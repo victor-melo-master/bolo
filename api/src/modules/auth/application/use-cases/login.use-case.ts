@@ -1,4 +1,26 @@
-// projectBolo/api/src/modules/auth/application/use-cases/login.use-case.ts
+// src/modules/auth/application/use-cases/login.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginUseCase — Caso de Uso: Inicio de Sesión
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Orquesta la autenticación de usuarios:
+ *   1. Busca usuario por número telefónico
+ *   2. Verifica la contraseña contra el hash almacenado
+ *   3. Verifica que el usuario esté activo (isActive = true)
+ *   4. Genera y firma un JWT con sub, phone y role
+ *   5. Retorna token + datos básicos del usuario
+ *
+ * Dependencias inyectadas:
+ *   - UserRepositoryPort: para buscar el usuario
+ *   - CryptoService: para comparar contraseñas
+ *   - JwtService: para firmar el token JWT
+ *
+ * Capa: Aplicación (auth) — Caso de uso
+ *
+ * @module LoginUseCase
+ */
+
 import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { USER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/user.repository.port';

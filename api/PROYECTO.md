@@ -1,176 +1,249 @@
-# API — NestJS Monolítico
+# BOLO API — Documentación Técnica del Proyecto
 
-## Descripción General
+## 1. Descripción General
 
-API principal del sistema BOLO. Es un monolito construido con **NestJS 11** sobre **Node.js 24** que centraliza toda la lógica de negocio: autenticación y registro de usuarios (pasajeros, conductores, admins), gestión de cooperativas y asociaciones, administración de rutas y flota de vehículos, ejecución de viajes con tracking GPS, sistema de billetera y pagos con soporte para crédito de emergencia, y cálculo de tarifas con tasas de cambio diarias.
+API monolítica modular de la plataforma BOLO. Construida con **NestJS 11** sobre **Node.js 24**, sigue **Arquitectura Hexagonal (Puertos y Adaptadores)** para desacoplar la lógica de negocio de la infraestructura.
 
-Se comunica con **PostgreSQL 18 + PostGIS** para persistencia y con **Redis 7** para caché de sesiones y rate-limiting. No expone puerto al exterior en producción — todo el tráfico externo pasa por el middleware (Go Fiber).
+La base de datos corre sobre **PostgreSQL 18 + PostGIS 3**, con esquemas separados por dominio de negocio (microservicios lógicos). **Redis 7** se utiliza para caché de sesiones, rate-limiting y tracking GPS en tiempo real.
 
-## Estructura de Archivos
+## 2. Stack Tecnológico
+
+| Componente               | Versión        | Propósito                             |
+|--------------------------|----------------|---------------------------------------|
+| Node.js                  | 24 Alpine      | Runtime JavaScript                    |
+| NestJS                   | ^11.0          | Framework backend (DI, módulos, guards) |
+| TypeScript               | ^5.7           | Lenguaje                              |
+| TypeORM                  | ^1.0           | ORM para PostgreSQL                   |
+| PostgreSQL               | 18 + PostGIS 3 | Base de datos relacional + geoespacial |
+| Redis                    | 7 Alpine       | Caché / sesiones / rate-limiting      |
+| passport-jwt             | ^4.0           | Autenticación JWT                     |
+| bcrypt                   | ^6.0           | Hashing de contraseñas                |
+| class-validator          | ^0.15          | Validación de DTOs                    |
+| @nestjs/swagger          | ^11.4          | Documentación OpenAPI automática      |
+| Winston                  | ^3.19          | Logging estructurado                  |
+| ioredis                  | ^5.11          | Cliente Redis                         |
+| Jest                     | ^30.0          | Tests unitarios y e2e                 |
+
+## 3. Arquitectura Hexagonal (Puertos y Adaptadores)
+
+### Capas por Módulo
+
+```
+┌─────────────────────────────────────────────────┐
+│                   Interfaces                     │
+│  (Controladores REST, DTOs de validación,       │
+│   Middleware, Guards, Decorators)                │
+├─────────────────────────────────────────────────┤
+│                Application                       │
+│  (Casos de uso, DTOs internos,                   │
+│   Servicios de aplicación)                       │
+├─────────────────────────────────────────────────┤
+│                  Domain                          │
+│  (Entidades puras, Puertos/Interfaces,          │
+│   Value Objects, Excepciones)                    │
+├─────────────────────────────────────────────────┤
+│              Infrastructure                      │
+│  (ORM entities, Repositorios TypeORM,            │
+│   JWT Strategy, Servicios externos)              │
+└─────────────────────────────────────────────────┘
+```
+
+### Flujo de una Solicitud
+
+```
+HTTP Request → Controller → DTO (validate) → UseCase → Port (interface)
+                                                          ↓
+                                              RepositoryImpl (TypeORM)
+                                                          ↓
+                                                      PostgreSQL
+```
+
+## 4. Estructura del Proyecto
 
 ```
 api/
-├── .prettierrc              # Configuración de formato
-├── Dockerfile               # Multi-stage: base / development / build / production
-├── eslint.config.mjs        # Configuración ESLint flat config
-├── nest-cli.json            # Configuración del CLI de NestJS
-├── package.json             # Dependencias y scripts
-├── package-lock.json        # Lockfile de npm
-├── tsconfig.json            # TypeScript configuración raíz
-├── tsconfig.build.json      # TypeScript configuración para build
-├── src/                     # Código fuente
-│   ├── main.ts              # Punto de entrada de la aplicación
-│   ├── app.module.ts        # Módulo raíz de NestJS
-│   ├── app.controller.ts    # Controlador raíz
-│   ├── app.service.ts       # Servicio raíz
-│   └── ...                  # Módulos, servicios, controladores adicionales
-├── test/                    # Tests end-to-end
-│   ├── jest-e2e.json
-│   └── app.e2e-spec.ts
-└── dist/                    # Compilación TypeScript (generado)
+├── .env                        # Variables de entorno (desarrollo)
+├── .prettierrc                 # Config Prettier
+├── Dockerfile                  # Multi-stage (dev / build / prod)
+├── eslint.config.mjs           # ESLint flat config
+├── nest-cli.json               # Config CLI NestJS
+├── package.json                # Dependencias y scripts
+├── tsconfig.json               # TypeScript raíz
+├── tsconfig.build.json         # TypeScript para build
+├── src/
+│   ├── main.ts                 # Bootstrap de la app
+│   ├── app.module.ts           # Módulo raíz
+│   ├── app.controller.ts       # Controlador raíz (GET /)
+│   ├── app.service.ts          # Servicio raíz
+│   ├── health.controller.ts    # Healthcheck (GET /health)
+│   ├── shared/                 # Código común transversal
+│   │   ├── domain/
+│   │   │   ├── base.entity.ts              # Entidad base abstracta
+│   │   │   ├── exceptions/                 # NotFound, Unauthorized
+│   │   │   ├── interfaces/                 # IBaseRepository
+│   │   │   └── value-objects/              # Money, Email, Phone (stubs)
+│   │   ├── application/
+│   │   │   ├── services/crypto.service.ts  # Hash bcrypt
+│   │   │   └── ports/                      # ICache, ILogger
+│   │   ├── infrastructure/
+│   │   │   ├── database/typeorm.config.ts  # Config PostgreSQL
+│   │   │   ├── logger/winston.logger.ts    # Logger Winston
+│   │   │   └── redis/redis.client.ts       # Cliente Redis singleton
+│   │   └── interfaces/
+│   │       ├── middleware/logging.middleware.ts
+│   │       ├── filters/all-exceptions.filter.ts
+│   │       └── decorators/                 # @Roles, @CurrentUser
+│   └── modules/
+│       ├── auth/               # ✅ COMPLETO
+│       │   ├── domain/entities/            # User, Association, DriverRequest
+│       │   ├── domain/interfaces/          # Ports: repositorios + servicios
+│       │   ├── application/use-cases/      # CreateUserUseCase, LoginUseCase
+│       │   ├── application/dto/            # CreateUserDto, LoginDto
+│       │   ├── interfaces/dto/             # RegisterDto, LoginDto, UserResponseDto
+│       │   ├── interfaces/rest/            # AuthController, UserController, AssociationController
+│       │   └── infrastructure/
+│       │       ├── orm/                    # UserOrmEntity, AssociationOrmEntity, DriverRequestOrmEntity
+│       │       ├── persistence/            # UserRepositoryImpl, etc.
+│       │       ├── auth/                   # JwtStrategy, JwtAuthGuard
+│       │       ├── services/               # NotificationServiceImpl (stub)
+│       │       └── auth.module.ts          # Composición del módulo
+│       ├── fin/               # ⚠️ PARCIAL
+│       │   ├── domain/entities/wallet.entity.ts
+│       │   └── infrastructure/orm/wallet.orm-entity.ts
+│       ├── trip/              # ❌ STUB
+│       ├── ops/               # ❌ STUB
+│       └── audit/             # ❌ STUB
+└── test/
+    ├── jest-e2e.json           # Config Jest e2e
+    └── app.e2e-spec.ts         # Test e2e básico
 ```
 
-## Stack Tecnológico
+## 5. Módulo auth — Detalle
 
-| Componente    | Versión   | Propósito                              |
-|---------------|-----------|----------------------------------------|
-| Node.js       | 24 Alpine | Runtime JavaScript                      |
-| NestJS        | ^11.0     | Framework backend (controladores, módulos, servicios) |
-| @nestjs/core  | ^11.0     | Core del framework                      |
-| @nestjs/common| ^11.0     | Decoradores, guards, pipes, interceptors |
-| @nestjs/platform-express | ^11.0 | Adaptador Express                    |
-| @nestjs/terminus | ^11.0  | Healthchecks                            |
-| TypeScript    | ^5.7      | Lenguaje                                |
-| Jest          | ^30.0     | Tests unitarios                         |
-| Supertest     | ^7.0      | Tests HTTP end-to-end                   |
-| ESLint        | ^9.18     | Linting                                 |
-| Prettier      | ^3.4      | Formateo                                |
+### Endpoints
 
-## Despliegue — Paso a Paso
+| Método | Ruta              | Auth     | Descripción                          | Implementado |
+|--------|-------------------|----------|--------------------------------------|:---:|
+| POST   | /auth/register    | No       | Registro de usuario con billetera    | ✅  |
+| POST   | /auth/login       | No       | Login con phone + password → JWT     | ✅  |
+| GET    | /auth/profile     | JWT      | Perfil del usuario autenticado       | ✅  |
+| GET    | /users/:id        | No       | Obtener usuario por ID (placeholder) | ⚠️  |
+| GET    | /associations/:id | No       | Obtener asociación (placeholder)     | ⚠️  |
+| POST   | /associations     | No       | Crear asociación (placeholder)       | ⚠️  |
 
-### En Desarrollo (con Docker Compose)
+### Casos de Uso
 
-```bash
-# 1. Desde la raíz del proyecto, genera los secretos y construye imágenes
-make init
+#### CreateUserUseCase
+1. Verifica unicidad de teléfono
+2. Hashea contraseña con bcrypt (costo 10)
+3. Crea entidad User mediante factory method
+4. Persiste mediante UserRepositoryImpl (TypeORM → auth.users)
+5. Crea billetera digital (mock WalletServicePort no-op)
 
-# 2. Levanta todo el stack (postgres, redis, api, middleware, frontend)
-make up
+#### LoginUseCase
+1. Busca usuario por teléfono
+2. Compara contraseña contra hash
+3. Verifica isActive
+4. Genera JWT firmado con sub, phone, role (expira 1h)
 
-# 3. Verifica que la API esté saludable
-curl http://localhost:3000/
+### Seguridad JWT
+
+- Estrategia: `passport-jwt` con extracción del header `Authorization: Bearer <token>`
+- Secreto: `JWT_SECRET` desde ConfigService (variable de entorno o Docker secret)
+- Guard: `JwtAuthGuard` protege rutas que requieren autenticación
+- Payload: `{ sub: userId, phone, role }`
+
+### Tablas en Base de Datos
+
+**auth.users** — Usuarios del sistema
+- UUID v7, phone único, email único nullable
+- Role enum: passenger, driver, association_admin, super_admin
+- Category enum: normal, student, elderly
+- Soft-delete via deleted_at
+- QR fields para identificación rápida de conductores
+
+**auth.associations** — Cooperativas/Asociaciones
+- UUID v7, name único, RIF único
+- admin_id referencia a auth.users
+
+**auth.driver_requests** — Solicitudes de afiliación
+- Estados: pending, approved, rejected
+- documents_urls: JSONB para documentos adjuntos
+- rejection_reason opcional
+
+## 6. Módulo fin — Estado Actual
+
+### Implementado
+- Entidad de dominio `Wallet` con:
+  - balance/debtBalance en centavos (BigInt)
+  - Control de concurrencia optimista (version)
+  - Flag creditUsed para crédito de emergencia
+- ORM entity `WalletOrmEntity` para tabla fin.wallets
+
+### Pendiente
+- `WalletServiceImpl` real (reemplazar mock en AuthModule)
+- Repositorio WalletRepository (port + impl)
+- Transacciones financieras (fin.transactions)
+- Tarifas por cooperativa (fin.coop_fares)
+- Tipos de cambio (fin.exchange_rates)
+- Saga pattern para pagos distribuidos (fin.saga_states)
+- Módulo FinModule completo
+
+## 7. Módulos Pendientes
+
+### Ops (Operaciones)
+- CRUD de rutas con referencia a tarifarios
+- CRUD de vehículos (capacidad, tipo, estado)
+- Asignación de rutas a conductores
+
+### Trip (Viajes)
+- Inicio/finalización de viajes
+- Cálculo de tarifa dinámica
+- Tracking GPS con PostGIS (GEOGRAPHY Point, 4326)
+- Pagos y comisiones por viaje
+
+### Audit (Auditoría)
+- Log inmutable de acciones críticas
+- Trigger BD para prevenir UPDATE/DELETE
+- Consulta de historial por entidad
+
+## 8. Configuración de Base de Datos
+
+### Conexión (typeorm.config.ts)
+```typescript
+type: 'postgres',
+host: DB_HOST || 'localhost',
+port: DB_PORT || 5432,
+username: DB_USER || 'postgres',
+password: readSecret('DB_PASSWORD_FILE', 'DB_PASSWORD'),
+database: DB_NAME || 'bolo',
+synchronize: false,  // ¡Deshabilitado! Usar init.sql o migraciones
 ```
 
-El contenedor usa el stage `development` del Dockerfile. NestJS arranca con `nest start --watch`, que compila TypeScript al vuelo y reinicia automáticamente ante cualquier cambio. El código fuente se monta como volumen `./api:/app` (delegated), por lo que los cambios locales se reflejan al instante.
-
-### En Desarrollo Local (sin Docker, solo Node)
-
-```bash
-cd api
-npm install
-npm run start:dev    # Compila y escucha cambios
+### Lectura de Secrets
+```typescript
+function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string
+// 1. Si existe variable <fileEnvKey> (path a archivo secreto), lo lee
+// 2. Sino, usa <fallbackEnvKey> como variable directa
+// 3. Sino, retorna string vacío
 ```
 
-### En Producción
+## 9. Próximos Pasos
 
-El stage `production` del Dockerfile genera una imagen optimizada:
+- [ ] Implementar WalletServiceImpl real en fin/infrastructure
+- [ ] Desarrollar CRUD de módulo ops (rutas, vehículos)
+- [ ] Implementar módulo trip con tracking GPS
+- [ ] Configurar módulo audit con triggers de BD
+- [ ] Integrar Redis para caché de sesiones
+- [ ] Agregar migraciones TypeORM
+- [ ] Escribir tests unitarios para casos de uso
+- [ ] Escribir tests e2e para endpoints
 
-```bash
-# Construir imagen de producción
-docker build --target production -t bolo-api:latest .
+## 10. Notas Técnicas
 
-# O desde la raíz del proyecto:
-docker compose build api
-```
-
-La imagen de producción:
-- Usa `node:24.17-alpine` como base
-- Solo instala dependencias de producción (`npm ci --omit=dev`)
-- Copia el `dist/` compilado desde el stage `build`
-- Corre como usuario no privilegiado `bolo:bolo`
-- Usa `dumb-init` como PID 1 (manejo correcto de señales)
-
-## Variables de Entorno
-
-| Variable             | Requerida | Default | Descripción                                  |
-|----------------------|-----------|---------|----------------------------------------------|
-| DB_HOST              | Sí        | —       | Host de PostgreSQL (nombre del servicio Docker) |
-| DB_PORT              | Sí        | —       | Puerto PostgreSQL (5432)                     |
-| DB_NAME              | Sí        | —       | Nombre de la base de datos (`POSTGRES_DB`)   |
-| DB_USER              | Sí        | —       | Usuario de BD (`POSTGRES_USER`)              |
-| DB_PASSWORD_FILE     | Sí        | —       | Ruta al secret con la contraseña de BD       |
-| REDIS_HOST           | Sí        | —       | Host de Redis                                |
-| REDIS_PORT           | Sí        | —       | Puerto Redis (6379)                          |
-| REDIS_PASSWORD_FILE  | Sí        | —       | Ruta al secret con la contraseña de Redis    |
-| JWT_SECRET_FILE      | Sí        | —       | Ruta al secret JWT                           |
-| QR_HMAC_SECRET_FILE  | Sí        | —       | Ruta al secret HMAC para códigos QR          |
-| NODE_ENV             | No        | development | Entorno de ejecución                     |
-| PORT                 | No        | 3000    | Puerto interno del contenedor                |
-
-## Dependencias entre Servicios
-
-```
-postgres (healthy) ──→ api ──→ middleware (healthy) ──→ frontend
-redis (healthy)    ──→ api
-                    ──→ middleware
-```
-
-La API **no se inicia** hasta que PostgreSQL y Redis estén saludables (ver `depends_on` en el compose).
-
-## Redes
-
-| Red       | Tipo      | Acceso                           |
-|-----------|-----------|----------------------------------|
-| `db_net`  | internal  | API ↔ PostgreSQL                 |
-| `cache_net` | internal | API ↔ Redis                     |
-| `api_net` | internal  | Middleware → API (proxy reverso) |
-
-La API **nunca** está en `public_net`. No recibe tráfico directo del exterior.
-
-## Healthcheck
-
-```yaml
-test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
-interval: 10s
-timeout: 5s
-retries: 5
-start_period: 30s
-```
-
-## Comandos Útiles (dentro del contenedor)
-
-```bash
-npm run build          # Compila TypeScript a dist/
-npm run start          # Inicia la aplicación compilada
-npm run start:dev      # Desarrollo con live-reload
-npm run start:prod     # node dist/main (producción local)
-npm run test           # Tests unitarios (Jest)
-npm run test:e2e       # Tests end-to-end
-npm run test:cov       # Tests con cobertura
-npm run lint           # ESLint + fix automático
-npm run format         # Prettier
-```
-
-## Notas de Seguridad
-
-- En producción, el puerto 3000 **no se expone al host**. Solo está visible internamente mediante `expose` en el compose.
-- Las contraseñas se leen desde archivos montados como Docker Secrets (`/run/secrets/`), nunca desde variables de entorno.
-- La conexión a PostgreSQL usa solo redes internas de Docker (`db_net`), sin exposición a internet.
-- El usuario del contenedor es `bolo:bolo` sin privilegios.
-- `dumb-init` asegura que las señales (SIGTERM, SIGINT) se propaguen correctamente a NestJS.
-
-## Scripts de package.json
-
-| Script          | Comando                      |
-|-----------------|------------------------------|
-| build           | `nest build`                 |
-| format          | `prettier --write "src/**/*.ts" "test/**/*.ts"` |
-| start           | `nest start`                 |
-| start:dev       | `nest start --watch`         |
-| start:debug     | `nest start --debug --watch` |
-| start:prod      | `node dist/main`             |
-| lint            | `eslint "{src,apps,libs,test}/**/*.ts" --fix` |
-| test            | `jest`                       |
-| test:watch      | `jest --watch`               |
-| test:cov        | `jest --coverage`            |
-| test:e2e        | `jest --config ./test/jest-e2e.json` |
+- UUID v7: disponible nativamente en PostgreSQL 18 (no requiere extensión pg_uuidv7)
+- PostGIS: usar imagen `postgis/postgis:18-3.5` en Docker
+- TypeORM: `autoLoadEntities: true` es propiedad de `TypeOrmModuleOptions` (NestJS), no de `DataSourceOptions`
+- Docker: las contraseñas se montan como archivos en `/run/secrets/`; en desarrollo se usa `.env`
+- Contraseña para bcrypt: **costo 10** — balance entre seguridad y performance
+- La API nunca expone puerto al exterior en producción; todo el tráfico pasa por middleware Go Fiber

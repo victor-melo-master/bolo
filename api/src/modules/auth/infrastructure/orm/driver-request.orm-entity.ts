@@ -1,4 +1,24 @@
-// projectBolo/api/src/modules/auth/infrastructure/orm/driver-request.orm-entity.ts
+// src/modules/auth/infrastructure/orm/driver-request.orm-entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * DriverRequestOrmEntity — Entidad TypeORM para auth.driver_requests
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Mapeo ORM de la tabla `auth.driver_requests`. Almacena las
+ * solicitudes de afiliación de conductores a cooperativas.
+ *
+ * La columna documents_urls es JSONB para almacenar URLs de
+ * documentos de forma flexible (cédula, licencia, certificados).
+ *
+ * Esquema: auth
+ * Tabla: driver_requests
+ *
+ * Capa: Infraestructura (auth/orm)
+ *
+ * @see DriverRequest
+ * @see DriverRequestRepositoryImpl
+ */
+
 import {
   Entity,
   Column,

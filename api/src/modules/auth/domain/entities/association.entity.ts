@@ -1,3 +1,24 @@
+// src/modules/auth/domain/entities/association.entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * Association — Entidad de Dominio de Cooperativa/Asociación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Representa una cooperativa o asociación de transporte registrada
+ * en el sistema. Cada asociación tiene un RIF (registro fiscal
+ * venezolano), datos de contacto y un administrador designado.
+ *
+ * Las asociaciones agrupan conductores y definen tarifarios
+ * (ver fin.coop_fares) y rutas (ver ops.routes).
+ *
+ * Capa: Dominio (auth)
+ * Método de fábrica:
+ *   Association.create(data) — construye una nueva asociación
+ *
+ * @module Association
+ * @see DriverRequest
+ */
+
 export class Association {
   constructor(
     public readonly id: string,

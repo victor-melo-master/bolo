@@ -1,3 +1,14 @@
+// src/app.controller.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AppController — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el controlador raíz retorne "Hello World!".
+ *
+ * @module test/app.controller.spec
+ */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';

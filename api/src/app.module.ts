@@ -1,3 +1,28 @@
+// src/app.module.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AppModule — Módulo Raíz de la Aplicación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Orquesta todos los módulos funcionales del monolito y configura los servicios
+ * globales de infraestructura:
+ *
+ *   - ConfigModule:  carga .env y expone ConfigService globalmente
+ *   - TypeOrmModule: conecta a PostgreSQL usando la configuración compartida
+ *   - AuthModule:    autenticación, usuarios, asociaciones, solicitudes de conductor
+ *   - FinModule:     (pendiente) billetera digital, transacciones, tarifas
+ *   - TripModule:    (pendiente) viajes, pagos, historial GPS
+ *   - AuditModule:   (pendiente) logs de auditoría inmutables
+ *
+ * Capa: Infraestructura (composición de módulos)
+ * Dependencias:
+ *   - TypeORM + PostgreSQL: fuente de verdad del sistema
+ *   - @nestjs/config: variables de entorno globales
+ *   - AuthModule: módulo funcional implementado
+ *
+ * @module AppModule
+ */
+
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/infrastructure/auth.module';
@@ -11,7 +36,7 @@ import { AppService } from './app.service';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRoot(typeOrmConfig),
     AuthModule,
-    // Module,
+    // TODO: Activar cuando estén implementados
     // FinModule,
     // TripModule,
     // AuditModule,

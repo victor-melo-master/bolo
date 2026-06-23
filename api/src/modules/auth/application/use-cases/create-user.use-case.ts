@@ -1,3 +1,27 @@
+// src/modules/auth/application/use-cases/create-user.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateUserUseCase — Caso de Uso: Registrar Usuario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Orquesta el registro completo de un nuevo usuario:
+ *   1. Valida que el teléfono no esté registrado
+ *   2. Hashea la contraseña con bcrypt (costo 10)
+ *   3. Crea la entidad User mediante el método de fábrica
+ *   4. Persiste mediante el repositorio
+ *   5. Crea la billetera digital asociada (si WalletServicePort
+ *      está disponible — actualmente es un mock)
+ *
+ * Dependencias inyectadas:
+ *   - UserRepositoryPort (puerto de salida → UserRepositoryImpl)
+ *   - CryptoService (servicio compartido de hashing)
+ *   - WalletServicePort (opcional — mock hasta implementar fin)
+ *
+ * Capa: Aplicación (auth) — Caso de uso
+ *
+ * @module CreateUserUseCase
+ */
+
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { User } from '../../domain/entities/user.entity';
@@ -18,16 +42,13 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(dto: CreateUserDto): Promise<User> {
-    // 1. Validar reglas de negocio
     const existing = await this.userRepo.findByPhone(dto.phone);
     if (existing) {
       throw new Error('Phone already registered');
     }
 
-    // 2. Hashear la contraseña
     const hashedPassword = await this.cryptoService.hash(dto.password);
 
-    // 3. Crear entidad de dominio
     const user = User.create({
       phone: dto.phone,
       email: dto.email ?? null,
@@ -46,10 +67,8 @@ export class CreateUserUseCase {
       lastLoginAt: null,
     });
 
-    // 4. Persistir
     const savedUser = await this.userRepo.save(user);
 
-    // 5. Crear billetera asociada (si el servicio está disponible)
     if (this.walletService) {
       await this.walletService.createWallet(savedUser.id);
     }

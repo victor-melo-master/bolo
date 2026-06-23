@@ -1,4 +1,31 @@
-// auth/infrastructure/orm/user.orm-entity.ts
+// src/modules/auth/infrastructure/orm/user.orm-entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UserOrmEntity — Entidad TypeORM para la tabla auth.users
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Mapeo objeto-relacional de la tabla `auth.users` en PostgreSQL.
+ * Es la contraparte de infraestructura de la entidad de dominio User.
+ *
+ * La separación entre User (dominio) y UserOrmEntity (ORM) permite:
+ *   - Mantener el dominio puro, sin decoradores ni dependencias
+ *   - Cambiar de ORM sin afectar la lógica de negocio
+ *   - Tener distintos mapeos para distintas bases de datos
+ *
+ * Los mappers toDomain() / toOrm() en UserRepositoryImpl realizan
+ * la conversión entre ambas representaciones.
+ *
+ * Esquema: auth
+ * Tabla: users
+ *
+ * Capa: Infraestructura (auth/orm)
+ * Dependencias:
+ *   - TypeORM decorators (@Entity, @Column, etc.)
+ *   - clock_timestamp() de PostgreSQL para createdAt/updatedAt
+ *
+ * @see User
+ * @see UserRepositoryImpl
+ */
 
 import {
   Entity,

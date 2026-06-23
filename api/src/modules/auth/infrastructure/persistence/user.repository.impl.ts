@@ -1,3 +1,33 @@
+// src/modules/auth/infrastructure/persistence/user.repository.impl.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UserRepositoryImpl — Implementación del Repositorio de Usuarios
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Adaptador concreto del puerto UserRepositoryPort utilizando
+ * TypeORM como motor de persistencia.
+ *
+ * Responsabilidades:
+ *   - Persistir entidades User en la tabla auth.users
+ *   - Recuperar usuarios por ID o número telefónico
+ *   - Mapear entre entidad de dominio (User) y entidad ORM
+ *     (UserOrmEntity) mediante métodos privados toDomain / toOrm
+ *
+ * Los mappers son necesarios porque la entidad de dominio es una
+ * clase pura sin decoradores, mientras que la ORM usa decoradores
+ * de TypeORM. Esta separación es clave en Arquitectura Hexagonal.
+ *
+ * Capa: Infraestructura (auth/persistence)
+ * Dependencias:
+ *   - TypeORM Repository<UserOrmEntity>
+ *   - UserRepositoryPort (puerto que implementa)
+ *   - User (entidad de dominio)
+ *   - UserOrmEntity (entidad ORM)
+ *
+ * @module UserRepositoryImpl
+ * @see UserRepositoryPort
+ */
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

@@ -1,4 +1,36 @@
-// auth/domain/entities/user.entity.ts
+// src/modules/auth/domain/entities/user.entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * User — Entidad de Dominio de Usuario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Representa un usuario del sistema BOLO. Puede ser pasajero,
+ * conductor, administrador de cooperativa o superadministrador.
+ *
+ * Roles (UserRole):
+ *   - passenger:         usuario que solicita viajes
+ *   - driver:            conductor que presta el servicio
+ *   - association_admin: administrador de una cooperativa
+ *   - super_admin:       administrador global del sistema
+ *
+ * Categorías tarifarias (UserCategory):
+ *   - normal:  tarifa estándar
+ *   - student: tarifa estudiantil (requiere documento aprobado)
+ *   - elderly: tarifa de adulto mayor
+ *
+ * Soporta soft-delete (deletedAt) y tracking de último login.
+ * Los QR codes (qrCode, qrKey, qrVersion) se usan para emisión
+ * de tickets digitales o identificación rápida del conductor.
+ *
+ * Capa: Dominio (auth)
+ * Método de fábrica:
+ *   User.create(data) — construye un nuevo usuario con defaults
+ *     sensatos (isActive: true, qrVersion: 1, etc.)
+ *
+ * @module User
+ * @see UserRole
+ * @see UserCategory
+ */
 
 export type UserRole =
   | 'passenger'
@@ -29,12 +61,11 @@ export class User {
     public readonly updatedAt: Date,
   ) {}
 
-  // Método de fábrica para crear un nuevo usuario (puede incluir validaciones)
   static create(
     data: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { id?: string },
   ): User {
     return new User(
-      data.id ?? crypto.randomUUID(), // placeholder; luego se usará uuidv7()
+      data.id ?? crypto.randomUUID(), // TODO: migrar a uuidv7() nativo de PG 18
       data.phone,
       data.email ?? null,
       data.passwordHash,

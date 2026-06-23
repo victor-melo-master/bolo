@@ -1,98 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# BOLO — API Backend (NestJS Monolítico)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API principal del sistema BOLO, una plataforma integral de transporte de pasajeros con tracking GPS, billetera digital y pagos.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+| Componente  | Versión           |
+|-------------|-------------------|
+| Node.js     | 24 Alpine         |
+| NestJS      | ^11.0             |
+| TypeScript  | ^5.7              |
+| TypeORM     | ^1.0              |
+| PostgreSQL  | 18 + PostGIS 3    |
+| Redis       | 7 Alpine          |
+| JWT         | passport-jwt      |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Arquitectura
 
-## Project setup
+### Hexagonal (Puertos y Adaptadores)
 
-```bash
-$ npm install
+```
+src/
+├── shared/           # Código común transversal
+├── modules/
+│   ├── auth/         # Autenticación y usuarios
+│   │   ├── domain/          # Entidades, puertos, excepciones
+│   │   ├── application/     # Casos de uso, DTOs internos
+│   │   ├── infrastructure/  # ORM, repositorios, JWT, servicios
+│   │   └── interfaces/      # Controladores REST, DTOs validación
+│   ├── fin/          # Billetera, transacciones, tarifas (parcial)
+│   ├── trip/         # Viajes, GPS, tracking (pendiente)
+│   ├── ops/          # Rutas, vehículos (pendiente)
+│   └── audit/        # Logs inmutables (pendiente)
+└── main.ts
 ```
 
-## Compile and run the project
+### Estado de Implementación
+
+| Módulo | Estado         |
+|--------|----------------|
+| shared | ✅ Capa completa |
+| auth   | ✅ Domain + App + Infra + Interfaces |
+| fin    | ⚠️ Wallet entity + ORM (falta servicio real) |
+| trip   | ❌ Stub         |
+| ops    | ❌ Stub         |
+| audit  | ❌ Stub         |
+
+### Endpoints Funcionales
+
+| Método | Ruta              | Auth     | Descripción                |
+|--------|-------------------|----------|----------------------------|
+| GET    | /                 | No       | Healthcheck raíz           |
+| GET    | /health           | No       | Healthcheck Terminus       |
+| POST   | /auth/register    | No       | Registro de usuario        |
+| POST   | /auth/login       | No       | Inicio de sesión (JWT)     |
+| GET    | /auth/profile     | JWT      | Perfil del usuario aut.    |
+| GET    | /users/:id        | No       | Buscar usuario (placeholder) |
+| GET    | /associations/:id | No       | Buscar asociación (placeholder) |
+| POST   | /associations     | No       | Crear asociación (placeholder) |
+
+### Esquemas de Base de Datos
+
+| Schema | Tabla              | Módulo |
+|--------|--------------------|--------|
+| auth   | users, associations, driver_requests | auth |
+| ops    | routes, vehicles, assigned_routes | ops (pendiente) |
+| fin    | exchange_rates, coop_fares, wallets, transactions, saga_states | fin |
+| trip   | trips, payments, gps_history | trip (pendiente) |
+| audit  | audit_log          | audit (pendiente) |
+
+## Scripts
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run build          # Compilar TypeScript
+npm run start          # Iniciar servidor
+npm run start:dev      # Desarrollo con hot-reload
+npm run test           # Tests unitarios
+npm run test:e2e       # Tests end-to-end
+npm run lint           # ESLint
+npm run format         # Prettier
 ```
 
-## Run tests
+## Variables de Entorno
 
-```bash
-# unit tests
-$ npm run test
+Ver `src/.env` para desarrollo local. En Docker, usar secrets montados en `/run/secrets/`.
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Variable         | Requerida | Default   | Descripción              |
+|------------------|-----------|-----------|--------------------------|
+| DB_HOST          | No        | localhost | Host PostgreSQL          |
+| DB_PORT          | No        | 5432      | Puerto PostgreSQL        |
+| DB_NAME          | No        | bolo      | Nombre de base de datos  |
+| DB_USER          | No        | postgres  | Usuario de BD            |
+| DB_PASSWORD      | No        | (vacio)   | Contraseña de BD         |
+| JWT_SECRET       | No        | defaultSecret | Secreto para firmar JWT |
+| REDIS_HOST       | No        | localhost | Host de Redis            |
+| REDIS_PORT       | No        | 6379      | Puerto de Redis          |

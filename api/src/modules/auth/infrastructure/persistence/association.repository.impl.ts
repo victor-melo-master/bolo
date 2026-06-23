@@ -1,3 +1,19 @@
+// src/modules/auth/infrastructure/persistence/association.repository.impl.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AssociationRepositoryImpl — Repositorio de Asociaciones (TypeORM)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Adaptador concreto del puerto AssociationRepositoryPort.
+ * Persiste y recupera asociaciones/cooperativas en la tabla
+ * auth.associations mediante TypeORM.
+ *
+ * Capa: Infraestructura (auth/persistence)
+ *
+ * @module AssociationRepositoryImpl
+ * @see AssociationRepositoryPort
+ */
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

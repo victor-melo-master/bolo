@@ -1,3 +1,19 @@
+// src/modules/auth/infrastructure/persistence/driver-request.repository.impl.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * DriverRequestRepositoryImpl — Repositorio de Solicitudes (TypeORM)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Adaptador concreto del puerto DriverRequestRepositoryPort.
+ * Persiste y recupera solicitudes de afiliación de conductores
+ * en la tabla auth.driver_requests mediante TypeORM.
+ *
+ * Capa: Infraestructura (auth/persistence)
+ *
+ * @module DriverRequestRepositoryImpl
+ * @see DriverRequestRepositoryPort
+ */
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

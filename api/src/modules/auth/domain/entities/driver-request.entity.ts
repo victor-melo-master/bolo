@@ -1,3 +1,28 @@
+// src/modules/auth/domain/entities/driver-request.entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * DriverRequest — Solicitud de Afiliación de Conductor
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Representa la solicitud de un conductor para unirse a una
+ * cooperativa. El flujo es:
+ *   1. Conductor solicita afiliación (status: pending)
+ *   2. Admin de la cooperativa revisa documentos
+ *   3. Aprueba (status: approved) o rechaza (status: rejected)
+ *      con una razón opcional.
+ *
+ * Los documentos se almacenan como URLs (fotos de cédula, licencia,
+ * certificados médicos, etc.) en un objeto JSONB.
+ *
+ * Capa: Dominio (auth)
+ * Método de fábrica:
+ *   DriverRequest.create(data) — crea solicitud en estado 'pending'
+ *
+ * @module DriverRequest
+ * @see DriverRequestStatus
+ * @see Association
+ */
+
 export type DriverRequestStatus = 'pending' | 'approved' | 'rejected';
 
 export class DriverRequest {
