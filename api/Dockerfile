@@ -49,4 +49,4 @@ COPY --from=build /app/dist ./dist
 USER bolo:bolo
 
 EXPOSE 3000
-CMD ["dumb-init", "node", "dist/main.js"]
+CMD ["dumb-init", "node", "--max-old-space-size=4096", "/app/node_modules/.bin/nest", "start", "--watch"]

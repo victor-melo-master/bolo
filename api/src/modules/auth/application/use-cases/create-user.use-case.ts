@@ -41,7 +41,7 @@ export class CreateUserUseCase {
       qrKey: null,
       qrVersion: 0,
       studentDocApproved: false,
-      isActive: false,
+      isActive: true,
       deletedAt: null,
       lastLoginAt: null,
     });

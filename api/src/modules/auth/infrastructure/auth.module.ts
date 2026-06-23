@@ -26,6 +26,12 @@ import {
   WALLET_SERVICE_PORT,
 } from '../domain/interfaces';
 import { CryptoService } from '../../../shared/application/services/crypto.service';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LoginUseCase } from '../application/use-cases/login.use-case';
+import { PassportModule } from '@nestjs/passport';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -34,12 +40,21 @@ import { CryptoService } from '../../../shared/application/services/crypto.servi
       AssociationOrmEntity,
       DriverRequestOrmEntity,
     ]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET') ?? 'defaultSecret',
+        signOptions: { expiresIn: '1h' },
+      }),
+    }),
   ],
   controllers: [AuthController, UserController, AssociationController],
   providers: [
     // Casos de uso
     CreateUserUseCase,
-    // Otros use-cases...
+    LoginUseCase,
 
     // Servicios compartidos
     CryptoService,
@@ -59,15 +74,19 @@ import { CryptoService } from '../../../shared/application/services/crypto.servi
       provide: WALLET_SERVICE_PORT,
       useValue: { createWallet: async () => {} },
     },
+    JwtStrategy, // ← agregar (debe ser provider)
+    JwtAuthGuard, // ← agregar (debe ser provider)
   ],
   exports: [
-    // Exportar los tokens, NO las clases concretas
     USER_REPOSITORY_PORT,
     ASSOCIATION_REPOSITORY_PORT,
     DRIVER_REQUEST_REPOSITORY_PORT,
     NOTIFICATION_SERVICE_PORT,
-    // También se pueden exportar use-cases si otros módulos los necesitan
+    WALLET_SERVICE_PORT, // ← añadir
     CreateUserUseCase,
+    LoginUseCase, // ← añadir
+    JwtAuthGuard, // ← añadir (opcional)
+    JwtModule, // ← añadir (opcional, para que otros módulos puedan firmar tokens)
   ],
 })
 export class AuthModule {}

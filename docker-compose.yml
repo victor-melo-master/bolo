@@ -204,6 +204,8 @@ services:
     container_name: bolo_api
     <<: *default-restart
     logging: *default-logging
+    # command: node --max-old-space-size=4096 dist/main.js
+
 
     environment:
       DB_HOST:         postgres
@@ -250,8 +252,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 1536M
 
     networks:
       - db_net          # Accede a postgres
