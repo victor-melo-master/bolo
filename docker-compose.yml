@@ -1,0 +1,359 @@
+# ==============================================================
+# BOLO MVP – Docker Compose
+# Prioridades: seguridad, robustez, observabilidad mínima
+# ==============================================================
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-restart: &default-restart
+  restart: unless-stopped
+
+x-healthcheck-defaults: &hc-defaults
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
+
+services:
+
+  # ============================================================
+  # PostgreSQL 18 + PostGIS
+  # ============================================================
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    container_name: bolo_postgres
+    <<: *default-restart
+    logging: *default-logging
+
+    # Sin acceso a la red del host salvo el puerto explícito
+    # El usuario de la BD nunca es root
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+      # Refuerza que solo se acepten conexiones con contraseña
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+
+    secrets:
+      - pg_password
+
+    ports:
+      - "127.0.0.1:5432:5432"   # Solo escucha en loopback (no expuesto al exterior)
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/18/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./postgres/pgpass:/pgadmin4/pgpass:ro
+
+    healthcheck:
+      <<: *hc-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+
+    # Limita recursos para evitar que un leak consuma el host
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+    networks:
+      - db_net          # Red aislada: solo la API puede ver postgres
+
+  # ============================================================
+  # Redis 7
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: bolo_redis
+    <<: *default-restart
+    logging: *default-logging
+
+    # Carga la config desde archivo (no flags inline)
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+    secrets:
+      - redis_password
+
+    ports:
+      - "127.0.0.1:6379:6379"   # Solo loopback
+
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+
+    healthcheck:
+      <<: *hc-defaults
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+    networks:
+      - cache_net       # Red aislada: API y middleware pueden ver redis
+
+  # ============================================================
+  # pgAdmin (solo en desarrollo, desactivar en staging/prod)
+  # ============================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bolo_pgadmin
+    <<: *default-restart
+    logging: *default-logging
+    profiles:
+      - tools           # Solo se levanta con: docker compose --profile tools up
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'       # Modo desktop (un solo usuario)
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+
+    secrets:
+      - pgadmin_password
+
+    ports:
+      - "127.0.0.1:5050:80"
+
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./postgres/pgadmin-servers.json:/pgadmin4/servers.json:ro  # Pre-configura la conexión
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # pgAdmin no necesita ver redis ni el middleware
+    networks:
+      - db_net
+
+  # ============================================================
+  # Middleware de seguridad (Go Fiber)
+  # ============================================================
+  middleware:
+    build:
+      context: ./middleware
+      dockerfile: Dockerfile
+      target: development       # Stage separado con hot-reload (air)
+    container_name: bolo_middleware
+    <<: *default-restart
+    logging: *default-logging
+
+    environment:
+      JWT_SECRET_FILE:    /run/secrets/jwt_secret
+      QR_HMAC_SECRET_FILE: /run/secrets/qr_hmac_secret
+      REDIS_HOST:         redis
+      REDIS_PORT:         6379
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      API_URL:            http://api:3000
+      FIBER_PREFORK:      "false"
+      LOG_LEVEL:          ${LOG_LEVEL:-info}
+
+    secrets:
+      - jwt_secret
+      - qr_hmac_secret
+      - redis_password
+
+    ports:
+      - "127.0.0.1:${MIDDLEWARE_PORT:-8080}:8080"
+
+    volumes:
+      - ./middleware:/app:delegated
+      - middleware_cache:/root/go/pkg/mod  # Caché de módulos Go entre reinicios
+
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+    healthcheck:
+      <<: *hc-defaults
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+    networks:
+      - public_net      # Recibe tráfico externo
+      - cache_net       # Habla con Redis
+      - api_net         # Proxy hacia la API
+
+  # ============================================================
+  # API Monolítica (Node.js / NestJS)
+  # ============================================================
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: development
+    container_name: bolo_api
+    <<: *default-restart
+    logging: *default-logging
+
+    environment:
+      DB_HOST:         postgres
+      DB_PORT:         5432
+      DB_NAME:         ${POSTGRES_DB}
+      DB_USER:         ${POSTGRES_USER}
+      DB_PASSWORD_FILE: /run/secrets/pg_password
+      REDIS_HOST:      redis
+      REDIS_PORT:      6379
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      QR_HMAC_SECRET_FILE: /run/secrets/qr_hmac_secret
+      NODE_ENV:        ${NODE_ENV:-development}
+      PORT:            3000
+
+    secrets:
+      - pg_password
+      - redis_password
+      - jwt_secret
+      - qr_hmac_secret
+
+    #! Para pruebas rápidas, exponer puerto 3000 de lo contrario comentar o eliminar !#
+    ports:
+      - "127.0.0.1:3000:3000" # Exponer API para pruebas rápidas
+
+    # Puerto NO expuesto al host: solo el middleware accede por api_net
+    expose:
+      - "3000"
+
+    volumes:
+      - ./api:/app:delegated
+      - api_node_modules:/app/node_modules   # Volumen nombrado para node_modules
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    healthcheck:
+      <<: *hc-defaults
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+    networks:
+      - db_net          # Accede a postgres
+      - cache_net       # Accede a redis
+      - api_net         # Recibe tráfico del middleware
+
+  # ============================================================
+  # Panel de Administración (React + Vite)
+  # ============================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: bolo_frontend
+    <<: *default-restart
+    logging: *default-logging
+
+    environment:
+      VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
+      VITE_ENVIRONMENT:  development
+
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
+
+    volumes:
+      - ./frontend:/app:delegated
+      - frontend_node_modules:/app/node_modules
+
+    depends_on:
+      middleware:
+        condition: service_healthy
+
+    healthcheck:
+      <<: *hc-defaults
+      test: ["CMD-SHELL", "curl -f http://localhost:5173 || exit 1"]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+    networks:
+      - public_net
+
+# ==============================================================
+# Docker Secrets (archivos locales en desarrollo)
+# En producción estos vendrían de Docker Swarm / Vault / AWS SM
+# ==============================================================
+secrets:
+  pg_password:
+    file: ./secrets/pg_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  qr_hmac_secret:
+    file: ./secrets/qr_hmac_secret.txt
+  pgadmin_password:
+    file: ./secrets/pgadmin_password.txt
+
+# ==============================================================
+# Volúmenes persistentes
+# ==============================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  middleware_cache:
+    driver: local
+  api_node_modules:
+    driver: local
+  frontend_node_modules:
+    driver: local
+
+# ==============================================================
+# Redes segmentadas (principio de mínimo privilegio)
+#
+#   public_net  → middleware ↔ frontend  (tráfico externo)
+#   api_net     → middleware ↔ api       (proxy interno)
+#   db_net      → api ↔ postgres, pgadmin ↔ postgres
+#   cache_net   → api ↔ redis, middleware ↔ redis
+#
+# postgres y redis NUNCA están en public_net ni api_net directamente
+# ==============================================================
+networks:
+  public_net:
+    driver: bridge
+    name: bolo_public_net
+  api_net:
+    driver: bridge
+    name: bolo_net_api
+    # internal: true      # Sin salida a internet
+  db_net:
+    driver: bridge
+    name: bolo_db_net
+    # internal: true      # Sin salida a internet
+  cache_net:
+    driver: bridge
+    name: bolo_cache_net
+    # internal: true      # Sin salida a internet

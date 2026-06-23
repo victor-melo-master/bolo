@@ -8,19 +8,27 @@ import {
   MaxLength,
   IsEnum,
 } from 'class-validator';
-import { UserRole, UserCategory } from '../../domain/entities/user.entity';
-
+import type { UserRole, UserCategory } from '../../domain/entities/user.entity';
 export class RegisterDto {
-  @ApiProperty({ description: 'Número de teléfono con código de país', example: '+584121234567' })
+  @ApiProperty({
+    description: 'Número de teléfono con código de país',
+    example: '+584121234567',
+  })
   @IsPhoneNumber()
   phone: string;
 
-  @ApiPropertyOptional({ description: 'Correo electrónico (opcional)', example: 'usuario@email.com' })
+  @ApiPropertyOptional({
+    description: 'Correo electrónico (opcional)',
+    example: 'usuario@email.com',
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ description: 'Contraseña en texto plano', example: 'MiPassword123' })
+  @ApiProperty({
+    description: 'Contraseña en texto plano',
+    example: 'MiPassword123',
+  })
   @IsString()
   @MinLength(6)
   @MaxLength(50)
@@ -32,7 +40,10 @@ export class RegisterDto {
   @MaxLength(255)
   fullName: string;
 
-  @ApiPropertyOptional({ description: 'Cédula venezolana (V-/E-)', example: 'V12345678' })
+  @ApiPropertyOptional({
+    description: 'Cédula venezolana (V-/E-)',
+    example: 'V12345678',
+  })
   @IsOptional()
   @IsString()
   cedula?: string;

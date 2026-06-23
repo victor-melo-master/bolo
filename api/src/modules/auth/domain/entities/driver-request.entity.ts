@@ -12,7 +12,11 @@ export class DriverRequest {
     public readonly updatedAt: Date,
   ) {}
 
-  static create(data: Omit<DriverRequest, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): DriverRequest {
+  static create(
+    data: Omit<DriverRequest, 'id' | 'createdAt' | 'updatedAt'> & {
+      id?: string;
+    },
+  ): DriverRequest {
     return new DriverRequest(
       data.id ?? crypto.randomUUID(),
       data.driverId,

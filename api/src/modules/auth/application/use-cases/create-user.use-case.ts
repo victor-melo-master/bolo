@@ -1,24 +1,20 @@
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { User } from '../../domain/entities/user.entity';
-import {
-  USER_REPOSITORY_PORT,
-  UserRepositoryPort,
-} from '../../domain/interfaces/repositories/user.repository.port';
-import {
-  WALLET_SERVICE_PORT,
-  WalletServicePort,
-} from '../../domain/interfaces/services/wallet.service.port';
-import { CryptoService } from '../../../shared/application/services/crypto.service';
+import { USER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/user.repository.port';
+import type { UserRepositoryPort } from '../../domain/interfaces/repositories/user.repository.port';
+import { WALLET_SERVICE_PORT } from '../../domain/interfaces/services/wallet.service.port';
+import type { WalletServicePort } from '../../domain/interfaces/services/wallet.service.port';
+import { CryptoService } from '../../../../shared/application/services/crypto.service';
 
 @Injectable()
 export class CreateUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY_PORT) private readonly userRepo: UserRepositoryPort,
+    private readonly cryptoService: CryptoService,
     @Optional()
     @Inject(WALLET_SERVICE_PORT)
     private readonly walletService?: WalletServicePort,
-    private readonly cryptoService: CryptoService,
   ) {}
 
   async execute(dto: CreateUserDto): Promise<User> {
@@ -34,12 +30,20 @@ export class CreateUserUseCase {
     // 3. Crear entidad de dominio
     const user = User.create({
       phone: dto.phone,
-      email: dto.email,
+      email: dto.email ?? null,
       passwordHash: hashedPassword,
       fullName: dto.fullName,
-      cedula: dto.cedula,
+      cedula: dto.cedula ?? null,
       role: dto.role,
       category: dto.category,
+      jwtKey: null,
+      qrCode: null,
+      qrKey: null,
+      qrVersion: 0,
+      studentDocApproved: false,
+      isActive: false,
+      deletedAt: null,
+      lastLoginAt: null,
     });
 
     // 4. Persistir

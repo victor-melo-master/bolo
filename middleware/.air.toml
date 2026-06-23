@@ -1,0 +1,12 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ."
+  bin = "./tmp/main"
+  include_ext = ["go", "tpl", "html", "env"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+  log = "build-errors.log"
+  delay = 1000
+  stop_on_error = true

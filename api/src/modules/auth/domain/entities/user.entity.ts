@@ -1,6 +1,10 @@
 // auth/domain/entities/user.entity.ts
 
-export type UserRole = 'passenger' | 'driver' | 'association_admin' | 'super_admin';
+export type UserRole =
+  | 'passenger'
+  | 'driver'
+  | 'association_admin'
+  | 'super_admin';
 export type UserCategory = 'normal' | 'student' | 'elderly';
 
 export class User {
@@ -26,7 +30,9 @@ export class User {
   ) {}
 
   // Método de fábrica para crear un nuevo usuario (puede incluir validaciones)
-  static create(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): User {
+  static create(
+    data: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { id?: string },
+  ): User {
     return new User(
       data.id ?? crypto.randomUUID(), // placeholder; luego se usará uuidv7()
       data.phone,

@@ -12,8 +12,14 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registrar un nuevo usuario (pasajero o conductor)' })
-  @ApiResponse({ status: 201, description: 'Usuario creado exitosamente', type: UserResponseDto })
+  @ApiOperation({
+    summary: 'Registrar un nuevo usuario (pasajero o conductor)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuario creado exitosamente',
+    type: UserResponseDto,
+  })
   @ApiResponse({ status: 409, description: 'El teléfono ya está registrado' })
   async register(@Body() registerDto: RegisterDto): Promise<UserResponseDto> {
     // Transformar de RegisterDto a CreateUserDto

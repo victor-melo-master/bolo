@@ -11,7 +11,9 @@ export class Association {
     public readonly updatedAt: Date,
   ) {}
 
-  static create(data: Omit<Association, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Association {
+  static create(
+    data: Omit<Association, 'id' | 'createdAt' | 'updatedAt'> & { id?: string },
+  ): Association {
     return new Association(
       data.id ?? crypto.randomUUID(),
       data.name,

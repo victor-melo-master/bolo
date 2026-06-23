@@ -1,15 +1,14 @@
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm'; // ← cambia la importación
 
 export const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USERNAME || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_DATABASE || 'bolo',
-  entities: ['**/*.orm-entity.ts'],
-  migrations: ['**/migrations/*.ts'],
+  host: process.env.DB_HOST ?? 'localhost',
+  port: parseInt(process.env.DB_PORT ?? '5432', 10),
+  username: process.env.DB_USER ?? 'postgres',
+  password: process.env.DB_PASSWORD ?? '',
+  database: process.env.DB_NAME ?? 'bolos_db',
+  entities: [__dirname + '/../../**/*.orm-entity{.ts,.js}'],
   synchronize: false,
 };
 
-export const AppDataSource = new DataSource(typeOrmConfig);
+export const AppDataSource = new DataSource(typeOrmConfig); // ahora funciona
