@@ -1,4 +1,4 @@
-// src/shared/interfaces/decorators/current-user.decorator.ts
+// src/shared/interfaces/decorators/current-user.decorator.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * CurrentUser — Decorator para Extraer Usuario Autenticado
@@ -18,11 +18,16 @@
  * @module CurrentUser
  */
 
+// Importa el factory de decoradores de parámetro y el contexto de ejecución de NestJS
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
+// Decorador de parámetro que extrae el usuario autenticado del request HTTP
 export const CurrentUser = createParamDecorator(
+  // data: argumento opcional pasado al decorador (no usado aquí); ctx: contexto de ejecución de NestJS
   (data: unknown, ctx: ExecutionContext) => {
+    // Obtiene el objeto Request de Express desde el contexto HTTP
     const request = ctx.switchToHttp().getRequest();
+    // Retorna el usuario inyectado por Passport tras validar el JWT (req.user)
     return request.user;
   },
 );

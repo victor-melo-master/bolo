@@ -1,4 +1,4 @@
-// src/shared/domain/value-objects/money.vo.ts
+// src/shared/domain/value-objects/money.vo.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * Money — Value Object para Montos Financieros
@@ -13,3 +13,8 @@
  *
  * @module Money
  */
+
+// ─── Placeholder: Pendiente de implementación ───
+// Este archivo es un esqueleto (TODO) que se completará cuando se definan
+// los requisitos exactos de manejo monetario (moneda, precisión, redondeo, etc.).
+// Mientras tanto, el sistema usa number para los montos.

@@ -1,4 +1,4 @@
-// src/shared/application/ports/logger.port.ts
+// src/shared/application/ports/logger.port.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * ILogger — Puerto de Logger
@@ -18,9 +18,14 @@
  */
 
 export interface ILogger {
+  // Registra un mensaje informativo estándar; context identifica el módulo origen
   log(message: string, context?: string): void;
+  // Registra un error; trace puede contener el stack trace y context el módulo origen
   error(message: string, trace?: string, context?: string): void;
+  // Registra una advertencia; context identifica el módulo origen
   warn(message: string, context?: string): void;
+  // Registra un mensaje de depuración (solo visible en desarrollo si LOG_LEVEL lo permite)
   debug(message: string, context?: string): void;
+  // Registra un mensaje detallado para trazas finas de diagnóstico
   verbose(message: string, context?: string): void;
 }

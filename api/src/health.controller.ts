@@ -1,4 +1,4 @@
-// src/health.controller.ts
+// src/health.controller.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * HealthController — Healthcheck para Orquestación
@@ -16,16 +16,18 @@
  * @module HealthController
  */
 
-import { Controller, Get } from '@nestjs/common';
-import { HealthCheckService, HealthCheck } from '@nestjs/terminus';
+import { Controller, Get } from '@nestjs/common';            // Decoradores NestJS para controladores REST
+import { HealthCheckService, HealthCheck } from '@nestjs/terminus';  // Servicio de healthchecks de Terminus
 
-@Controller('health')
+@Controller('health')   // Todas las rutas de este controlador empiezan con /health
 export class HealthController {
+  // Se inyecta HealthCheckService de Terminus para ejecutar los checks
   constructor(private health: HealthCheckService) {}
 
-  @Get()
-  @HealthCheck()
+  @Get()                // GET /health
+  @HealthCheck()        // Decorador que formatea automáticamente la respuesta con status, timestamp, etc.
   check() {
+    // Array vacío = sin indicadores registrados. Solo retorna estado genérico "ok"
     return this.health.check([]);
   }
 }

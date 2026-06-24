@@ -1,4 +1,4 @@
-// src/shared/domain/value-objects/email.vo.ts
+// src/shared/domain/value-objects/email.vo.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * Email — Value Object para Correo Electrónico
@@ -13,3 +13,8 @@
  *
  * @module Email
  */
+
+// ─── Placeholder: Pendiente de implementación ───
+// Este archivo es un esqueleto (TODO) que se completará cuando se definan
+// los requisitos exactos de validación (formatos aceptados, reglas de negocio, etc.).
+// Mientras tanto, el sistema usa string directamente para los emails.

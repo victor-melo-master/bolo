@@ -5,6 +5,7 @@
  * @module auth/domain/interfaces/repositories
  */
 
+// Re-exporta todos los puertos de repositorio para facilitar imports desde un solo punto
 export * from './user.repository.port';
 export * from './association.repository.port';
 export * from './driver-request.repository.port';

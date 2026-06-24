@@ -21,15 +21,22 @@
  * @see DRIVER_REQUEST_REPOSITORY_PORT
  */
 
+// Importa la entidad DriverRequest (solicitud de afiliación conductor-cooperativa)
 import { DriverRequest } from '../../entities';
 
+// Token de DI para distinguir este puerto en el contenedor
 export const DRIVER_REQUEST_REPOSITORY_PORT = 'DRIVER_REQUEST_REPOSITORY_PORT';
 
+// Puerto del repositorio de solicitudes de afiliación de conductores a cooperativas.
 export interface DriverRequestRepositoryPort {
+  // Busca una solicitud por su UUID.
   findById(id: string): Promise<DriverRequest | null>;
+  // Busca una solicitud existente entre un conductor y una cooperativa específicos.
+  // Útil para evitar solicitudes duplicadas o consultar el estado actual.
   findByDriverAndAssociation(
     driverId: string,
     associationId: string,
   ): Promise<DriverRequest | null>;
+  // Persiste la solicitud (insert o update).
   save(request: DriverRequest): Promise<DriverRequest>;
 }

@@ -17,12 +17,18 @@
  * @see ASSOCIATION_REPOSITORY_PORT
  */
 
+// Se importa la entidad Association para tipar las operaciones del repositorio
 import { Association } from '../../entities';
 
+// Token de DI para identificar este puerto en el contenedor de NestJS
 export const ASSOCIATION_REPOSITORY_PORT = 'ASSOCIATION_REPOSITORY_PORT';
 
+// Puerto del repositorio de asociaciones/cooperativas. Aísla la lógica de persistencia del dominio.
 export interface AssociationRepositoryPort {
+  // Busca una asociación por su UUID. Retorna null si no se encuentra.
   findById(id: string): Promise<Association | null>;
+  // Busca por RIF (Registro de Información Fiscal), identificador único fiscal en Venezuela.
   findByRif(rif: string): Promise<Association | null>;
+  // Guarda la asociación: crea o actualiza según si ya existe el registro.
   save(association: Association): Promise<Association>;
 }

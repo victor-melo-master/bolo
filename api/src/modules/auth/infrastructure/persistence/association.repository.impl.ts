@@ -1,4 +1,4 @@
-// src/modules/auth/infrastructure/persistence/association.repository.impl.ts
+// src/modules/auth/infrastructure/persistence/association.repository.impl.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * AssociationRepositoryImpl — Repositorio de Asociaciones (TypeORM)
@@ -24,10 +24,15 @@ import { AssociationOrmEntity } from '../orm/association.orm-entity';
 @Injectable()
 export class AssociationRepositoryImpl implements AssociationRepositoryPort {
   constructor(
+    // @InjectRepository inyecta el repositorio TypeORM específico para
+    // AssociationOrmEntity, registrado por TypeOrmModule.forFeature
     @InjectRepository(AssociationOrmEntity)
     private readonly associationRepository: Repository<AssociationOrmEntity>,
   ) {}
 
+  // Patrón toDomain/toOrm: igual que en UserRepositoryImpl, aísla el
+  // dominio de la infraestructura de persistencia. Si se cambia de ORM,
+  // solo se modifican estos mappers y los decoradores de AssociationOrmEntity.
   async save(association: Association): Promise<Association> {
     const ormAssociation = this.toOrm(association);
     const savedOrm = await this.associationRepository.save(ormAssociation);
@@ -48,6 +53,7 @@ export class AssociationRepositoryImpl implements AssociationRepositoryPort {
     return ormAssociation ? this.toDomain(ormAssociation) : null;
   }
 
+  // Mapeo Association → AssociationOrmEntity (dominio → ORM)
   private toOrm(association: Association): AssociationOrmEntity {
     const ormAssociation = new AssociationOrmEntity();
     ormAssociation.id = association.id;
@@ -60,6 +66,7 @@ export class AssociationRepositoryImpl implements AssociationRepositoryPort {
     return ormAssociation;
   }
 
+  // Mapeo AssociationOrmEntity → Association (ORM → dominio)
   private toDomain(orm: AssociationOrmEntity): Association {
     return new Association(
       orm.id,

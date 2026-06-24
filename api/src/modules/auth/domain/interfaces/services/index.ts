@@ -5,5 +5,6 @@
  * @module auth/domain/interfaces/services
  */
 
+// Re-exporta todos los puertos de servicios externos para imports centralizados
 export * from './notification.service.port';
 export * from './wallet.service.port';

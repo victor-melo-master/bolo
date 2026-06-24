@@ -18,13 +18,22 @@
  * @see USER_REPOSITORY_PORT
  */
 
+// Se importa la entidad User para tipar los retornos del repositorio
 import { User } from '../../entities';
 
+// Token único para que el contenedor DI (NestJS) asocie esta interfaz con su implementación concreta.
+// Se usa un string en vez de una clase para evitar conflictos con múltiples implementaciones del mismo puerto.
 export const USER_REPOSITORY_PORT = 'USER_REPOSITORY_PORT';
 
+// Puerto (contrato) del repositorio de usuarios. Define qué operaciones de persistencia necesita la capa de dominio.
+// La implementación concreta (adaptador) vive en infraestructura (TypeORM, mock, etc.).
 export interface UserRepositoryPort {
+  // Busca un usuario por su UUID. Retorna null si no existe.
   findById(id: string): Promise<User | null>;
+  // Busca un usuario por su número telefónico (campo único en el dominio).
   findByPhone(phone: string): Promise<User | null>;
+  // Persiste un usuario: hace insert si es nuevo, update si ya existe (upsert).
   save(user: User): Promise<User>;
+  // Actualiza únicamente el campo jwtKey del usuario, usado para invalidar tokens JWT al cambiar contraseña.
   updateJwtKey(userId: string, jwtKey: string): Promise<void>;
 }

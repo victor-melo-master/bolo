@@ -1,4 +1,4 @@
-// src/shared/domain/value-objects/phone.vo.ts
+// src/shared/domain/value-objects/phone.vo.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * Phone — Value Object para Número Telefónico
@@ -13,3 +13,8 @@
  *
  * @module Phone
  */
+
+// ─── Placeholder: Pendiente de implementación ───
+// Este archivo es un esqueleto (TODO) que se completará cuando se definan
+// los requisitos exactos de validación telefónica (formatos por país, códigos de área, etc.).
+// Mientras tanto, el sistema usa string directamente para los teléfonos.

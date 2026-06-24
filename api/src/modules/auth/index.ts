@@ -15,16 +15,16 @@
  * @module auth/index
  */
 
-// Domain exports
+// ─── Capa de Dominio ───────────────────────────────────────────
 export * from './domain/entities';
-// export * from './domain/value-objects';
-// export * from './domain/exceptions';
-export * from './domain/interfaces';
+// export * from './domain/value-objects';       // Pendiente de implementar
+// export * from './domain/exceptions';          // Pendiente de implementar
+export * from './domain/interfaces';             // Puertos (repositorios + servicios externos)
 
-// Application exports
-// export * from './application/use-cases';
-export * from './application/dto';
-// export * from './application/services';
+// ─── Capa de Aplicación ───────────────────────────────────────
+// export * from './application/use-cases';      // Pendiente de implementar
+export * from './application/dto';               // Data Transfer Objects (ej. CreateUserDto)
+// export * from './application/services';       // Pendiente de implementar
 
-// Infrastructure exports
-export * from './infrastructure/auth.module';
+// ─── Capa de Infraestructura ──────────────────────────────────
+export * from './infrastructure/auth.module';    // Módulo raíz de NestJS para auth

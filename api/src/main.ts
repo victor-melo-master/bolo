@@ -1,4 +1,4 @@
-// src/main.ts
+// src/main.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * BOLO API — Punto de Entrada (Bootstrap)
@@ -17,12 +17,15 @@
  * @module main
  */
 
-import 'dotenv/config';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import 'dotenv/config';                           // Carga .env ANTES que nada para que todas las variables de entorno estén disponibles desde el inicio
+import { NestFactory } from '@nestjs/core';       // Fábrica que crea y configura la aplicación NestJS
+import { AppModule } from './app.module';          // Módulo raíz que orquesta todos los submódulos funcionales
 
 async function bootstrap() {
+  // Se crea la aplicación compilando AppModule y resolviendo todo el árbol de dependencias
   const app = await NestFactory.create(AppModule);
+  // Se inicia el servidor HTTP en el puerto definido en PORT, o 3000 si no está definido
   await app.listen(process.env.PORT ?? 3000);
 }
+// Se ejecuta la función bootstrap para arrancar la aplicación
 bootstrap();

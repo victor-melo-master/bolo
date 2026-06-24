@@ -14,7 +14,18 @@
  * @see AuthController.login()
  */
 
+// ApiProperty / ApiPropertyOptional: decoradores de Swagger que generan
+// la documentación OpenAPI automática. Sin ellos, los campos no aparecerían
+// en la interfaz de Swagger UI.
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+// Decoradores de class-validator: validan los datos en RUNTIME.
+// NestJS ejecuta estas validaciones automáticamente cuando el DTO se usa
+// con ValidationPipe (configurado globalmente en main.ts).
+// - @IsString:     el valor debe ser string
+// - @IsNotEmpty:   el string no puede estar vacío
+// - @MinLength:    longitud mínima del string
+// - @IsOptional:   el campo puede omitirse
+// - @IsEmail:      validación de formato de correo
 import {
   IsString,
   IsNotEmpty,
@@ -24,11 +35,18 @@ import {
 } from 'class-validator';
 
 export class LoginDto {
+  // ─── email (opcional, reservado para uso futuro) ───
+  // Actualmente el login usa solo phone + password, pero se incluye email
+  // como campo opcional para permitir en el futuro inicio de sesión con correo.
   @ApiPropertyOptional({ description: 'Correo electrónico (opcional)' })
   @IsOptional()
   @IsEmail()
   email?: string;
 
+  // ─── phone ───
+  // @IsString(): asegura que el valor sea string
+  // @IsNotEmpty(): rechaza strings vacíos (pero no valida formato E.164;
+  //   eso se hace en el caso de uso o en una validación personalizada)
   @ApiProperty({
     description: 'Número de teléfono con código de país',
     example: '+584141234567',
@@ -37,6 +55,9 @@ export class LoginDto {
   @IsNotEmpty()
   phone: string;
 
+  // ─── password ───
+  // @MinLength(6): rechaza contraseñas menores a 6 caracteres como validación
+  //   temprana en la capa HTTP, antes de llegar al caso de uso
   @ApiProperty({
     description: 'Contraseña',
     example: 'MiPassword123',

@@ -1,4 +1,4 @@
-// src/modules/auth/domain/entities/driver-request.entity.ts
+// src/modules/auth/domain/entities/driver-request.entity.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * DriverRequest — Solicitud de Afiliación de Conductor
@@ -23,34 +23,38 @@
  * @see Association
  */
 
+// Tipo unión para los estados posibles del flujo de aprobación — cada transición tiene reglas de negocio
 export type DriverRequestStatus = 'pending' | 'approved' | 'rejected';
 
 export class DriverRequest {
   constructor(
-    public readonly id: string,
-    public readonly driverId: string,
-    public readonly associationId: string,
-    public readonly status: DriverRequestStatus,
-    public readonly documentsUrls: Record<string, any> | null,
-    public readonly rejectionReason: string | null,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date,
+    // readonly — garantiza que los campos no se modifiquen después de la creación (inmutabilidad)
+    public readonly id: string, // Identificador único de la solicitud (UUID v4)
+    public readonly driverId: string, // ID del conductor solicitante — FK a user.id
+    public readonly associationId: string, // ID de la cooperativa destino — FK a association.id
+    public readonly status: DriverRequestStatus, // Estado actual del flujo de aprobación
+    public readonly documentsUrls: Record<string, any> | null, // Objeto JSONB con URLs de documentos probatorios
+    public readonly rejectionReason: string | null, // Razón del rechazo — solo aplica si status === 'rejected'
+    public readonly createdAt: Date, // Fecha de creación de la solicitud
+    public readonly updatedAt: Date, // Fecha de última actualización (aprobación/rechazo)
   ) {}
 
+  // Método de fábrica estático — centraliza la creación con defaults y oculta la complejidad del constructor
   static create(
+    // Omit excluye campos auto-generados; id opcional permite rehidratación desde la BD
     data: Omit<DriverRequest, 'id' | 'createdAt' | 'updatedAt'> & {
       id?: string;
     },
   ): DriverRequest {
     return new DriverRequest(
-      data.id ?? crypto.randomUUID(),
+      data.id ?? crypto.randomUUID(), // Genera UUID si no se proporciona
       data.driverId,
       data.associationId,
-      data.status ?? 'pending',
+      data.status ?? 'pending', // Por defecto 'pending' — la solicitud comienza sin revisar
       data.documentsUrls ?? null,
-      data.rejectionReason ?? null,
-      new Date(),
-      new Date(),
+      data.rejectionReason ?? null, // Inicialmente nulo — solo se llena si es rechazada
+      new Date(), // createdAt — se fija al crear la solicitud
+      new Date(), // updatedAt — inicialmente igual que createdAt
     );
   }
 }

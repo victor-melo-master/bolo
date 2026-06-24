@@ -20,16 +20,20 @@
  * ni lógica de negocio. Solo define la estructura de 
  * datos que se envía al cliente.
 
-* No requiere tests unitarios específicos porque:
-
-* - No tiene decoradores de class-validator que necesiten ser probados.
-
-* - No tiene métodos ni comportamiento.
-
-* Su estructura ya queda verificada indirectamente en 
-* los tests del controlador (auth.controller.spec.ts), donde se usa como tipo de retorno esperado.
+ * No requiere tests unitarios específicos porque:
+ * - No tiene decoradores de class-validator que necesiten ser probados.
+ * - No tiene métodos ni comportamiento.
+ * Su estructura ya queda verificada indirectamente en 
+ * los tests del controlador (auth.controller.spec.ts), donde se usa como tipo de retorno esperado.
  */
 
+// ApiProperty / ApiPropertyOptional: decoradores de Swagger para documentar
+// la respuesta de la API en OpenAPI. Aunque UserResponseDto es un DTO de
+// salida (no se valida con class-validator), los decoradores de Swagger son
+// necesarios para que la documentación generada automáticamente refleje la
+// estructura exacta de la respuesta que verá el cliente.
+// - ApiProperty: campo siempre presente en la respuesta
+// - ApiPropertyOptional: campo que puede ser null/undefined
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserResponseDto {

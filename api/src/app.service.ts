@@ -1,4 +1,4 @@
-// src/app.service.ts
+// src/app.service.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * AppService — Servicio Raíz
@@ -13,11 +13,12 @@
  * @module AppService
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';  // @Injectable() registra la clase en el contenedor IoC para poder inyectarla
 
 @Injectable()
 export class AppService {
   getHello(): string {
+    // Placeholder: retorna un mensaje simple. En producción podría redirigir a Swagger o devolver estado
     return 'Hello World!';
   }
 }

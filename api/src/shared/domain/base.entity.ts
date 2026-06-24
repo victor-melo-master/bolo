@@ -1,4 +1,4 @@
-// src/shared/domain/base.entity.ts
+// src/shared/domain/base.entity.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * BaseEntity — Entidad Base del Dominio
@@ -19,11 +19,12 @@
  */
 
 export abstract class BaseEntity {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string;            // UUID v7 — identificador único universal, generado en el momento de creación
+  createdAt: Date;       // Timestamp de creación (se asigna en el constructor con new Date())
+  updatedAt: Date;       // Timestamp de última modificación
 
   constructor(id: string) {
+    // Se asigna el id recibido y se establecen las fechas en el momento de creación
     this.id = id;
     this.createdAt = new Date();
     this.updatedAt = new Date();

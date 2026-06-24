@@ -1,4 +1,4 @@
-// src/modules/auth/infrastructure/persistence/driver-request.repository.impl.ts
+// src/modules/auth/infrastructure/persistence/driver-request.repository.impl.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * DriverRequestRepositoryImpl — Repositorio de Solicitudes (TypeORM)
@@ -24,10 +24,14 @@ import { DriverRequestOrmEntity } from '../orm/driver-request.orm-entity';
 @Injectable()
 export class DriverRequestRepositoryImpl implements DriverRequestRepositoryPort {
   constructor(
+    // @InjectRepository inyecta el repositorio TypeORM para DriverRequestOrmEntity
     @InjectRepository(DriverRequestOrmEntity)
     private readonly driverRequestRepository: Repository<DriverRequestOrmEntity>,
   ) {}
 
+  // Patrón toDomain/toOrm consistente con los otros repositorios:
+  // desacopla la entidad de dominio DriverRequest de la entidad ORM,
+  // permitiendo cambiar de ORM o de esquema de BD sin afectar el dominio.
   async save(request: DriverRequest): Promise<DriverRequest> {
     const ormRequest = this.toOrm(request);
     const savedOrm = await this.driverRequestRepository.save(ormRequest);
@@ -41,6 +45,9 @@ export class DriverRequestRepositoryImpl implements DriverRequestRepositoryPort 
     return ormRequest ? this.toDomain(ormRequest) : null;
   }
 
+  // Busca una solicitud por combinación de conductor y asociación.
+  // Útil para evitar solicitudes duplicadas (un conductor no puede
+  // enviar múltiples solicitudes a la misma asociación).
   async findByDriverAndAssociation(
     driverId: string,
     associationId: string,
@@ -51,6 +58,7 @@ export class DriverRequestRepositoryImpl implements DriverRequestRepositoryPort 
     return ormRequest ? this.toDomain(ormRequest) : null;
   }
 
+  // Mapeo DriverRequest → DriverRequestOrmEntity (dominio → ORM)
   private toOrm(request: DriverRequest): DriverRequestOrmEntity {
     const ormRequest = new DriverRequestOrmEntity();
     ormRequest.id = request.id;
@@ -62,6 +70,7 @@ export class DriverRequestRepositoryImpl implements DriverRequestRepositoryPort 
     return ormRequest;
   }
 
+  // Mapeo DriverRequestOrmEntity → DriverRequest (ORM → dominio)
   private toDomain(orm: DriverRequestOrmEntity): DriverRequest {
     return new DriverRequest(
       orm.id,
