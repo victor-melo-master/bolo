@@ -6,28 +6,24 @@
  *
  * Punto de entrada del módulo financiero.
  *
- * Estado actual: implementación parcial.
- *   ✅ Entidad de dominio Wallet + ORM entity
- *   ❌ WalletServicePort real (actualmente mock en AuthModule)
- *   ❌ Transacciones, tarifas, tipos de cambio
- *   ❌ Saga pattern para pagos distribuidos
+ * Estado actual: implementación completa de:
+ *   ✅ Entidades de dominio: Wallet, Transaction, ExchangeRate, CoopFare, SagaState
+ *   ✅ Value Objects: Money
+ *   ✅ Excepciones de dominio
+ *   ✅ Puertos de repositorio y servicio
+ *   ✅ Casos de uso: create-wallet, deposit, withdraw, process-payment, get-balance
+ *   ✅ DTOs de aplicación
+ *   ✅ WalletServiceImpl (implementación real del puerto WalletServicePort)
+ *   ✅ ORM entities: todas las entidades TypeORM
+ *   ✅ Repositorios TypeORM: todas las implementaciones
+ *   ✅ FinModule completo con DI, controladores y exports
+ *   ✅ Controladores REST: WalletController, TransactionController
+ *   ✅ DTOs de interfaces
  *
  * @module fin/index
  */
 
-// Exporta las entidades de dominio públicas del módulo financiero (Wallet actualmente)
-export * from './domain/entities';
-// (Pendiente) Value Objects: Moneda, Monto, PorcentajeTarifa — tipado fuerte para valores financieros
-// export * from './domain/value-objects';
-// (Pendiente) Excepciones de dominio: SaldoInsuficienteError, LimiteCreditoAlcanzadoError, etc.
-// export * from './domain/exceptions';
-// (Pendiente) Interfaces de repositorio y puertos: WalletRepositoryPort, PaymentGatewayPort
-// export * from './domain/interfaces';
-// (Pendiente) Casos de uso: RecargarSaldo, Transferir, PagarViaje, ActivarCreditoEmergencia
-// export * from './application/use-cases';
-// (Pendiente) DTOs de aplicación: RecargaRequest, TransferenciaResponse, EstadoCuentaDTO
-// export * from './application/dto';
-// (Pendiente) Servicios de aplicación: WalletService, PaymentOrchestrator, FeeCalculator
-// export * from './application/services';
-// (Pendiente) Módulo NestJS raíz: FinModule con imports reales de TypeORM, controladores y servicios
-// export * from './infrastructure/fin.module';
+export * from './domain';
+export * from './application';
+export * from './infrastructure';
+export * from './interfaces';

@@ -23,13 +23,14 @@
  * @module AppModule
  */
 
-import { Module } from '@nestjs/common';              // Decorador @Module para definir módulos NestJS
-import { TypeOrmModule } from '@nestjs/typeorm';      // Módulo de integración TypeORM para NestJS
-import { AuthModule } from './modules/auth/infrastructure/auth.module';  // Único módulo funcional implementado
-import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config';  // Config compartida de PostgreSQL
-import { ConfigModule } from '@nestjs/config';         // Módulo para variables de entorno
-import { AppController } from './app.controller';      // Controlador raíz (GET /)
-import { AppService } from './app.service';            // Servicio raíz
+import { Module } from '@nestjs/common'; // Decorador @Module para definir módulos NestJS
+import { TypeOrmModule } from '@nestjs/typeorm'; // Módulo de integración TypeORM para NestJS
+import { AuthModule } from './modules/auth/infrastructure/auth.module'; // Único módulo funcional implementado
+import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config'; // Config compartida de PostgreSQL
+import { ConfigModule } from '@nestjs/config'; // Módulo para variables de entorno
+import { AppController } from './app.controller'; // Controlador raíz (GET /)
+import { AppService } from './app.service'; // Servicio raíz
+import { FinModule } from './modules/fin/infrastructure/fin.module';
 
 @Module({
   imports: [
@@ -39,8 +40,8 @@ import { AppService } from './app.service';            // Servicio raíz
     TypeOrmModule.forRoot(typeOrmConfig),
     // AuthModule es el único módulo funcional implementado; los demás están comentados
     AuthModule,
+    FinModule, // Módulo financiero (billetera, tarifas, transacciones)
     // TODO: Activar cuando estén implementados
-    // FinModule,     // Módulo financiero (billetera, tarifas, transacciones)
     // TripModule,    // Módulo de viajes (tracking GPS, pagos)
     // AuditModule,   // Módulo de auditoría (logs inmutables)
   ],

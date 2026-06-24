@@ -107,9 +107,25 @@ api/
 │       │       ├── auth/                   # JwtStrategy, JwtAuthGuard
 │       │       ├── services/               # NotificationServiceImpl (stub)
 │       │       └── auth.module.ts          # Composición del módulo
-│       ├── fin/               # ⚠️ PARCIAL
-│       │   ├── domain/entities/wallet.entity.ts
-│       │   └── infrastructure/orm/wallet.orm-entity.ts
+│       ├── fin/               # ⚠️ PARCIAL → ✅ COMPLETO
+│       │   ├── domain/
+│       │   │   ├── entities/              # Wallet, Transaction, ExchangeRate, CoopFare, SagaState
+│       │   │   ├── exceptions/            # InsufficientBalance, WalletNotFound, TransactionFailed
+│       │   │   ├── value-objects/         # Money (en centavos)
+│       │   │   └── interfaces/
+│       │   │       ├── repositories/      # 5 puertos de repositorio
+│       │   │       └── services/          # WalletServicePort
+│       │   ├── application/
+│       │   │   ├── use-cases/             # create, deposit, withdraw, payment, balance
+│       │   │   ├── dto/                   # CreateWalletDto, TransactionDto, BalanceResponseDto
+│       │   │   └── services/              # WalletServiceImpl
+│       │   ├── infrastructure/
+│       │   │   ├── orm/                   # 5 entidades TypeORM
+│       │   │   ├── persistence/           # 5 repositorios TypeORM
+│       │   │   └── fin.module.ts          # DI con TypeOrmModule.forFeature
+│       │   └── interfaces/
+│       │       ├── rest/                  # WalletController, TransactionController
+│       │       └── dto/                   # DepositDto, TransferDto
 │       ├── trip/              # ❌ STUB
 │       ├── ops/               # ❌ STUB
 │       └── audit/             # ❌ STUB
@@ -173,21 +189,45 @@ api/
 
 ## 6. Módulo fin — Estado Actual
 
-### Implementado
-- Entidad de dominio `Wallet` con:
-  - balance/debtBalance en centavos (BigInt)
-  - Control de concurrencia optimista (version)
-  - Flag creditUsed para crédito de emergencia
-- ORM entity `WalletOrmEntity` para tabla fin.wallets
+### Implementado — Dominio (✅ Completo)
+- **Entidades:**
+  - `Wallet` — billetera digital con balance/debtBalance en centavos (BigInt), OCC por version, crédito de emergencia de uso único
+  - `Transaction` — transacciones financieras con ciclo de estados (PENDING → COMPLETED | FAILED → REVERSED)
+  - `ExchangeRate` — tipo de cambio con vigencia temporal (validFrom/validUntil)
+  - `CoopFare` — tarifario por cooperativa (baseFare + perKmRate * distance)
+  - `SagaState` — paso de saga distribuida con estados y compensación
+- **Value Object:** `Money` — monto inmutable en centavos con operaciones aritméticas seguras
+- **Excepciones:** `InsufficientBalanceException`, `WalletNotFoundException`, `TransactionFailedException`
+- **Puertos (interfaces):**
+  - 5 repositorios: Wallet, Transaction, ExchangeRate, CoopFare, SagaState
+  - 1 servicio: WalletServicePort (usado por AuthModule para crear billeteras)
+
+### Implementado — Aplicación (✅ Completo)
+- **Casos de uso:**
+  - `CreateWalletUseCase` — crea wallet o retorna existente (idempotente)
+  - `DepositUseCase` — acredita fondos con creación de transacción
+  - `WithdrawUseCase` — debita fondos con validación de saldo
+  - `ProcessPaymentUseCase` — pago con consumo de crédito de emergencia si es necesario
+  - `GetBalanceUseCase` — consulta de saldo y deuda
+- **DTOs:** CreateWalletDto, TransactionDto, BalanceResponseDto
+- **Servicio:** `WalletServiceImpl` — implementación real del puerto (reemplaza mock en AuthModule)
+
+### Implementado — Infraestructura (✅ Completo)
+- **ORM (TypeORM):** 5 entidades en esquema `fin`: wallets, transactions, exchange_rates, coop_fares, saga_states
+- **Repositorios:** 5 implementaciones TypeORM con mapeo toDomain/toOrm
+- **Módulo NestJS:** `FinModule` con DI completa (puertos → implementaciones), controladores y exports
+
+### Implementado — Interfaces (✅ Completo)
+- **REST:**
+  - `WalletController`: POST /fin/wallets, GET /fin/wallets/:userId/balance
+  - `TransactionController`: POST /fin/transactions/deposit, POST /fin/transactions/transfer
+- **DTOs:** DepositDto, TransferDto (pendientes decoradores de validación)
 
 ### Pendiente
-- `WalletServiceImpl` real (reemplazar mock en AuthModule)
-- Repositorio WalletRepository (port + impl)
-- Transacciones financieras (fin.transactions)
-- Tarifas por cooperativa (fin.coop_fares)
-- Tipos de cambio (fin.exchange_rates)
-- Saga pattern para pagos distribuidos (fin.saga_states)
-- Módulo FinModule completo
+- Agregar decoradores class-validator a DepositDto y TransferDto
+- Integrar FinModule en app.module.ts (descomentar import)
+- Tests unitarios para casos de uso y repositorios
+- Endpoint para historial de transacciones por wallet
 
 ## 7. Módulos Pendientes
 
@@ -230,13 +270,21 @@ function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string
 
 ## 9. Próximos Pasos
 
-- [ ] Implementar WalletServiceImpl real en fin/infrastructure
+- [x] Implementar WalletServiceImpl real en fin/infrastructure
+- [x] Crear repositorios WalletRepository (port + impl) y resto de entidades fin
+- [x] Transacciones financieras (fin.transactions)
+- [x] Tarifas por cooperativa (fin.coop_fares)
+- [x] Tipos de cambio (fin.exchange_rates)
+- [x] Saga pattern para pagos distribuidos (fin.saga_states)
+- [x] Módulo FinModule completo
+- [ ] Agregar decoradores class-validator a DepositDto y TransferDto
+- [ ] Integrar FinModule en app.module.ts (descomentar import)
 - [ ] Desarrollar CRUD de módulo ops (rutas, vehículos)
 - [ ] Implementar módulo trip con tracking GPS
 - [ ] Configurar módulo audit con triggers de BD
 - [ ] Integrar Redis para caché de sesiones
 - [ ] Agregar migraciones TypeORM
-- [ ] Escribir tests unitarios para casos de uso
+- [ ] Escribir tests unitarios para casos de uso y repositorios
 - [ ] Escribir tests e2e para endpoints
 
 ## 10. Notas Técnicas

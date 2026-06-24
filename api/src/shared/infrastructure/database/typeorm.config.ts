@@ -34,6 +34,7 @@ import { readFileSync } from 'fs';
 import { UserOrmEntity } from '../../../modules/auth/infrastructure/orm/user.orm-entity';
 import { AssociationOrmEntity } from '../../../modules/auth/infrastructure/orm/association.orm-entity';
 import { DriverRequestOrmEntity } from '../../../modules/auth/infrastructure/orm/driver-request.orm-entity';
+import { WalletOrmEntity } from 'src/modules/fin';
 
 // Lee un secreto desde archivo (Docker Swarm/K8s) o de variable de entorno como fallback
 function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string {
@@ -67,7 +68,12 @@ export const typeOrmConfig: DataSourceOptions = {
   // Nombre de la base de datos, por defecto bolo
   database: process.env.DB_NAME ?? 'bolo',
   // Lista explícita de entidades registradas en esta conexión
-  entities: [UserOrmEntity, AssociationOrmEntity, DriverRequestOrmEntity],
+  entities: [
+    UserOrmEntity,
+    AssociationOrmEntity,
+    DriverRequestOrmEntity,
+    WalletOrmEntity,
+  ],
   // sincronización automática deshabilitada: los cambios de esquema se manejan con migraciones manuales
   synchronize: false,
   // En desarrollo solo se loggean errores y advertencias; en producción no hay logging de queries

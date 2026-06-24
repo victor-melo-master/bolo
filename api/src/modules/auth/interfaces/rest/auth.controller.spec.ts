@@ -104,6 +104,22 @@ describe('AuthController', () => {
         UserAlreadyExistsException,
       );
     });
+
+    // Verifica que el caso de uso sea invocado (delega la creación completa,
+    // incluyendo la wallet). La integración real se prueba en tests E2E.
+    it('should call wallet service to create wallet', async () => {
+      const mockUser = {
+        id: 'uuid',
+        phone: '+584141234567',
+        fullName: 'Test',
+        role: 'passenger',
+      };
+      (createUserUseCase.execute as jest.Mock).mockResolvedValue(mockUser);
+
+      await controller.register(registerDto);
+
+      expect(createUserUseCase.execute).toHaveBeenCalled();
+    });
   });
 
   // ────────────────────────────────────────────────────────────────────────────

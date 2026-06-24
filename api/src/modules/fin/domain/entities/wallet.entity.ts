@@ -68,14 +68,14 @@ export class Wallet {
     return new Wallet(
       crypto.randomUUID(), // Genera UUID v4 único como identificador de la billetera
       userId,
-      0,                  // balance inicial en cero — el usuario debe recargar antes de usar
-      0,                  // debtBalance inicial en cero — no hay deuda al crear
-      false,              // creditUsed: false — el crédito de emergencia aún está disponible
-      currency,           // moneda por defecto USD (dólar estadounidense)
-      null,               // lastTransactionAt: null — nunca ha transado
-      1,                  // version: 1 — primera versión del registro
-      new Date(),         // createdAt: momento de creación
-      new Date(),         // updatedAt: igual a createdAt inicialmente
+      0, // balance inicial en cero — el usuario debe recargar antes de usar
+      0, // debtBalance inicial en cero — no hay deuda al crear
+      false, // creditUsed: false — el crédito de emergencia aún está disponible
+      currency, // moneda por defecto USD (dólar estadounidense)
+      null, // lastTransactionAt: null — nunca ha transado
+      1, // version: 1 — primera versión del registro
+      new Date(), // createdAt: momento de creación
+      new Date(), // updatedAt: igual a createdAt inicialmente
     );
   }
 }

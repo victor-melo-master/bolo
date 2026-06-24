@@ -1478,16 +1478,701 @@ export {};
 
 ---
 
-## `src/modules/fin/index.ts` — Financiero (parcial)
+## `src/modules/fin/index.ts` — Financiero (completo)
 
 ```typescript
-export * from './domain/entities';  // Exporta Wallet
-// Lo demás comentado (pendiente de implementación)
+export * from './domain';
+export * from './application';
+export * from './infrastructure';
+export * from './interfaces';
+```
+
+**¿Por qué?**: Barrel público del módulo financiero. Ahora exporta todas las capas (dominio, aplicación, infraestructura, interfaces) con todas las entidades, casos de uso, repositorios y controladores implementados.
+
+---
+
+# MÓDULO FIN — DOCUMENTACIÓN COMPLETA
+
+---
+
+## `src/modules/fin/domain/entities/transaction.entity.ts` — Transacción financiera
+
+```typescript
+export enum TransactionType {
+  DEPOSIT = 'DEPOSIT',
+  WITHDRAWAL = 'WITHDRAWAL',
+  PAYMENT = 'PAYMENT',
+  REFUND = 'REFUND',
+  FEE = 'FEE',
+}
+
+export enum TransactionStatus {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  REVERSED = 'REVERSED',
+}
+
+export class Transaction {
+  constructor(
+    public readonly id: string,
+    public readonly walletId: string,
+    public readonly type: TransactionType,
+    public readonly amount: number,
+    public readonly currency: string,
+    public readonly status: TransactionStatus,
+    public readonly referenceId: string | null,
+    public readonly description: string | null,
+    public readonly metadata: Record<string, unknown> | null,
+    public readonly version: number,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
+  ) {}
+
+  static create(walletId, type, amount, currency, ...): Transaction { /* ... */ }
+  complete(): Transaction { /* status → COMPLETED, version+1 */ }
+  fail(): Transaction { /* status → FAILED, version+1 */ }
+  reverse(): Transaction { /* status → REVERSED, version+1 */ }
+}
+```
+
+**¿Por qué?**: Entidad de dominio que representa cualquier operación financiera. Los métodos complete/fail/reverse retornan nuevas instancias (inmutabilidad). El patrón de fábrica `create` asegura defaults consistentes (status PENDING). `referenceId` permite trazabilidad con entidades externas (viajes, recargas).
+
+---
+
+## `src/modules/fin/domain/entities/exchange-rate.entity.ts` — Tipo de cambio
+
+```typescript
+export class ExchangeRate {
+  constructor(
+    public readonly id: string,
+    public readonly fromCurrency: string,  // Ej: "USD"
+    public readonly toCurrency: string,    // Ej: "VED"
+    public readonly rate: number,
+    public readonly validFrom: Date,
+    public readonly validUntil: Date | null,  // null = vigente indefinidamente
+    public readonly version: number,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
+  ) {}
+
+  isEffective(at: Date): boolean {
+    return at >= this.validFrom && (!this.validUntil || at <= this.validUntil);
+  }
+
+  convert(amount: number): number {
+    return Math.round(amount * this.rate);  // Redondeo a centavos
+  }
+}
+```
+
+**¿Por qué?**: `validFrom`/`validUntil` permiten tener históricos de tasas de cambio. `validUntil: null` representa tasas vigentes sin fecha de expiración. `convert()` redondea al entero más cercano para mantener centavos exactos.
+
+---
+
+## `src/modules/fin/domain/entities/coop-fare.entity.ts` — Tarifa por cooperativa
+
+```typescript
+export class CoopFare {
+  constructor(
+    public readonly id: string,
+    public readonly cooperativeId: string,   // Referencia a auth.associations
+    public readonly name: string,             // Ej: "Tarifa estándar"
+    public readonly baseFare: number,         // Centavos
+    public readonly perKmRate: number,        // Centavos por km
+    public readonly currency: string,
+    public readonly active: boolean,
+    public readonly version: number,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
+  ) {}
+
+  calculateTripCost(distanceKm: number): number {
+    return this.baseFare + Math.round(this.perKmRate * distanceKm);
+  }
+
+  deactivate(): CoopFare { /* active=false, version+1 */ }
+}
+```
+
+**¿Por qué?**: `calculateTripCost` aplica la fórmula `baseFare + (perKmRate * distanceKm)`. `deactivate()` en lugar de eliminar para mantener historial de tarifas aplicadas en viajes pasados.
+
+---
+
+## `src/modules/fin/domain/entities/saga-state.entity.ts` — Estado de saga distribuida
+
+```typescript
+export enum SagaStatus { PENDING, COMPLETED, FAILED, COMPENSATING, COMPENSATED }
+export enum SagaStep { AUTH_HOLD, DEBIT_WALLET, RECORD_TRANSACTION, NOTIFY_USER, RELEASE_HOLD }
+
+export class SagaState {
+  constructor(
+    public readonly id: string,
+    public readonly sagaId: string,           // Agrupa pasos de una transacción
+    public readonly step: SagaStep,
+    public readonly status: SagaStatus,
+    public readonly payload: Record<string, unknown> | null,
+    public readonly error: string | null,
+    public readonly version: number,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
+  ) {}
+  // complete(), fail(error), compensate(), compensated()
+}
+```
+
+**¿Por qué?**: Saga pattern para transacciones distribuidas. Cada paso tiene un estado independiente. Si un paso falla, los pasos previos se compensan (deshacen) en orden inverso. `sagaId` agrupa todos los pasos de una transacción completa.
+
+---
+
+## `src/modules/fin/domain/exceptions/insufficient-balance.exception.ts` — Saldo insuficiente
+
+```typescript
+export class InsufficientBalanceException extends Error {
+  constructor(
+    public readonly walletId: string,
+    public readonly currentBalance: number,
+    public readonly requiredAmount: number,
+  ) {
+    super(`Insufficient balance in wallet ${walletId}: current=${currentBalance}, required=${requiredAmount}`);
+  }
+}
+```
+
+**¿Por qué?**: Excepción de dominio que incluye contexto (walletId, saldo actual, monto requerido) para facilitar debugging y respuestas informativas al cliente.
+
+---
+
+## `src/modules/fin/domain/exceptions/wallet-not-found.exception.ts` — Billetera no encontrada
+
+```typescript
+export class WalletNotFoundException extends Error {
+  constructor(identifier: string) {
+    super(`Wallet not found: ${identifier}`);
+  }
+}
 ```
 
 ---
 
-## `src/modules/fin/domain/entities/wallet.entity.ts` — Billetera digital
+## `src/modules/fin/domain/exceptions/transaction-failed.exception.ts` — Transacción fallida
+
+```typescript
+export class TransactionFailedException extends Error {
+  constructor(
+    public readonly reason: string,
+    public readonly transactionId?: string,
+  ) {
+    super(`Transaction failed: ${reason}${transactionId ? ` (id: ${transactionId})` : ''}`);
+  }
+}
+```
+
+**¿Por qué?**: Separada de InsufficientBalanceException para distinguir entre fallos por saldo y fallos técnicos (concurrencia, BD, etc.).
+
+---
+
+## `src/modules/fin/domain/value-objects/money.vo.ts` — Value Object Money
+
+```typescript
+export class Money {
+  private constructor(
+    public readonly amount: number,    // Centavos (entero)
+    public readonly currency: string,  // ISO 4217
+  ) {}
+
+  static fromCents(amount: number, currency: string): Money { /* ... */ }
+  static fromDecimal(amount: number, currency: string): Money { /* amount * 100 */ }
+  add(other: Money): Money { /* valida misma moneda */ }
+  subtract(other: Money): Money { /* valida misma moneda */ }
+  multiply(factor: number): Money { /* Math.round(amount * factor) */ }
+  isGreaterThanOrEqual(other: Money): boolean { /* ... */ }
+  toDecimal(): number { return this.amount / 100; }
+}
+```
+
+**¿Por qué?**: Value Object inmutable. Almacena en centavos (entero) para evitar errores de punto flotante. Validación en constructor: amount debe ser entero, currency debe ser 3 letras. Operaciones aritméticas validan misma moneda.
+
+---
+
+## `src/modules/fin/domain/interfaces/repositories/wallet.repository.port.ts` — Puerto WalletRepository
+
+```typescript
+export const WALLET_REPOSITORY_PORT = 'WalletRepositoryPort';
+
+export interface WalletRepositoryPort {
+  findById(id: string): Promise<Wallet | null>;
+  findByUserId(userId: string): Promise<Wallet | null>;
+  save(wallet: Wallet): Promise<Wallet>;
+  update(id: string, wallet: Partial<Wallet>): Promise<Wallet>;
+  delete(id: string): Promise<void>;
+}
+```
+
+**¿Por qué?**: Puerto con token string para inyección de dependencias. `findByUserId` es clave porque auth module busca wallets por userId (relación 1:1).
+
+---
+
+## `src/modules/fin/domain/interfaces/repositories/transaction.repository.port.ts` — Puerto TransactionRepository
+
+```typescript
+export const TRANSACTION_REPOSITORY_PORT = 'TransactionRepositoryPort';
+
+export interface TransactionRepositoryPort {
+  findById(id: string): Promise<Transaction | null>;
+  findByWalletId(walletId: string): Promise<Transaction[]>;
+  save(transaction: Transaction): Promise<Transaction>;
+  update(id: string, transaction: Partial<Transaction>): Promise<Transaction>;
+}
+```
+
+---
+
+## `src/modules/fin/domain/interfaces/repositories/exchange-rate.repository.port.ts` — Puerto ExchangeRateRepository
+
+```typescript
+export interface ExchangeRateRepositoryPort {
+  findCurrent(from: string, to: string): Promise<ExchangeRate | null>;
+  findById(id: string): Promise<ExchangeRate | null>;
+  save(rate: ExchangeRate): Promise<ExchangeRate>;
+}
+```
+
+**¿Por qué?**: `findCurrent` busca la tasa vigente en el momento actual según validFrom/validUntil.
+
+---
+
+## `src/modules/fin/domain/interfaces/repositories/coop-fare.repository.port.ts` — Puerto CoopFareRepository
+
+```typescript
+export interface CoopFareRepositoryPort {
+  findById(id: string): Promise<CoopFare | null>;
+  findByCooperativeId(cooperativeId: string): Promise<CoopFare | null>;
+  save(fare: CoopFare): Promise<CoopFare>;
+  update(id: string, fare: Partial<CoopFare>): Promise<CoopFare>;
+}
+```
+
+**¿Por qué?**: `findByCooperativeId` retorna la tarifa activa de una cooperativa para calcular costos de viaje.
+
+---
+
+## `src/modules/fin/domain/interfaces/repositories/saga-state.repository.port.ts` — Puerto SagaStateRepository
+
+```typescript
+export interface SagaStateRepositoryPort {
+  findById(id: string): Promise<SagaState | null>;
+  findBySagaId(sagaId: string): Promise<SagaState[]>;
+  save(state: SagaState): Promise<SagaState>;
+  update(id: string, state: Partial<SagaState>): Promise<SagaState>;
+}
+```
+
+**¿Por qué?**: `findBySagaId` retorna todos los pasos de una saga para orquestar compensaciones si algún paso falla.
+
+---
+
+## `src/modules/fin/domain/interfaces/services/wallet.service.port.ts` — Puerto WalletService
+
+```typescript
+export const WALLET_SERVICE_PORT = 'WalletServicePort';
+
+export interface WalletServicePort {
+  createWallet(userId: string, currency?: string): Promise<Wallet>;
+  getBalance(userId: string): Promise<{ balance: number; debtBalance: number; currency: string }>;
+  deposit(userId: string, amount: number, referenceId?: string): Promise<Transaction>;
+  withdraw(userId: string, amount: number, referenceId?: string): Promise<Transaction>;
+  processPayment(userId: string, amount: number, referenceId: string): Promise<Transaction>;
+  getWallet(userId: string): Promise<Wallet>;
+}
+```
+
+**¿Por qué?**: Puerto de servicio que define las operaciones de alto nivel. Es el contrato que consume AuthModule (createWallet) y los controladores REST. La implementación concreta (WalletServiceImpl) orquesta casos de uso.
+
+---
+
+## `src/modules/fin/application/use-cases/create-wallet.use-case.ts` — Caso de uso: crear billetera
+
+```typescript
+@Injectable()
+export class CreateWalletUseCase {
+  constructor(
+    @Inject(WALLET_REPOSITORY_PORT) private readonly walletRepo: WalletRepositoryPort,
+  ) {}
+
+  async execute(userId: string, currency: string = 'USD'): Promise<Wallet> {
+    const existing = await this.walletRepo.findByUserId(userId);
+    if (existing) return existing;  // Idempotente
+    const wallet = Wallet.create(userId, currency);
+    return this.walletRepo.save(wallet);
+  }
+}
+```
+
+**¿Por qué?**: Idempotente: si el usuario ya tiene wallet, retorna la existente. Esto permite llamarlo múltiples veces sin efecto secundario.
+
+---
+
+## `src/modules/fin/application/use-cases/deposit.use-case.ts` — Caso de uso: depositar
+
+```typescript
+@Injectable()
+export class DepositUseCase {
+  async execute(userId: string, amount: number, referenceId?: string): Promise<Transaction> {
+    const wallet = await this.walletRepo.findByUserId(userId);
+    if (!wallet) throw new WalletNotFoundException(userId);
+
+    // Crea nueva instancia con saldo incrementado y version+1 (OCC)
+    const updatedWallet = new Wallet(
+      wallet.id, wallet.userId, wallet.balance + amount,
+      wallet.debtBalance, wallet.creditUsed, wallet.currency,
+      new Date(), wallet.version + 1, wallet.createdAt, new Date(),
+    );
+    await this.walletRepo.update(wallet.id, updatedWallet);
+
+    const transaction = Transaction.create(wallet.id, DEPOSIT, amount, wallet.currency, referenceId);
+    return this.transactionRepo.save(transaction.complete());
+  }
+}
+```
+
+**¿Por qué?**: Actualiza el saldo creando una nueva instancia de Wallet (inmutabilidad del dominio). La transacción se crea y marca como COMPLETED atómicamente.
+
+---
+
+## `src/modules/fin/application/use-cases/withdraw.use-case.ts` — Caso de uso: retirar
+
+```typescript
+@Injectable()
+export class WithdrawUseCase {
+  async execute(userId: string, amount: number, referenceId?: string): Promise<Transaction> {
+    const wallet = await this.walletRepo.findByUserId(userId);
+    if (!wallet) throw new WalletNotFoundException(userId);
+    if (wallet.balance < amount) throw new InsufficientBalanceException(wallet.id, wallet.balance, amount);
+
+    const updatedWallet = new Wallet(/* balance - amount, version + 1 */);
+    await this.walletRepo.update(wallet.id, updatedWallet);
+
+    const transaction = Transaction.create(wallet.id, WITHDRAWAL, amount, wallet.currency, referenceId);
+    return this.transactionRepo.save(transaction.complete());
+  }
+}
+```
+
+**¿Por qué?**: Valida balance >= amount antes de operar. Si no hay saldo suficiente, lanza InsufficientBalanceException.
+
+---
+
+## `src/modules/fin/application/use-cases/process-payment.use-case.ts` — Caso de uso: procesar pago
+
+```typescript
+@Injectable()
+export class ProcessPaymentUseCase {
+  async execute(userId: string, amount: number, referenceId: string): Promise<Transaction> {
+    const wallet = await this.walletRepo.findByUserId(userId);
+    if (!wallet) throw new WalletNotFoundException(userId);
+
+    // Usa balance + crédito de emergencia (si no usado antes)
+    const totalDebt = wallet.balance + (wallet.creditUsed ? 0 : wallet.debtBalance);
+    if (totalDebt < amount) throw new InsufficientBalanceException(wallet.id, totalDebt, amount);
+
+    // Primero descuenta de balance, el resto a debtBalance
+    let newBalance = wallet.balance;
+    let newDebt = wallet.debtBalance;
+    let creditUsed = wallet.creditUsed;
+
+    if (newBalance >= amount) {
+      newBalance -= amount;
+    } else {
+      const remaining = amount - newBalance;
+      newBalance = 0;
+      newDebt += remaining;
+      creditUsed = true;  // Marca crédito como usado (única vez)
+    }
+
+    const updatedWallet = new Wallet(/* newBalance, newDebt, creditUsed, version+1 */);
+    await this.walletRepo.update(wallet.id, updatedWallet);
+
+    const transaction = Transaction.create(wallet.id, PAYMENT, amount, wallet.currency, referenceId);
+    return this.transactionRepo.save(transaction.complete());
+  }
+}
+```
+
+**¿Por qué?**: Lógica de crédito de emergencia: si el saldo disponible no alcanza, usa el crédito (debtBalance). El crédito es de uso único (creditUsed flag). Una vez usado, no puede volver a activarse hasta que se salde la deuda.
+
+---
+
+## `src/modules/fin/application/use-cases/get-balance.use-case.ts` — Caso de uso: consultar saldo
+
+```typescript
+@Injectable()
+export class GetBalanceUseCase {
+  async execute(userId: string): Promise<{ balance: number; debtBalance: number; currency: string }> {
+    const wallet = await this.walletRepo.findByUserId(userId);
+    if (!wallet) throw new WalletNotFoundException(userId);
+    return { balance: wallet.balance, debtBalance: wallet.debtBalance, currency: wallet.currency };
+  }
+}
+```
+
+---
+
+## `src/modules/fin/application/services/wallet.service.impl.ts` — Implementación del servicio
+
+```typescript
+@Injectable()
+export class WalletServiceImpl implements WalletServicePort {
+  constructor(
+    private readonly createWalletUseCase: CreateWalletUseCase,
+    private readonly getBalanceUseCase: GetBalanceUseCase,
+    private readonly depositUseCase: DepositUseCase,
+    private readonly withdrawUseCase: WithdrawUseCase,
+    private readonly processPaymentUseCase: ProcessPaymentUseCase,
+  ) {}
+
+  async createWallet(userId: string, currency?: string): Promise<Wallet> {
+    return this.createWalletUseCase.execute(userId, currency);
+  }
+  // ...delega cada método al caso de uso correspondiente
+}
+```
+
+**¿Por qué?**: Implementación concreta de WalletServicePort que orquesta los casos de uso. Esta clase reemplaza el mock no-op que AuthModule usaba para crear billeteras. Al inyectarla via `{ provide: WALLET_SERVICE_PORT, useClass: WalletServiceImpl }`, AuthModule obtiene la implementación real automáticamente.
+
+---
+
+## `src/modules/fin/infrastructure/fin.module.ts` — Módulo NestJS
+
+```typescript
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([
+      WalletOrmEntity, TransactionOrmEntity,
+      ExchangeRateOrmEntity, CoopFareOrmEntity, SagaStateOrmEntity,
+    ]),
+  ],
+  controllers: [WalletController, TransactionController],
+  providers: [
+    { provide: WALLET_REPOSITORY_PORT, useClass: WalletRepositoryImpl },
+    { provide: TRANSACTION_REPOSITORY_PORT, useClass: TransactionRepositoryImpl },
+    { provide: EXCHANGE_RATE_REPOSITORY_PORT, useClass: ExchangeRateRepositoryImpl },
+    { provide: COOP_FARE_REPOSITORY_PORT, useClass: CoopFareRepositoryImpl },
+    { provide: SAGA_STATE_REPOSITORY_PORT, useClass: SagaStateRepositoryImpl },
+    CreateWalletUseCase, DepositUseCase, WithdrawUseCase,
+    ProcessPaymentUseCase, GetBalanceUseCase,
+    { provide: WALLET_SERVICE_PORT, useClass: WalletServiceImpl },
+  ],
+  exports: [WALLET_SERVICE_PORT, /* ...repos */],
+})
+export class FinModule {}
+```
+
+**¿Por qué?**: Ensambla todas las piezas del módulo financiero. Los tokens string vinculan puertos abstractos a implementaciones concretas. Exporta WALLET_SERVICE_PORT para que AuthModule lo inyecte al crear usuarios.
+
+---
+
+## `src/modules/fin/infrastructure/orm/transaction.orm-entity.ts` — ORM de transacciones
+
+```typescript
+@Entity({ name: 'transactions', schema: 'fin' })
+export class TransactionOrmEntity {
+  @PrimaryGeneratedColumn('uuid') id: string;
+  @Column({ type: 'uuid', name: 'wallet_id' }) walletId: string;
+  @Column({ type: 'varchar', length: 20 }) type: TransactionOrmType;
+  @Column({ type: 'bigint' }) amount: number;
+  @Column({ type: 'varchar', length: 3, default: 'USD' }) currency: string;
+  @Column({ type: 'varchar', length: 20, default: 'PENDING' }) status: TransactionOrmStatus;
+  @Column({ type: 'uuid', name: 'reference_id', nullable: true }) referenceId: string | null;
+  @Column({ type: 'jsonb', nullable: true }) metadata: Record<string, unknown> | null;
+  @Column({ type: 'int', default: 1 }) version: number;
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' }) createdAt: Date;
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' }) updatedAt: Date;
+}
+```
+
+**¿Por qué?**: JSONB para metadata permite almacenar datos dinámicos del gateway de pago sin cambiar el esquema. type y status como VARCHAR (no enum nativo) para flexibilidad al agregar nuevos valores.
+
+---
+
+## `src/modules/fin/infrastructure/orm/exchange-rate.orm-entity.ts` — ORM de tipo de cambio
+
+```typescript
+@Entity({ name: 'exchange_rates', schema: 'fin' })
+export class ExchangeRateOrmEntity {
+  // ...
+  @Column({ type: 'decimal', precision: 18, scale: 8 }) rate: number;
+  @Column({ type: 'timestamptz', name: 'valid_from' }) validFrom: Date;
+  @Column({ type: 'timestamptz', name: 'valid_until', nullable: true }) validUntil: Date | null;
+  // ...
+}
+```
+
+**¿Por qué?**: DECIMAL(18,8) para precisión financiera en tasas de cambio (hasta 8 decimales). valid_until nullable = vigente indefinidamente.
+
+---
+
+## `src/modules/fin/infrastructure/orm/coop-fare.orm-entity.ts` — ORM de tarifa
+
+```typescript
+@Entity({ name: 'coop_fares', schema: 'fin' })
+export class CoopFareOrmEntity {
+  @Column({ type: 'uuid', name: 'cooperative_id' }) cooperativeId: string;
+  @Column({ type: 'bigint', name: 'base_fare' }) baseFare: number;
+  @Column({ type: 'bigint', name: 'per_km_rate' }) perKmRate: number;
+  @Column({ type: 'boolean', default: true }) active: boolean;
+  // ...
+}
+```
+
+---
+
+## `src/modules/fin/infrastructure/orm/saga-state.orm-entity.ts` — ORM de saga
+
+```typescript
+@Entity({ name: 'saga_states', schema: 'fin' })
+export class SagaStateOrmEntity {
+  @Column({ type: 'uuid', name: 'saga_id' }) sagaId: string;
+  @Column({ type: 'varchar', length: 30 }) step: SagaOrmStep;
+  @Column({ type: 'varchar', length: 20, default: 'PENDING' }) status: SagaOrmStatus;
+  @Column({ type: 'jsonb', nullable: true }) payload: Record<string, unknown> | null;
+  @Column({ type: 'text', nullable: true }) error: string | null;
+  // ...
+}
+```
+
+---
+
+## `src/modules/fin/infrastructure/persistence/wallet.repository.impl.ts` — Repositorio Wallet
+
+```typescript
+@Injectable()
+export class WalletRepositoryImpl implements WalletRepositoryPort {
+  constructor(
+    @InjectRepository(WalletOrmEntity)
+    private readonly repo: Repository<WalletOrmEntity>,
+  ) {}
+
+  async save(wallet: Wallet): Promise<Wallet> {
+    const entity = this.toOrm(wallet);           // Dominio → ORM
+    const saved = await this.repo.save(entity);  // Persiste
+    return this.toDomain(saved);                 // ORM → Dominio
+  }
+
+  private toDomain(entity: WalletOrmEntity): Wallet { /* mapeo campo por campo */ }
+  private toOrm(domain: Wallet): WalletOrmEntity { /* mapeo inverso */ }
+}
+```
+
+**¿Por qué?**: Implementación TypeORM con mapeo explícito toDomain/toOrm. La separación dominio/ORM permite cambiar de ORM sin afectar la capa de dominio. `Number(entity.balance)` convierte BIGINT de PostgreSQL a number de TypeScript.
+
+---
+
+## `src/modules/fin/infrastructure/persistence/transaction.repository.impl.ts` — Repositorio Transaction
+
+Mismo patrón que WalletRepositoryImpl. findByWalletId retorna todas las transacciones de una billetera.
+
+---
+
+## `src/modules/fin/infrastructure/persistence/exchange-rate.repository.impl.ts` — Repositorio ExchangeRate
+
+```typescript
+async findCurrent(from: string, to: string): Promise<ExchangeRate | null> {
+  const now = new Date();
+  const entity = await this.repo.findOne({
+    where: {
+      fromCurrency: from,
+      toCurrency: to,
+      validFrom: LessThanOrEqual(now),
+      validUntil: MoreThanOrEqual(now),
+    },
+    order: { validFrom: 'DESC' },
+  });
+  return entity ? this.toDomain(entity) : null;
+}
+```
+
+**¿Por qué?**: Usa LessThanOrEqual/MoreThanOrEqual de TypeORM para buscar tasas vigentes. Order DESC + findOne retorna la más reciente.
+
+---
+
+## `src/modules/fin/infrastructure/persistence/coop-fare.repository.impl.ts` — Repositorio CoopFare
+
+findByCooperativeId filtra por cooperativeId + active: true para retornar solo la tarifa activa.
+
+---
+
+## `src/modules/fin/infrastructure/persistence/saga-state.repository.impl.ts` — Repositorio SagaState
+
+findBySagaId retorna todos los pasos de una saga para orquestar compensaciones.
+
+---
+
+## `src/modules/fin/interfaces/rest/wallet.controller.ts` — Controlador de billeteras
+
+```typescript
+@Controller('fin/wallets')
+export class WalletController {
+  constructor(
+    @Inject(WALLET_SERVICE_PORT)
+    private readonly walletService: WalletServicePort,
+  ) {}
+
+  @Post()                           // POST /fin/wallets
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() dto: CreateWalletDto) { /* ... */ }
+
+  @Get(':userId/balance')           // GET /fin/wallets/:userId/balance
+  async getBalance(@Param('userId') userId: string): Promise<BalanceResponseDto> { /* ... */ }
+}
+```
+
+**¿Por qué?**: Controlador delgado que delega en WalletServicePort. Las rutas siguen el patrón `/fin/{recurso}` consistente con la estructura de módulos.
+
+---
+
+## `src/modules/fin/interfaces/rest/transaction.controller.ts` — Controlador de transacciones
+
+```typescript
+@Controller('fin/transactions')
+export class TransactionController {
+  @Post('deposit')                  // POST /fin/transactions/deposit
+  async deposit(@Body() dto: DepositDto): Promise<TransactionDto> { /* ... */ }
+
+  @Post('transfer')                 // POST /fin/transactions/transfer
+  async transfer(@Body() dto: TransferDto): Promise<TransactionDto> { /* ... */ }
+}
+```
+
+**¿Por qué?**: Endpoints POST específicos para cada operación financiera. deposit acredita fondos, transfer debita (pago de viaje). Ambos retornan TransactionDto con el resultado.
+
+---
+
+## `src/modules/fin/interfaces/dto/deposit.dto.ts` — DTO de depósito
+
+```typescript
+export class DepositDto {
+  userId: string;
+  amount: number;
+  referenceId?: string;
+}
+```
+
+**¿Por qué?**: DTO de validación (pendiente decoradores class-validator). referenceId opcional para trazabilidad externa.
+
+---
+
+## `src/modules/fin/interfaces/dto/transfer.dto.ts` — DTO de transferencia
+
+```typescript
+export class TransferDto {
+  userId: string;
+  amount: number;
+  referenceId: string;  // Obligatorio: ID del viaje o servicio
+}
+```
+
+**¿Por qué?**: referenceId obligatorio porque un pago siempre debe asociarse a un viaje o servicio.
 
 ```typescript
 export class Wallet {
@@ -1664,4 +2349,4 @@ README simplificado con stack, endpoints funcionales, esquemas de BD y scripts.
 
 ---
 
-**Fin de la documentación — 83 archivos documentados.**
+**Fin de la documentación — 108 archivos documentados.**

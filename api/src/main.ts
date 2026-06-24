@@ -17,9 +17,9 @@
  * @module main
  */
 
-import 'dotenv/config';                           // Carga .env ANTES que nada para que todas las variables de entorno estén disponibles desde el inicio
-import { NestFactory } from '@nestjs/core';       // Fábrica que crea y configura la aplicación NestJS
-import { AppModule } from './app.module';          // Módulo raíz que orquesta todos los submódulos funcionales
+import 'dotenv/config'; // Carga .env ANTES que nada para que todas las variables de entorno estén disponibles desde el inicio
+import { NestFactory } from '@nestjs/core'; // Fábrica que crea y configura la aplicación NestJS
+import { AppModule } from './app.module'; // Módulo raíz que orquesta todos los submódulos funcionales
 
 async function bootstrap() {
   // Se crea la aplicación compilando AppModule y resolviendo todo el árbol de dependencias

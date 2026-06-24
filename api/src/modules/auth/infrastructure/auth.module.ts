@@ -91,7 +91,6 @@ import {
   ASSOCIATION_REPOSITORY_PORT,
   DRIVER_REQUEST_REPOSITORY_PORT,
   NOTIFICATION_SERVICE_PORT,
-  WALLET_SERVICE_PORT,
 } from '../domain/interfaces';
 
 // ─── Servicios compartidos ─────────────────────────────────────────────────
@@ -104,6 +103,7 @@ import { CryptoService } from '../../../shared/application/services/crypto.servi
 // JwtAuthGuard: guard de NestJS que protege rutas con autenticación JWT
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { JwtStrategy } from './auth/jwt.strategy';
+import { FinModule } from 'src/modules/fin/infrastructure/fin.module';
 
 @Module({
   imports: [
@@ -127,6 +127,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
       secret: 'unused',
       signOptions: { expiresIn: '24h' },
     }),
+    FinModule,
   ],
   controllers: [AuthController, UserController, AssociationController],
   providers: [
@@ -158,18 +159,6 @@ import { JwtStrategy } from './auth/jwt.strategy';
     // SendGrid para email, FCM para push notifications).
     { provide: NOTIFICATION_SERVICE_PORT, useClass: NotificationServiceImpl },
 
-    // WalletServicePort: patrón mock no-op con useValue.
-    // Como la integración con el proveedor de billetera/pagos aún no está
-    // implementada, se inyecta un objeto placeholder que implementa la
-    // interfaz (createWallet: async () => {}) pero no ejecuta nada real.
-    // useValue inyecta un objeto directamente (sin instanciar una clase).
-    // Cuando se integre un proveedor real (MercadoPago, Stripe, etc.),
-    // se cambiará a useClass apuntando a la implementación concreta.
-    {
-      provide: WALLET_SERVICE_PORT,
-      useValue: { createWallet: async () => {} },
-    },
-
     // JwtStrategy y JwtAuthGuard se registran como providers para que
     // NestJS los tenga disponibles en el contenedor DI y Passport pueda
     // encontrar la estrategia 'jwt' cuando JwtAuthGuard la invoca
@@ -184,7 +173,6 @@ import { JwtStrategy } from './auth/jwt.strategy';
     ASSOCIATION_REPOSITORY_PORT,
     DRIVER_REQUEST_REPOSITORY_PORT,
     NOTIFICATION_SERVICE_PORT,
-    WALLET_SERVICE_PORT,
 
     // Se exportan los casos de uso para que otros módulos puedan reutilizar
     // la lógica de negocio (ej. módulo de onboarding invoca CreateUserUseCase)

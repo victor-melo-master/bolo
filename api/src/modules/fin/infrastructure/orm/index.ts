@@ -1,13 +1,17 @@
 // src/modules/fin/infrastructure/orm/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para entidades ORM del módulo fin.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Entidades ORM del Módulo Financiero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Exporta las entidades de TypeORM para que FinModule las registre
+ * via TypeOrmModule.forFeature([...]).
  *
  * @module fin/infrastructure/orm
  */
 
-// Exporta las entidades TypeORM del módulo financiero para que el módulo NestJS
-// las registre en TypeOrmModule.forFeature([...]) y estén disponibles en los repositorios
 export { WalletOrmEntity } from './wallet.orm-entity';
-// (Pendiente) export { TransactionOrmEntity } from './transaction.orm-entity';
-// (Pendiente) export { CooperativeFareOrmEntity } from './cooperative-fare.orm-entity';
-// (Pendiente) export { PaymentMethodOrmEntity } from './payment-method.orm-entity';
+export { TransactionOrmEntity, TransactionOrmType, TransactionOrmStatus } from './transaction.orm-entity';
+export { ExchangeRateOrmEntity } from './exchange-rate.orm-entity';
+export { CoopFareOrmEntity } from './coop-fare.orm-entity';
+export { SagaStateOrmEntity, SagaOrmStatus, SagaOrmStep } from './saga-state.orm-entity';
