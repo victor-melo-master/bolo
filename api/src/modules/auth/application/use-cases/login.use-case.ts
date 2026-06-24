@@ -26,6 +26,8 @@ import { JwtService } from '@nestjs/jwt';
 import { USER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/user.repository.port';
 import { CryptoService } from '../../../../shared/application/services/crypto.service';
 import type { UserRepositoryPort } from '../../domain/interfaces/repositories/user.repository.port';
+import { InvalidCredentialsException } from '../../domain/exceptions/invalid-credentials.exception';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class LoginUseCase {
@@ -39,21 +41,30 @@ export class LoginUseCase {
     phone: string,
     password: string,
   ): Promise<{ accessToken: string; user: any }> {
+    // 1 - Find user by phone
     const user = await this.userRepo.findByPhone(phone);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new InvalidCredentialsException('Invalid credentials');
     }
+    // 2 - Verify password
     const isValid = await this.cryptoService.compare(
       password,
       user.passwordHash,
     );
     if (!isValid) {
-      throw new Error('Invalid credentials');
+      throw new InvalidCredentialsException('Invalid credentials');
     }
     if (!user.isActive) {
-      throw new Error('User is inactive');
+      throw new InvalidCredentialsException('User is inactive');
     }
+
+    // 3. Rotación de llave: generar una nueva llave y guardarla
+    const newJwtKey = randomUUID(); // o crypto.randomUUID()
+    await this.userRepo.updateJwtKey(user.id, newJwtKey);
+
+    // 4. Construir payload con la nueva llave
     const payload = { sub: user.id, phone: user.phone, role: user.role };
+    // 5. Firmar token con la nueva llave
     const accessToken = this.jwtService.sign(payload);
     return {
       accessToken,

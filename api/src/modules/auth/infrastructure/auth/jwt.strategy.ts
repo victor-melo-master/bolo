@@ -24,21 +24,48 @@
  * @see JwtAuthGuard
  */
 
-import { Injectable } from '@nestjs/common';
+// src/modules/auth/infrastructure/auth/jwt.strategy.ts
+import { Injectable, Inject } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
+import { USER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/user.repository.port';
+import type { UserRepositoryPort } from '../../domain/interfaces/repositories/user.repository.port';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
+  constructor(
+    @Inject(USER_REPOSITORY_PORT) private readonly userRepo: UserRepositoryPort,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_SECRET') ?? 'defaultSecret',
+      secretOrKeyProvider: (request, rawJwtToken: string, done) => {
+        this.resolveSecretKey(rawJwtToken)
+          .then((key) => done(null, key))
+          .catch((err) => done(err));
+      },
     });
   }
 
+  private async resolveSecretKey(rawJwtToken: string): Promise<string> {
+    const payload = JSON.parse(
+      Buffer.from(rawJwtToken.split('.')[1], 'base64').toString(),
+    );
+    const userId: string = payload.sub;
+    if (!userId) {
+      throw new Error('Token sin sub');
+    }
+
+    // Unsafe argument of type `any` assigned to a parameter of type `string`.
+    const user = await this.userRepo.findById(userId);
+    if (!user || !user.jwtKey) {
+      throw new Error('Usuario no encontrado o sin llave');
+    }
+
+    return user.jwtKey;
+  }
+
+  // Sin async porque no hay operación asíncrona
   validate(payload: any) {
     return { userId: payload.sub, phone: payload.phone, role: payload.role };
   }

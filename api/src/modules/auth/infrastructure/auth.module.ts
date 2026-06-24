@@ -34,8 +34,11 @@
  * @see CreateUserUseCase
  */
 
+// src/modules/auth/infrastructure/auth.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 import {
   UserOrmEntity,
   AssociationOrmEntity,
@@ -48,6 +51,7 @@ import {
 } from './persistence';
 import { NotificationServiceImpl } from './services';
 import { CreateUserUseCase } from '../application/use-cases/create-user.use-case';
+import { LoginUseCase } from '../application/use-cases/login.use-case';
 import {
   UserController,
   AuthController,
@@ -61,10 +65,6 @@ import {
   WALLET_SERVICE_PORT,
 } from '../domain/interfaces';
 import { CryptoService } from '../../../shared/application/services/crypto.service';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { LoginUseCase } from '../application/use-cases/login.use-case';
-import { PassportModule } from '@nestjs/passport';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { JwtStrategy } from './auth/jwt.strategy';
 
@@ -76,13 +76,9 @@ import { JwtStrategy } from './auth/jwt.strategy';
       DriverRequestOrmEntity,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') ?? 'defaultSecret',
-        signOptions: { expiresIn: '1h' },
-      }),
+    JwtModule.register({
+      secret: 'unused', // No se usa porque cada token se firma con la clave del usuario
+      signOptions: { expiresIn: '24h' },
     }),
   ],
   controllers: [AuthController, UserController, AssociationController],

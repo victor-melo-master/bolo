@@ -101,4 +101,8 @@ export class UserRepositoryImpl implements UserRepositoryPort {
       ormUser.updatedAt,
     );
   }
+
+  async updateJwtKey(userId: string, jwtKey: string): Promise<void> {
+    await this.userRepository.update(userId, { jwtKey });
+  }
 }

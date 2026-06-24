@@ -30,6 +30,7 @@ import type { UserRepositoryPort } from '../../domain/interfaces/repositories/us
 import { WALLET_SERVICE_PORT } from '../../domain/interfaces/services/wallet.service.port';
 import type { WalletServicePort } from '../../domain/interfaces/services/wallet.service.port';
 import { CryptoService } from '../../../../shared/application/services/crypto.service';
+import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 
 @Injectable()
 export class CreateUserUseCase {
@@ -44,7 +45,9 @@ export class CreateUserUseCase {
   async execute(dto: CreateUserDto): Promise<User> {
     const existing = await this.userRepo.findByPhone(dto.phone);
     if (existing) {
-      throw new Error('Phone already registered');
+      throw new UserAlreadyExistsException(
+        'User with this phone already exists',
+      );
     }
 
     const hashedPassword = await this.cryptoService.hash(dto.password);
@@ -69,8 +72,17 @@ export class CreateUserUseCase {
 
     const savedUser = await this.userRepo.save(user);
 
+    // 5. Crear billetera asociada (si el servicio está disponible)
     if (this.walletService) {
-      await this.walletService.createWallet(savedUser.id);
+      try {
+        await this.walletService.createWallet(savedUser.id);
+      } catch (error) {
+        // La creación del usuario no debe fallar por un error en la wallet
+        console.error(
+          'Wallet creation failed, continuing user registration:',
+          error,
+        );
+      }
     }
 
     return savedUser;
