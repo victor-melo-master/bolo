@@ -2,6 +2,7 @@
 
 import { WalletServiceImpl } from './wallet.service.impl';
 import { Wallet } from '../../domain/entities/wallet.entity';
+import { CreateWalletUseCase } from '../../application';
 
 describe('WalletServiceImpl', () => {
   let service: WalletServiceImpl;
@@ -11,7 +12,7 @@ describe('WalletServiceImpl', () => {
     createWalletUseCase = {
       execute: jest.fn(),
     };
-    service = new WalletServiceImpl(createWalletUseCase);
+    service = new WalletServiceImpl(createWalletUseCase as CreateWalletUseCase);
   });
 
   it('should call createWalletUseCase.execute with userId', async () => {

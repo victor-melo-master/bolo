@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TransactionRepositoryPort } from '../../domain/interfaces/repositories/transaction.repository.port';
-import { Transaction } from '../../domain/entities/transaction.entity';
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from '../../domain/entities/transaction.entity';
 import { TransactionOrmEntity } from '../orm/transaction.orm-entity';
 
 @Injectable()
@@ -41,10 +45,10 @@ export class TransactionRepositoryImpl implements TransactionRepositoryPort {
     return new Transaction(
       entity.id,
       entity.walletId,
-      entity.type as any,
+      entity.type as unknown as TransactionType,
       Number(entity.amount),
       entity.currency,
-      entity.status as any,
+      entity.status as unknown as TransactionStatus,
       entity.referenceId,
       entity.description,
       entity.metadata,

@@ -1,6 +1,7 @@
 import { WalletRepositoryImpl } from './wallet.repository.impl';
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletOrmEntity } from '../orm/wallet.orm-entity';
+import { Repository } from 'typeorm';
 
 describe('WalletRepositoryImpl', () => {
   let repo: WalletRepositoryImpl;
@@ -38,7 +39,9 @@ describe('WalletRepositoryImpl', () => {
       save: jest.fn(),
     };
 
-    repo = new WalletRepositoryImpl(mockTypeOrmRepo);
+    repo = new WalletRepositoryImpl(
+      mockTypeOrmRepo as Repository<WalletOrmEntity>,
+    );
   });
 
   describe('save', () => {

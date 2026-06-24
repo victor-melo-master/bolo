@@ -71,6 +71,7 @@ describe('AuthController', () => {
     // Caso feliz: el caso de uso crea el usuario y el controlador devuelve
     // la respuesta en el formato esperado (UserResponseDto)
     it('should register a user and return user response', async () => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const executeMock = createUserUseCase.execute as jest.Mock;
       // Simula que el caso de uso retorna un usuario exitosamente
       executeMock.mockResolvedValue(mockUserResponse as any);
@@ -97,6 +98,7 @@ describe('AuthController', () => {
     // la excepción sin atraparla (el filtro global de excepciones la convertirá
     // en un 409 Conflict)
     it('should throw ConflictException when phone already exists', async () => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const executeMock = createUserUseCase.execute as jest.Mock;
       executeMock.mockRejectedValue(new UserAlreadyExistsException());
 
@@ -118,6 +120,7 @@ describe('AuthController', () => {
 
       await controller.register(registerDto);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(createUserUseCase.execute).toHaveBeenCalled();
     });
   });
@@ -144,6 +147,7 @@ describe('AuthController', () => {
 
     // Caso feliz: credenciales correctas, el controlador devuelve el token
     it('should login and return access token', async () => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const executeLoginMock = loginUseCase.execute as jest.Mock;
       executeLoginMock.mockResolvedValue(mockLoginResponse);
 
@@ -161,6 +165,7 @@ describe('AuthController', () => {
     // InvalidCredentialsException y el controlador debe propagarla
     // (el filtro global la convertirá en un 401 Unauthorized)
     it('should throw UnauthorizedException on invalid credentials', async () => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const executeLoginMock = loginUseCase.execute as jest.Mock;
       executeLoginMock.mockRejectedValue(new InvalidCredentialsException());
 

@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SagaStateRepositoryPort } from '../../domain/interfaces/repositories/saga-state.repository.port';
-import { SagaState } from '../../domain/entities/saga-state.entity';
+import {
+  SagaState,
+  SagaStatus,
+  SagaStep,
+} from '../../domain/entities/saga-state.entity';
 import { SagaStateOrmEntity } from '../orm/saga-state.orm-entity';
 
 @Injectable()
@@ -38,8 +42,8 @@ export class SagaStateRepositoryImpl implements SagaStateRepositoryPort {
     return new SagaState(
       entity.id,
       entity.sagaId,
-      entity.step as any,
-      entity.status as any,
+      entity.step as unknown as SagaStep,
+      entity.status as unknown as SagaStatus,
       entity.payload,
       entity.error,
       entity.version,
