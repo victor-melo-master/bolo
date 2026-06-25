@@ -57,7 +57,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKeyProvider: (request, rawJwtToken: string, done) => {
         this.resolveSecretKey(rawJwtToken)
           .then((key) => done(null, key))
-          .catch((err) => done(err));
+          .catch((err) => {
+            console.error('ERROR en secretOrKeyProvider:', err); // ← añadir
+            done(err);
+          });
       },
     });
   }
@@ -76,7 +79,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // convertir la porción codificada a string JSON, luego se parsea.
     // No hay verificación de firma en este paso.
     const payload = JSON.parse(
-      Buffer.from(rawJwtToken.split('.')[1], 'base64').toString(),
+      Buffer.from(rawJwtToken.split('.')[1], 'base64url').toString(),
     );
     // Extrae el ID de usuario del campo 'sub' (subject) del payload JWT
     const userId: string = payload.sub;

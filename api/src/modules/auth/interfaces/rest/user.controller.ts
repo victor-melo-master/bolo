@@ -44,7 +44,7 @@ export class UserController {
   }
 
   @Post('admins')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super_admin')
   async createAssociationAdmin(@Body() dto: CreateUserDto) {
     dto.role = 'association_admin';

@@ -107,7 +107,10 @@ export class LoginUseCase {
     // jwtService.sign() firma el payload usando el secreto/configuración definida
     // en el módulo JwtModule (generalmente leído de variables de entorno). El
     // token incluye automáticamente iat (issued at) y exp (expiration).
-    const accessToken = this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload, {
+      secret: newJwtKey, // ← usar la llave del usuario, NO 'unused'
+      expiresIn: '24h',
+    });
     return {
       accessToken, // JWT firmado para el cliente
       user: {
