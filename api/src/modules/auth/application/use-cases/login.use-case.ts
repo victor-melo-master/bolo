@@ -8,11 +8,12 @@
  *   1. Busca usuario por número telefónico
  *   2. Verifica la contraseña contra el hash almacenado
  *   3. Verifica que el usuario esté activo (isActive = true)
- *   4. Genera y firma un JWT con sub, phone y role
- *   5. Retorna token + datos básicos del usuario
+ *   4. Genera una nueva llave JWT (rotación de sesión)
+ *   5. Construye y firma un JWT con sub, phone, role y associationId
+ *   6. Retorna token + datos básicos del usuario
  *
  * Dependencias inyectadas:
- *   - UserRepositoryPort: para buscar el usuario
+ *   - UserRepositoryPort: para buscar el usuario y actualizar su jwtKey
  *   - CryptoService: para comparar contraseñas
  *   - JwtService: para firmar el token JWT
  *
@@ -103,10 +104,17 @@ export class LoginUseCase {
     // El payload del JWT contiene los claims estándar: sub (subject) con el ID
     // del usuario, phone y role para autorización en los controladores. No se
     // incluyen datos sensibles como passwordHash.
-    const payload = { sub: user.id, phone: user.phone, role: user.role };
-    // jwtService.sign() firma el payload usando el secreto/configuración definida
-    // en el módulo JwtModule (generalmente leído de variables de entorno). El
-    // token incluye automáticamente iat (issued at) y exp (expiration).
+    // associationId se incluye para que los sub‑admins puedan heredar la asociación
+    // de su creador sin necesidad de consultar la base de datos.
+    const payload = {
+      sub: user.id,
+      phone: user.phone,
+      role: user.role,
+      associationId: user.associationId, // ← Permite que el token sepa a qué asociación pertenece el usuario
+    };
+    // jwtService.sign() firma el payload usando la llave personal del usuario
+    // (newJwtKey) en lugar del secreto global. Esto garantiza que si la llave
+    // cambia (nueva sesión), los tokens anteriores quedan inválidos.
     const accessToken = this.jwtService.sign(payload, {
       secret: newJwtKey, // ← usar la llave del usuario, NO 'unused'
       expiresIn: '24h',
@@ -119,6 +127,7 @@ export class LoginUseCase {
         phone: user.phone,
         fullName: user.fullName,
         role: user.role,
+        associationId: user.associationId, // ← También se devuelve en la respuesta para conveniencia del frontend
       },
     };
   }

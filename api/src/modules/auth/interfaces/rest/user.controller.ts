@@ -17,7 +17,16 @@
  */
 
 // Decoradores de NestJS para definir rutas y extraer parámetros de la URL
-import { Controller, Get, Param, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  UseGuards,
+  BadRequestException,
+  Req,
+} from '@nestjs/common';
 // Se importa CreateUserUseCase por compatibilidad con el módulo, aunque
 // todavía no se usa directamente; se reemplazará por GetUserUseCase en el futuro
 import { CreateUserUseCase } from '../../application/use-cases/create-user.use-case';
@@ -45,11 +54,21 @@ export class UserController {
 
   @Post('admins')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin')
-  async createAssociationAdmin(@Body() dto: CreateUserDto) {
+  @Roles('super_admin', 'association_admin') // ambos roles permitidos
+  async createAssociationAdmin(@Req() req: any, @Body() dto: CreateUserDto) {
     dto.role = 'association_admin';
-    return this.createUserUseCase.execute(dto); // ← usa createUserUseCase
-    // return this.createAssociationUseCase.execute(adminId, dto);
-    // return this.createUserUseCase.execute(dto);
+
+    // Si el creador es un association_admin, hereda su asociación
+    if (req.user.role === 'association_admin') {
+      if (!req.user.associationId) {
+        throw new BadRequestException(
+          'No perteneces a ninguna asociación. Crea tu asociación primero.',
+        );
+      }
+      dto.associationId = req.user.associationId;
+    }
+    // Si es super_admin, dto.associationId queda undefined (sin asociación)
+
+    return this.createUserUseCase.execute(dto);
   }
 }

@@ -117,6 +117,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Retorna el objeto que se inyectará en req.user en los controladores
     // protegidos. Solo se exponen los datos necesarios para la autorización:
     // identificador, teléfono y rol del usuario.
-    return { userId: payload.sub, phone: payload.phone, role: payload.role };
+    return {
+      userId: payload.sub,
+      phone: payload.phone,
+      role: payload.role,
+      associationId: payload.associationId,
+    };
   }
 }
