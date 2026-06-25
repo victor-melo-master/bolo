@@ -89,6 +89,10 @@ export class UserOrmEntity {
   })
   role: UserRole;
 
+  // Id de la asociacion a la que pertenece un usuario si es 'drive' o 'association_admin'
+  @Column({ type: 'uuid', name: 'association_id', nullable: true })
+  associationId: string | null;
+
   // jwt_key: clave secreta JWT específica del usuario, se genera en cada
   // inicio de sesión para invalidar sesiones anteriores. Si es null, el
   // usuario no puede autenticarse (todas las sesiones revocadas).

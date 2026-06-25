@@ -74,20 +74,21 @@ describe('LoginUseCase', () => {
   // Nota: isActive = true para el flujo feliz; los tests de inactividad
   // crean un objeto con isActive = false.
   const mockUser = new User(
-    'user-uuid', // id
-    '+584141234567', // phone
+    'user-uuid',
+    '+584141234567',
     null, // email
-    'hashed_pass', // passwordHash
-    'Test User', // fullName
+    'hashed_pass',
+    'Test User',
     null, // cedula
     'passenger', // role
-    null, // jwtKey (se rotará en login)
+    null, // associationId ← ¡faltaba!
+    null, // jwtKey
     null, // qrCode
     null, // qrKey
     1, // qrVersion
     'normal', // category
     false, // studentDocApproved
-    true, // isActive ← clave: usuario activo
+    true, // isActive
     null, // deletedAt
     null, // lastLoginAt
     new Date(), // createdAt

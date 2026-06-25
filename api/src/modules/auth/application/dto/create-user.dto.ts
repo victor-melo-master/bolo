@@ -46,13 +46,14 @@ import { UserRole, UserCategory } from '../../domain/entities/user.entity';
 // (NestJS/class-validator/Swagger).
 export class CreateUserDto {
   // ─── Campos obligatorios ──────────────────────────────────────────────────
-  phone: string;          // Número telefónico (identificador único del usuario)
-  password: string;       // Contraseña en texto plano (se hashea antes de persistir)
-  fullName: string;       // Nombre completo para mostrar en perfiles y comunicaciones
-  role: UserRole;         // Rol del usuario: 'passenger' | 'driver' | 'admin'
+  phone: string; // Número telefónico (identificador único del usuario)
+  password: string; // Contraseña en texto plano (se hashea antes de persistir)
+  fullName: string; // Nombre completo para mostrar en perfiles y comunicaciones
+  role: UserRole; // Rol del usuario: 'passenger' | 'driver' | 'admin'
   category: UserCategory; // Categoría: 'normal' | 'estudiante' etc.
 
   // ─── Campos opcionales ────────────────────────────────────────────────────
-  email?: string;         // Correo electrónico (opcional, útil para recuperación)
-  cedula?: string;        // Cédula de identidad (opcional, requerida para ciertos roles)
+  email?: string; // Correo electrónico (opcional, útil para recuperación)
+  cedula?: string; // Cédula de identidad (opcional, requerida para ciertos roles)
+  associationId?: string; // Id de la asociacion a la que pertenece el usuario (opcional, requerido para ciertos roles)
 }

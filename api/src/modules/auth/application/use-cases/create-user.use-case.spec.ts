@@ -17,6 +17,7 @@
  *   ✓ Flujo feliz: validación → hash → persistencia → wallet → retorno
  *   ✓ Error: teléfono duplicado lanza UserAlreadyExistsException y NO persiste
  *   ✓ Resiliencia: wallet opcional falla pero el registro continúa
+ *   ✓ Nuevo: associationId se propaga a la entidad User creada
  *
  * @module CreateUserUseceTests
  */
@@ -36,6 +37,10 @@ import { CryptoService } from '../../../../shared/application/services/crypto.se
 import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 // Entidad User usada para construir el objeto que retorna userRepo.save()
 import { User } from '../../domain/entities/user.entity';
+import {
+  UserCategory,
+  UserRole,
+} from '../../infrastructure/orm/user.orm-entity';
 
 // describe: agrupa todos los tests del caso de uso CreateUserUseCase
 describe('CreateUserUseCase', () => {
@@ -107,12 +112,13 @@ describe('CreateUserUseCase', () => {
         'hashed_password',
         dto.fullName,
         dto.cedula,
-        dto.role,
-        null,
-        null,
-        null, // jwtKey, qrCode, qrKey
+        dto.role as UserRole,
+        null, // associationId
+        null, // jwtKey
+        null, // qrCode
+        null, // qrKey
         1, // qrVersion
-        dto.category,
+        dto.category as UserCategory,
         false, // studentDocApproved
         true, // isActive
         null, // deletedAt
@@ -161,6 +167,7 @@ describe('CreateUserUseCase', () => {
         dto.fullName,
         null,
         'passenger',
+        null, // associationId
         null,
         null,
         null,
@@ -206,6 +213,7 @@ describe('CreateUserUseCase', () => {
         dto.fullName,
         null,
         'passenger',
+        null, // associationId
         null,
         null,
         null,
@@ -229,5 +237,32 @@ describe('CreateUserUseCase', () => {
     expect(result).toBeDefined();
     // Verificar que se intentó crear la wallet aunque haya fallado
     expect(walletService.createWallet).toHaveBeenCalled();
+  });
+
+  // ── Test 4: Asociación a cooperativa ───────────────────────────────────────
+  // Verifica que el campo associationId se pasa correctamente a la entidad User
+  // cuando se crea un usuario (por ejemplo, un admin de asociación).
+  // Añadido tras la inclusión de la columna association_id en auth.users.
+  it('should pass associationId to User.create', async () => {
+    const dto = {
+      phone: '+584141234567',
+      password: 'Test1234',
+      fullName: 'User',
+      role: 'association_admin' as any,
+      category: 'normal' as any,
+      associationId: 'some-uuid', // ← campo añadido
+    };
+
+    userRepo.findByPhone.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed');
+    // Capturar el usuario que se pasa a save para inspeccionarlo después
+    userRepo.save.mockImplementation((user: User) => Promise.resolve(user));
+
+    await useCase.execute(dto);
+
+    // Extraer el primer argumento de la llamada a save (la entidad User)
+    const savedUser: User = userRepo.save.mock.calls[0][0];
+    // Verificar que el campo associationId se propagó correctamente
+    expect(savedUser.associationId).toBe('some-uuid');
   });
 });

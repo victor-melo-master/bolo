@@ -17,11 +17,14 @@
  */
 
 // Decoradores de NestJS para definir rutas y extraer parámetros de la URL
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, UseGuards } from '@nestjs/common';
 // Se importa CreateUserUseCase por compatibilidad con el módulo, aunque
 // todavía no se usa directamente; se reemplazará por GetUserUseCase en el futuro
 import { CreateUserUseCase } from '../../application/use-cases/create-user.use-case';
-
+import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
+import { RolesGuard } from '../../../../shared/infrastructure/auth/roles.guard';
+import { Roles } from '../../../../shared/interfaces/decorators/roles.decorator';
+import { CreateUserDto } from '../../application/dto/create-user.dto';
 // Prefijo base: todas las rutas empiezan con /users
 @Controller('users')
 export class UserController {
@@ -36,7 +39,17 @@ export class UserController {
   //   2. Un DTO de respuesta (posiblemente reutilizar UserResponseDto)
   //   3. Protección con JwtAuthGuard para usuarios autenticados
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string) {
     return { message: 'Get user endpoint', id };
+  }
+
+  @Post('admins')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin')
+  async createAssociationAdmin(@Body() dto: CreateUserDto) {
+    // Forzar rol para garantizar que solo se creen association_admin por esta vía
+    dto.role = 'association_admin';
+    // associationId queda como null (el admin creará su asociación después)
+    return this.createUserUseCase.execute(dto);
   }
 }

@@ -99,6 +99,7 @@ export class CreateUserUseCase {
       isActive: true, // usuario activo por defecto al registrarse
       deletedAt: null, // soft-delete: null significa no eliminado
       lastLoginAt: null, // aún no ha iniciado sesión
+      associationId: dto.associationId ?? null, // Id de la asociacion a la que pertenece el usuario (opcional, requerido para ciertos roles)
     });
 
     // Paso 4 — Persistencia: guardar la entidad en la base de datos mediante el

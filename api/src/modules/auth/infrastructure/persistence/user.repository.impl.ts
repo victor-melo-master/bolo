@@ -82,6 +82,7 @@ export class UserRepositoryImpl implements UserRepositoryPort {
     ormUser.fullName = user.fullName;
     ormUser.cedula = user.cedula;
     ormUser.role = user.role;
+    ormUser.associationId = user.associationId ?? null;
     ormUser.jwtKey = user.jwtKey;
     ormUser.qrCode = user.qrCode;
     ormUser.qrKey = user.qrKey;
@@ -108,6 +109,7 @@ export class UserRepositoryImpl implements UserRepositoryPort {
       ormUser.fullName,
       ormUser.cedula,
       ormUser.role,
+      ormUser.associationId,
       ormUser.jwtKey,
       ormUser.qrCode,
       ormUser.qrKey,

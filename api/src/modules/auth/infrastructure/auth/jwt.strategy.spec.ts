@@ -38,7 +38,8 @@ describe('JwtStrategy', () => {
     'Test User',
     null,
     'passenger',
-    'current-jwt-key', // jwtKey: clave actual del usuario
+    null, // associationId ← añadir
+    'current-jwt-key', // jwtKey ← debe ser string, no null
     null,
     null,
     1,
@@ -100,7 +101,9 @@ describe('JwtStrategy', () => {
       userRepo.findById.mockResolvedValue(mockUser);
 
       const key = await (strategy as any).resolveSecretKey(token);
-      expect(userRepo.findById).toHaveBeenCalledWith('user-id');
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      const findByIdMock = userRepo.findById as jest.Mock;
+      expect(findByIdMock).toHaveBeenCalledWith('user-id');
       expect(key).toBe('current-jwt-key');
     });
 
@@ -128,7 +131,7 @@ describe('JwtStrategy', () => {
       // o se le revocaron todas las sesiones activas)
       const token = createFakeToken({ sub: 'user-id' });
       const userWithoutKey = { ...mockUser, jwtKey: null };
-      userRepo.findById.mockResolvedValue(userWithoutKey as any);
+      userRepo.findById.mockResolvedValue(userWithoutKey);
 
       await expect((strategy as any).resolveSecretKey(token)).rejects.toThrow(
         'Usuario no encontrado o sin llave',
