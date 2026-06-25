@@ -27,6 +27,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+// Estados posibles de una solicitud de afiliación:
+//   - pending:  solicitud enviada, pendiente de revisión por el admin
+//   - approved: solicitud aprobada, el conductor queda afiliado
+//   - rejected: solicitud rechazada, con el motivo en rejectionReason
 export type DriverRequestStatus = 'pending' | 'approved' | 'rejected';
 
 // @Entity asigna la tabla 'driver_requests' en el esquema 'auth'.
@@ -65,6 +69,9 @@ export class DriverRequestOrmEntity {
   @Column({ type: 'text', name: 'rejection_reason', nullable: true })
   rejectionReason: string | null;
 
+  // CreateDateColumn: TypeORM asigna automáticamente la fecha de creación.
+  // Se usa clock_timestamp() de PostgreSQL (hora real del reloj en cada
+  // llamada) en lugar de NOW() que es constante dentro de una transacción.
   @CreateDateColumn({
     type: 'timestamptz',
     name: 'created_at',
@@ -72,6 +79,8 @@ export class DriverRequestOrmEntity {
   })
   createdAt: Date;
 
+  // UpdateDateColumn: TypeORM actualiza automáticamente este campo en cada
+  // modificación del registro (UPDATE), también con clock_timestamp()
   @UpdateDateColumn({
     type: 'timestamptz',
     name: 'updated_at',

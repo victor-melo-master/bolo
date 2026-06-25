@@ -1,4 +1,4 @@
-// src/modules/auth/interfaces/dto/index.ts
+// src/modules/auth/interfaces/dto/index.ts — Ruta relativa desde src/
 /**
  * Barrel exports para DTOs de validación/Swagger del módulo auth.
  *

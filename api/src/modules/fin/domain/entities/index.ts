@@ -11,7 +11,11 @@
  */
 
 export { Wallet } from './wallet.entity';
-export { Transaction, TransactionType, TransactionStatus } from './transaction.entity';
+export {
+  Transaction,
+  TransactionType,
+  TransactionStatus,
+} from './transaction.entity';
 export { ExchangeRate } from './exchange-rate.entity';
 export { CoopFare } from './coop-fare.entity';
 export { SagaState, SagaStatus, SagaStep } from './saga-state.entity';

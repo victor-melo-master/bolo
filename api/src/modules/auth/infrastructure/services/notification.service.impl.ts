@@ -43,7 +43,11 @@ export class NotificationServiceImpl implements NotificationServicePort {
 
   // Notificación push: actualmente solo imprime en consola.
   // En producción: integrar con Firebase Cloud Messaging (FCM).
-  async sendPushNotification(userId: string, title: string, body: string): Promise<void> {
+  async sendPushNotification(
+    userId: string,
+    title: string,
+    body: string,
+  ): Promise<void> {
     console.log(`Sending push to user ${userId}: ${title}`);
   }
 }

@@ -21,59 +21,58 @@
  * @see ILogger
  */
 
-// Importa el puerto ILogger para implementar el contrato de logging de la aplicación
-import { ILogger } from '../../application/ports/logger.port';
-// Importa la librería Winston 3 para logging estructurado con múltiples transportes
-import * as winston from 'winston';
+// ─── Importaciones ───
+import { ILogger } from '../../application/ports/logger.port'; // Puerto ILogger: contrato que esta clase implementa
+import * as winston from 'winston'; // Winston 3: librería de logging con múltiples transportes
 
-// Implementación concreta del puerto ILogger usando Winston
+// ─── Implementación concreta del puerto ILogger usando Winston 3 ───
+// Esta clase es el adaptador de infraestructura que conecta el contrato ILogger
+// (capa de aplicación) con Winston (librería externa). Sigue el patrón Puerto-Adaptador.
 export class WinstonLogger implements ILogger {
-  // Instancia interna del logger de Winston
-  private logger: winston.Logger;
+  private logger: winston.Logger; // Instancia interna del logger de Winston configurada en el constructor
 
-  // Configura Winston al construir la instancia: nivel, formato y transportes
+  // Constructor: configura Winston con nivel, formato JSON y tres transportes de salida
   constructor() {
     this.logger = winston.createLogger({
-      // Nivel mínimo de logging; se puede configurar vía variable de entorno LOG_LEVEL, default 'info'
+      // Nivel mínimo de logging: se lee de LOG_LEVEL (default 'info').
+      // Niveles disponibles: error, warn, info, http, verbose, debug, silly
       level: process.env.LOG_LEVEL || 'info',
-      // Combina formato de timestamp ISO con salida JSON estructurada
+      // Formato combinado: timestamp ISO 8601 + salida JSON estructurada para facilitar
+      // el parseo por sistemas centralizados de logs (ELK, Loki, Datadog, etc.)
       format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
+        winston.format.timestamp(), // Agrega campo @timestamp con la hora actual en formato ISO
+        winston.format.json(), // Serializa el mensaje como objeto JSON
       ),
-      // Transportes: consola + archivo de errores + archivo combinado
+      // Transportes definen DÓNDE se escriben los logs
       transports: [
-        // Salida a consola para todos los niveles (útil en desarrollo y Docker)
-        new winston.transports.Console(),
-        // Archivo error.log solo para nivel 'error' (facilita revisión de errores)
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        // Archivo combined.log con todos los niveles para auditoría completa
-        new winston.transports.File({ filename: 'combined.log' }),
+        new winston.transports.Console(), // Consola: útil en desarrollo y Docker (stdout/stderr)
+        new winston.transports.File({ filename: 'error.log', level: 'error' }), // error.log: solo errores, para revisión rápida de fallos
+        new winston.transports.File({ filename: 'combined.log' }), // combined.log: todos los niveles, para auditoría completa
       ],
     });
   }
 
-  // Registra un mensaje informativo; context indica el módulo que origina el log
+  // Nivel INFO: operaciones normales del sistema
   log(message: string, context?: string): void {
-    this.logger.info(message, { context });
+    this.logger.info(message, { context }); // context identifica el módulo/clase que origina el log
   }
 
-  // Registra un error; trace lleva el stack trace y context el módulo origen
+  // Nivel ERROR: fallos críticos que requieren atención
   error(message: string, trace?: string, context?: string): void {
-    this.logger.error(message, { trace, context });
+    this.logger.error(message, { trace, context }); // trace contiene el stack trace del error
   }
 
-  // Registra una advertencia; context indica el módulo que origina el log
+  // Nivel WARN: situaciones anómalas pero no críticas
   warn(message: string, context?: string): void {
     this.logger.warn(message, { context });
   }
 
-  // Registra mensaje de depuración para diagnóstico durante desarrollo
+  // Nivel DEBUG: diagnóstico detallado solo visible en desarrollo
   debug(message: string, context?: string): void {
     this.logger.debug(message, { context });
   }
 
-  // Registra mensaje detallado para trazas finas de diagnóstico
+  // Nivel VERBOSE: trazas muy finas para depuración profunda
   verbose(message: string, context?: string): void {
     this.logger.verbose(message, { context });
   }

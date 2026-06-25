@@ -11,7 +11,15 @@
  */
 
 export { WalletOrmEntity } from './wallet.orm-entity';
-export { TransactionOrmEntity, TransactionOrmType, TransactionOrmStatus } from './transaction.orm-entity';
+export {
+  TransactionOrmEntity,
+  TransactionOrmType,
+  TransactionOrmStatus,
+} from './transaction.orm-entity';
 export { ExchangeRateOrmEntity } from './exchange-rate.orm-entity';
 export { CoopFareOrmEntity } from './coop-fare.orm-entity';
-export { SagaStateOrmEntity, SagaOrmStatus, SagaOrmStep } from './saga-state.orm-entity';
+export {
+  SagaStateOrmEntity,
+  SagaOrmStatus,
+  SagaOrmStep,
+} from './saga-state.orm-entity';

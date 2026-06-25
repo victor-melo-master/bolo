@@ -13,16 +13,17 @@
  */
 
 // ─── Excepción de dominio: Acceso no autorizado ───
-// Extiende Error (y no UnauthorizedException de NestJS) para evitar que la capa de dominio
-// dependa de frameworks externos. El filtro global de excepciones traduce este error a
-// HTTP 401 (no autenticado) o 403 (sin permisos) según el contexto.
+// Extiende Error (NO UnauthorizedException de NestJS) para mantener la capa de dominio
+// pura y sin acoplamientos a infraestructura. AllExceptionsFilter atrapa esta excepción
+// y retorna HTTP 401 (no autenticado) o 403 (sin permisos) según el contexto de la aplicación.
 export class UnauthorizedException extends Error {
-  // El mensaje por defecto es propositalmente genérico por seguridad;
-  // los casos de uso pueden agregar detalles solo para logs internos.
+  // message: por defecto es genérico ("Unauthorized access") por razones de seguridad —
+  // no se deben exponer detalles internos al cliente. Cada caso de uso puede personalizar
+  // el mensaje para logs internos sin exponer información sensible al usuario final.
   constructor(message: string = 'Unauthorized access') {
-    super(message);
-    // Establece el nombre explícitamente para preservar el tipo tras la transpilación
-    // y permitir que el filtro de excepciones lo identifique con instanceof.
+    super(message); // Pasa el mensaje al constructor de Error para que esté disponible en .message y .stack
+    // this.name se asigna explícitamente para preservar el nombre de la clase tras la transpilación
+    // de TypeScript a JavaScript, garantizando que instanceof UnauthorizedException funcione correctamente
     this.name = 'UnauthorizedException';
   }
 }

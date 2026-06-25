@@ -19,47 +19,53 @@
  * @module AllExceptionsFilter
  */
 
-// Importa las interfaces y clases necesarias de NestJS para el filtro de excepciones
+// ─── Importaciones de NestJS ───
 import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
+  ExceptionFilter, // Interfaz que deben implementar los filtros de excepción de NestJS
+  Catch, // Decorador que indica qué tipo(s) de excepción capturar
+  ArgumentsHost, // Contexto de ejecución (HTTP, RPC, WebSockets)
+  HttpException, // Clase base para excepciones HTTP de NestJS (BadRequestException, NotFoundException, etc.)
+  HttpStatus, // Enumeración de códigos HTTP estándar (200, 400, 401, 404, 500, etc.)
 } from '@nestjs/common';
-// Importa los tipos Request y Response de Express para tipar el contexto HTTP
-import { Request, Response } from 'express';
+// ─── Tipos de Express para el contexto HTTP ───
+import { Request, Response } from 'express'; // Request y Response de Express para acceder a la URL y enviar la respuesta JSON
 
-// Decorador @Catch() sin argumentos: captura cualquier excepción sin importar su tipo
+// ─── Filtro global de excepciones — Captura TODAS las excepciones no manejadas ───
+// @Catch() sin argumentos: captura cualquier excepción (Error, HttpException, excepciones de dominio, etc.)
+// Si se especificara @Catch(HttpException) solo capturaría HttpException y sus subclases.
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  // Método obligatorio de ExceptionFilter; exception es el error lanzado, host el contexto de ejecución
+  // Método obligatorio de la interfaz ExceptionFilter
+  // exception: el error lanzado (unknown porque puede ser cualquier tipo)
+  // host: ArgumentsHost que permite acceder al contexto de ejecución (HTTP, RPC, etc.)
   catch(exception: unknown, host: ArgumentsHost) {
-    // Cambia al contexto HTTP para acceder a request y response de Express
-    const ctx = host.switchToHttp();
-    // Obtiene el objeto Response para enviar la respuesta de error
-    const response = ctx.getResponse<Response>();
-    // Obtiene el objeto Request para incluir la ruta en la respuesta de error
-    const request = ctx.getRequest<Request>();
+    const ctx = host.switchToHttp(); // Cambia al contexto HTTP para acceder a Request/Response
+    const response = ctx.getResponse<Response>(); // Objeto Response de Express para enviar la respuesta de error
+    const request = ctx.getRequest<Request>(); // Objeto Request de Express para obtener la URL que originó el error
 
-    // Determina el código HTTP: si es HttpException usa su código, si no, 500 Internal Server Error
+    // Determina el código HTTP de respuesta:
+    // - Si la excepción es una HttpException de NestJS, usa su código de estado (ej: 400, 404, 401)
+    // - Si es una excepción desconocida (incluyendo NotFoundException y UnauthorizedException de dominio),
+    //   retorna 500 Internal Server Error (a menos que un guardia las traduzca antes)
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // Determina el mensaje: si es HttpException usa su mensaje, si no, mensaje genérico
+    // Determina el mensaje de error:
+    // - Para HttpException usa el mensaje original de la excepción
+    // - Para excepciones desconocidas usa un mensaje genérico de seguridad
     const message =
       exception instanceof HttpException
         ? exception.message
         : 'Internal server error';
 
-    // Envía respuesta JSON estandarizada con código, timestamp, ruta y mensaje de error
+    // Envía la respuesta JSON estandarizada con los campos acordados para toda la API
     response.status(status).json({
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      message,
+      statusCode: status, // Código HTTP numérico (400, 404, 500, etc.)
+      timestamp: new Date().toISOString(), // Momento exacto del error en formato ISO 8601
+      path: request.url, // Ruta que originó el error para facilitar el debugging
+      message, // Descripción legible del error
     });
   }
 }

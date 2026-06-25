@@ -18,8 +18,9 @@
  * @module trip/index
  */
 
-// Stub: el módulo de viajes (trip) está pendiente de implementación.
-// Este barrel exporta vacío para que la resolución de módulos funcione.
+// ─── Stub: Módulo de Viajes (Pendiente de implementación) ───
+// Este barrel exporta vacío para que la resolución de módulos de NestJS no falle
+// al encontrar la ruta de importación. El módulo completo está por implementarse.
 // Se planea implementar:
 //
 //   - Entidad Trip: viajes con origen/destino real (dirección + coordenadas),

@@ -23,26 +23,26 @@
  * @see ICache
  */
 
-// Importa la clase Redis de ioredis para la conexión con Redis 7
-import { Redis } from 'ioredis';
+// ─── Importación de ioredis ───
+import { Redis } from 'ioredis'; // ioredis: cliente Redis con soporte para Redis 7, cluster, Sentinel y pipelining
 
-// Cliente singleton de Redis que reusa una única conexión en toda la aplicación
+// ─── Cliente Singleton de Redis 7 — Patrón Singleton ───
+// Implementa el puerto ICache (ver cache.port.ts) utilizando ioredis.
+// El patrón Singleton garantiza que toda la aplicación reutilice la misma conexión Redis,
+// evitando el agotamiento de conexiones y simplificando la configuración.
 export class RedisClient {
-  // Almacena la instancia única de Redis (patrón Singleton)
-  private static instance: Redis;
+  private static instance: Redis; // Almacena la instancia única de la conexión Redis (compartida globalmente)
 
-  // Retorna la instancia única, creándola si aún no existe
+  // Retorna la instancia única del cliente Redis, creándola si es la primera vez que se invoca
   static getInstance(): Redis {
-    // Si aún no se ha creado la instancia, la inicializa con la configuración de conexión
+    // Si instance es null/undefined, se crea la conexión con la configuración de entorno
     if (!RedisClient.instance) {
       RedisClient.instance = new Redis({
-        // Host de Redis, por defecto localhost para desarrollo local
-        host: process.env.REDIS_HOST || 'localhost',
-        // Puerto de Redis, por defecto 6379 (puerto estándar de Redis)
-        port: parseInt(process.env.REDIS_PORT || '6379'),
+        host: process.env.REDIS_HOST || 'localhost', // Host de Redis (variable REDIS_HOST o localhost por defecto)
+        port: parseInt(process.env.REDIS_PORT || '6379'), // Puerto de Redis (variable REDIS_PORT o 6379 por defecto)
       });
     }
-    // Retorna la instancia única ya existente o recién creada
+    // Retorna la instancia única existente o la recién creada
     return RedisClient.instance;
   }
 }

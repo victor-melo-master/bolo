@@ -1,4 +1,4 @@
-// src/modules/auth/interfaces/rest/index.ts
+// src/modules/auth/interfaces/rest/index.ts — Ruta relativa desde src/
 /**
  * Barrel exports para controladores REST del módulo auth.
  *

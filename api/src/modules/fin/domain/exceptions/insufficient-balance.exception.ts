@@ -20,10 +20,14 @@ export class InsufficientBalanceException extends Error {
   public readonly currentBalance: number;
   public readonly requiredAmount: number;
 
-  constructor(walletId: string, currentBalance: number, requiredAmount: number) {
+  constructor(
+    walletId: string,
+    currentBalance: number,
+    requiredAmount: number,
+  ) {
     super(
       `Insufficient balance in wallet ${walletId}: ` +
-      `current=${currentBalance}, required=${requiredAmount}`,
+        `current=${currentBalance}, required=${requiredAmount}`,
     );
     this.name = 'InsufficientBalanceException';
     this.walletId = walletId;

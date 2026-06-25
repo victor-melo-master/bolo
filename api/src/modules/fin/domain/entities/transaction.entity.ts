@@ -79,18 +79,18 @@ export class Transaction {
     metadata?: Record<string, unknown>,
   ): Transaction {
     return new Transaction(
-      crypto.randomUUID(),    // Genera UUID v4 único
-      walletId,               // Billetera asociada
-      type,                   // Tipo de operación
-      amount,                 // Monto en centavos
-      currency,               // Moneda ISO 4217
-      TransactionStatus.PENDING,  // Toda transacción nueva empieza como PENDING
-      referenceId ?? null,    // ID de referencia externa opcional
-      description ?? null,    // Descripción opcional
-      metadata ?? null,       // Metadatos opcionales
-      1,                      // version: 1 — primera versión
-      new Date(),             // createdAt: momento de creación
-      new Date(),             // updatedAt: igual a createdAt inicialmente
+      crypto.randomUUID(), // Genera UUID v4 único
+      walletId, // Billetera asociada
+      type, // Tipo de operación
+      amount, // Monto en centavos
+      currency, // Moneda ISO 4217
+      TransactionStatus.PENDING, // Toda transacción nueva empieza como PENDING
+      referenceId ?? null, // ID de referencia externa opcional
+      description ?? null, // Descripción opcional
+      metadata ?? null, // Metadatos opcionales
+      1, // version: 1 — primera versión
+      new Date(), // createdAt: momento de creación
+      new Date(), // updatedAt: igual a createdAt inicialmente
     );
   }
 

@@ -73,10 +73,10 @@ export class SagaState {
       crypto.randomUUID(),
       sagaId,
       step,
-      SagaStatus.PENDING,     // Todo paso nuevo empieza como PENDING
+      SagaStatus.PENDING, // Todo paso nuevo empieza como PENDING
       payload ?? null,
-      null,                   // error: null inicialmente
-      1,                      // version: 1
+      null, // error: null inicialmente
+      1, // version: 1
       new Date(),
       new Date(),
     );
@@ -85,40 +85,60 @@ export class SagaState {
   // Marca el paso como COMPLETED (ejecutado exitosamente).
   complete(): SagaState {
     return new SagaState(
-      this.id, this.sagaId, this.step,
+      this.id,
+      this.sagaId,
+      this.step,
       SagaStatus.COMPLETED,
-      this.payload, null,                       // Limpia el error si existía
-      this.version + 1, this.createdAt, new Date(),
+      this.payload,
+      null, // Limpia el error si existía
+      this.version + 1,
+      this.createdAt,
+      new Date(),
     );
   }
 
   // Marca el paso como FAILED con un mensaje de error.
   fail(error: string): SagaState {
     return new SagaState(
-      this.id, this.sagaId, this.step,
+      this.id,
+      this.sagaId,
+      this.step,
       SagaStatus.FAILED,
-      this.payload, error,
-      this.version + 1, this.createdAt, new Date(),
+      this.payload,
+      error,
+      this.version + 1,
+      this.createdAt,
+      new Date(),
     );
   }
 
   // Inicia la compensación del paso (deshacer la operación).
   compensate(): SagaState {
     return new SagaState(
-      this.id, this.sagaId, this.step,
+      this.id,
+      this.sagaId,
+      this.step,
       SagaStatus.COMPENSATING,
-      this.payload, null,
-      this.version + 1, this.createdAt, new Date(),
+      this.payload,
+      null,
+      this.version + 1,
+      this.createdAt,
+      new Date(),
     );
   }
 
   // Marca la compensación como completada.
   compensated(): SagaState {
     return new SagaState(
-      this.id, this.sagaId, this.step,
+      this.id,
+      this.sagaId,
+      this.step,
       SagaStatus.COMPENSATED,
-      this.payload, null,
-      this.version + 1, this.createdAt, new Date(),
+      this.payload,
+      null,
+      this.version + 1,
+      this.createdAt,
+      new Date(),
     );
   }
 }

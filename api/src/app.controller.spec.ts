@@ -11,27 +11,33 @@
  * @module test/app.controller.spec
  */
 
-import { Test, TestingModule } from '@nestjs/testing';  // Utilidad de NestJS para crear módulos de testing aislados
+// ─── Importaciones de NestJS Testing ───
+import { Test, TestingModule } from '@nestjs/testing'; // Test.createTestingModule: crea un módulo NestJS aislado sin servidor HTTP real
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+// describe: agrupa tests relacionados con AppController
 describe('AppController', () => {
-  let appController: AppController;
+  let appController: AppController; // Instancia del controlador bajo prueba
 
+  // beforeEach: se ejecuta antes de cada test, asegurando un módulo de testing fresco
   beforeEach(async () => {
-    // Se compila un módulo de testing con solo el controlador y su servicio (sin infraestructura real)
+    // Test.createTestingModule compila un módulo mínimo con solo controlador y provider necesarios
+    // No se importa infraestructura real (sin TypeORM, sin Redis), lo que hace el test rápido y aislado
     const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
+      controllers: [AppController], // Controlador a probar
+      providers: [AppService], // Servicio que depende el controlador
     }).compile();
 
-    // Se obtiene la instancia del controlador desde el contenedor de inyección de dependencias del módulo de testing
+    // app.get<T>(Tipo) recupera la instancia del controlador desde el contenedor DI del módulo de testing
     appController = app.get<AppController>(AppController);
   });
 
+  // describe('root'): agrupa tests del endpoint raíz
   describe('root', () => {
+    // it define un caso de prueba individual con descripción legible
     it('should return "Hello World!"', () => {
-      // Se verifica que el método getHello() del controlador retorne el mensaje esperado
+      // expect(..).toBe(..): verifica que el valor retornado sea exactamente el esperado
       expect(appController.getHello()).toBe('Hello World!');
     });
   });

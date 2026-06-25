@@ -15,17 +15,22 @@
  * @module AppController
  */
 
-import { Controller, Get } from '@nestjs/common';  // Controller = decorador de clase, Get = decorador de método
-import { AppService } from './app.service';          // Servicio inyectado para separar lógica del enrutamiento
+// ─── Importaciones de NestJS ───
+import { Controller, Get } from '@nestjs/common'; // @Controller: decorador de clase para definir un controlador REST; @Get: decorador de método para GET
+import { AppService } from './app.service'; // AppService: lógica del endpoint raíz, inyectada por constructor
 
-@Controller()   // @Controller() sin prefijo significa que responde en la raíz (GET /)
+// @Controller() sin argumento de prefijo: todas las rutas de este controlador cuelgan de la raíz (GET /)
+@Controller()
 export class AppController {
-  // Inyección por constructor: AppService se resuelve automáticamente desde el contenedor IoC
+  // Inyección de dependencias por constructor: AppService se resuelve automáticamente desde el contenedor IoC de NestJS
+  // `private readonly` crea e inicializa la propiedad this.appService automáticamente
   constructor(private readonly appService: AppService) {}
 
-  @Get()        // Decorador que asocia este método al verbo HTTP GET
+  // @Get() sin ruta adicional: asocia este método al verbo HTTP GET en la ruta raíz (GET /)
+  @Get()
   getHello(): string {
-    // Delega la lógica al servicio, manteniendo el controlador como un adaptador delgado
+    // Delega la lógica al servicio en lugar de implementarla directamente en el controlador
+    // Esto mantiene el controlador como un adaptador delgado (thin controller) y la lógica reutilizable
     return this.appService.getHello();
   }
 }

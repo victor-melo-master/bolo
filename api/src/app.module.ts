@@ -23,15 +23,22 @@
  * @module AppModule
  */
 
-import { Module } from '@nestjs/common'; // Decorador @Module para definir módulos NestJS
-import { TypeOrmModule } from '@nestjs/typeorm'; // Módulo de integración TypeORM para NestJS
-import { AuthModule } from './modules/auth/infrastructure/auth.module'; // Único módulo funcional implementado
-import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config'; // Config compartida de PostgreSQL
-import { ConfigModule } from '@nestjs/config'; // Módulo para variables de entorno
-import { AppController } from './app.controller'; // Controlador raíz (GET /)
-import { AppService } from './app.service'; // Servicio raíz
-import { FinModule } from './modules/fin/infrastructure/fin.module';
-import { OpsModule } from './modules/ops/infrastructure/ops.module';
+// ─── Módulos base de NestJS ───
+import { Module } from '@nestjs/common'; // @Module: decorador que define un módulo NestJS con imports, controllers y providers
+import { TypeOrmModule } from '@nestjs/typeorm'; // TypeOrmModule.forRoot(): integración de TypeORM con NestJS para PostgreSQL
+import { ConfigModule } from '@nestjs/config'; // ConfigModule.forRoot(): carga variables de entorno y las expone globalmente
+
+// ─── Módulos funcionales del monolito ───
+import { AuthModule } from './modules/auth/infrastructure/auth.module'; // Autenticación (JWT, usuarios, roles, asociaciones)
+import { FinModule } from './modules/fin/infrastructure/fin.module'; // Módulo financiero (billetera digital, tarifas, transacciones)
+import { OpsModule } from './modules/ops/infrastructure/ops.module'; // Módulo operativo (rutas, geolocalización, gestión de flota)
+
+// ─── Configuración compartida ───
+import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config'; // Configuración de TypeORM: host, puerto, credenciales, entidades
+
+// ─── Controladores y servicios del módulo raíz ───
+import { AppController } from './app.controller'; // Controlador raíz: responde en GET / con "Hello World!"
+import { AppService } from './app.service'; // Servicio raíz: lógica del endpoint de bienvenida
 
 @Module({
   imports: [

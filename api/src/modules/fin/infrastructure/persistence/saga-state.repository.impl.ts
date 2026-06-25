@@ -1,18 +1,42 @@
+// src/modules/fin/infrastructure/persistence/saga-state.repository.impl.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * SagaStateRepositoryImpl — Implementación TypeORM del Puerto SagaStateRepositoryPort
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Implementa el puerto de repositorio SagaStateRepositoryPort usando
+ * TypeORM como mecanismo de persistencia.
+ *
+ * Mapea entre la entidad de dominio SagaState y la entidad ORM
+ * SagaStateOrmEntity.
+ *
+ * Capa: Infraestructura (fin/persistence)
+ *
+ * @see SagaStateRepositoryPort
+ */
+
+// ─── Importaciones de NestJS y TypeORM ───
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+// ─── Puertos de dominio ───
 import { SagaStateRepositoryPort } from '../../domain/interfaces/repositories/saga-state.repository.port';
+
+// ─── Entidades de dominio ───
 import {
   SagaState,
   SagaStatus,
   SagaStep,
 } from '../../domain/entities/saga-state.entity';
+
+// ─── Entidades ORM ───
 import { SagaStateOrmEntity } from '../orm/saga-state.orm-entity';
 
 @Injectable()
 export class SagaStateRepositoryImpl implements SagaStateRepositoryPort {
   constructor(
-    @InjectRepository(SagaStateOrmEntity)
+    @InjectRepository(SagaStateOrmEntity) // Inyecta el repositorio TypeORM específico para SagaStateOrmEntity
     private readonly repo: Repository<SagaStateOrmEntity>,
   ) {}
 
@@ -38,6 +62,8 @@ export class SagaStateRepositoryImpl implements SagaStateRepositoryPort {
     return this.toDomain(saved);
   }
 
+  // Convierte de entidad ORM a entidad de dominio (sentido BD → aplicación)
+  // Los enum se castean porque TypeORM los almacena como strings
   private toDomain(entity: SagaStateOrmEntity): SagaState {
     return new SagaState(
       entity.id,
@@ -52,11 +78,12 @@ export class SagaStateRepositoryImpl implements SagaStateRepositoryPort {
     );
   }
 
+  // Convierte de entidad de dominio a entidad ORM (sentido aplicación → BD)
   private toOrm(domain: SagaState): SagaStateOrmEntity {
     const entity = new SagaStateOrmEntity();
     entity.id = domain.id;
     entity.sagaId = domain.sagaId;
-    entity.step = domain.step as any;
+    entity.step = domain.step as any; // Cast entre enum de dominio y enum ORM
     entity.status = domain.status as any;
     entity.payload = domain.payload;
     entity.error = domain.error;

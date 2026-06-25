@@ -76,9 +76,17 @@ export class TransactionOrmEntity {
   @Column({ type: 'int', default: 1 })
   version: number;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at', default: () => 'clock_timestamp()' })
+  @CreateDateColumn({
+    type: 'timestamptz',
+    name: 'created_at',
+    default: () => 'clock_timestamp()',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at', default: () => 'clock_timestamp()' })
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    name: 'updated_at',
+    default: () => 'clock_timestamp()',
+  })
   updatedAt: Date;
 }

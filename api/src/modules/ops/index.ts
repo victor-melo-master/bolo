@@ -17,6 +17,8 @@
  * @module ops/index
  */
 
+// ─── Barrel Exports ───
+
 // Stub: el módulo de operaciones (ops) está pendiente de implementación.
 // Este barrel exporta vacío para que la resolución de módulos funcione.
 // Se planea implementar:

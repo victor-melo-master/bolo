@@ -37,7 +37,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // la clave JWT específica del usuario al verificar cada token.
     // Se usa @Inject con el token del puerto en lugar del tipo directamente
     // para respetar el desacoplamiento de Arquitectura Hexagonal.
-    @Inject(USER_REPOSITORY_PORT) private readonly userRepo: UserRepositoryPort,
+    @Inject(USER_REPOSITORY_PORT)
+    private readonly userRepo: UserRepositoryPort,
   ) {
     super({
       // Extrae el token JWT del header HTTP Authorization con formato Bearer
@@ -113,6 +114,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // No es async porque es una transformación síncrona del payload decodificado.
   // El payload ya fue validado por Passport (firma, expiración), así que es
   // seguro asumir que contiene los campos esperados (sub, phone, role).
+  // El parámetro 'payload' es el JWT decodificado, tipado como any porque
+  // Passport no infiere el tipo; contiene sub, phone, role y associationId.
   validate(payload: any) {
     // Retorna el objeto que se inyectará en req.user en los controladores
     // protegidos. Solo se exponen los datos necesarios para la autorización:

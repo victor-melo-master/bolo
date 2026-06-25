@@ -10,6 +10,7 @@
 ## 1. RESUMEN DEL PROYECTO
 
 **BOLO API** es el backend monolítico modular de una plataforma de transporte de pasajeros con:
+
 - Billetera digital y pagos
 - Tracking GPS en tiempo real
 - Gestión de cooperativas y conductores
@@ -17,20 +18,20 @@
 
 ### Stack Tecnológico
 
-| Componente | Versión | Propósito |
-|---|---|---|
-| Node.js | 24 Alpine | Runtime |
-| NestJS | ^11.0 | Framework backend (DI, módulos, guards) |
-| TypeScript | ^5.7 | Lenguaje |
-| TypeORM | ^1.0 | ORM PostgreSQL |
-| PostgreSQL | 18 + PostGIS 3 | BD relacional + geoespacial |
-| Redis | 7 Alpine | Caché / sesiones / rate-limiting |
-| passport-jwt | ^4.0 | Autenticación JWT |
-| bcrypt | ^6.0 | Hashing de contraseñas |
-| class-validator | ^0.15 | Validación de DTOs |
-| Winston | ^3.19 | Logging estructurado |
-| ioredis | ^5.11 | Cliente Redis |
-| Jest | ^30.0 | Tests unitarios y e2e |
+| Componente      | Versión        | Propósito                               |
+| --------------- | -------------- | --------------------------------------- |
+| Node.js         | 24 Alpine      | Runtime                                 |
+| NestJS          | ^11.0          | Framework backend (DI, módulos, guards) |
+| TypeScript      | ^5.7           | Lenguaje                                |
+| TypeORM         | ^1.0           | ORM PostgreSQL                          |
+| PostgreSQL      | 18 + PostGIS 3 | BD relacional + geoespacial             |
+| Redis           | 7 Alpine       | Caché / sesiones / rate-limiting        |
+| passport-jwt    | ^4.0           | Autenticación JWT                       |
+| bcrypt          | ^6.0           | Hashing de contraseñas                  |
+| class-validator | ^0.15          | Validación de DTOs                      |
+| Winston         | ^3.19          | Logging estructurado                    |
+| ioredis         | ^5.11          | Cliente Redis                           |
+| Jest            | ^30.0          | Tests unitarios y e2e                   |
 
 ---
 
@@ -169,40 +170,50 @@ api/
 **Líneas:** 51
 **Patrón:** Módulo NestJS que importa `ConfigModule`, `TypeOrmModule`, `AuthModule` y `FinModule`.
 **Hallazgos importantes:**
+
 - ✅ `FinModule` ya está importado y activo (la documentación en `PROYECTO.md` lo marca como pendiente)
+- ✅ `OpsModule` también está importado y activo (con Route entity, CreateRouteUseCase)
 - ❌ `TripModule`, `AuditModule` siguen comentados (correcto)
 - ❌ Las entidades ORM en `typeorm.config.ts` ahora incluyen `WalletOrmEntity` (no estaba en la documentación original)
 
 ### 4.3 Shared — Capa Transversal
 
 #### `src/shared/domain/base.entity.ts`
+
 - **Estado:** Stub con campos `id`, `createdAt`, `updatedAt`
 - **Inconsistencia:** Ninguna entidad de dominio extiende `BaseEntity`. Las entidades actuales (User, Association, etc.) implementan sus propios campos directamente. `BaseEntity` es un esqueleto no utilizado.
 
 #### Value Objects en shared (`email.vo.ts`, `money.vo.ts`, `phone.vo.ts`)
+
 - **Estado:** Los 3 son TODOs sin implementación. Solo comentarios.
 - **Nota:** El módulo `fin` tiene su propio `Money` value object completo en `fin/domain/value-objects/money.vo.ts`. El de `shared` es un placeholder redundante.
 
 #### `src/shared/domain/exceptions/`
+
 - `NotFoundException` y `UnauthorizedException` extienden `Error` (dominio puro, sin dependencia de NestJS)
 - **Contraste con auth:** Las excepciones en `auth/domain/exceptions/` extienden `HttpException` de NestJS, no `Error`. Esto es una inconsistencia arquitectónica: unas son dominio puro, otras tienen dependencia de framework.
 
 #### `src/shared/application/services/crypto.service.ts`
+
 - **Estado:** Funcional. Usa bcrypt con costo 10.
 - **Nota:** Está ubicado en `shared/application/services` (capa de aplicación), lo cual es correcto según la arquitectura.
 
 #### `src/shared/infrastructure/database/typeorm.config.ts`
+
 - **Líneas:** 81
 - **Entidades registradas:** `UserOrmEntity`, `AssociationOrmEntity`, `DriverRequestOrmEntity`, `WalletOrmEntity`
 - **Nota:** `WalletOrmEntity` se importa desde `'src/modules/fin'` (path alias). Solo estas 4 entidades están registradas; las de `fin` (TransactionOrmEntity, etc.) NO están en la lista.
 
 #### `src/shared/infrastructure/logger/winston.logger.ts`
+
 - **Estado:** Funcional, implementa `ILogger`, escribe a consola + archivos.
 
 #### `src/shared/infrastructure/redis/redis.client.ts`
+
 - **Estado:** Singleton de ioredis. No implementa `ICache` directamente; expone la instancia de Redis.
 
 #### `src/shared/interfaces/decorators/`
+
 - `@CurrentUser`: Extrae `req.user` (funcional)
 - `@Roles`: Asigna metadatos (funcional, pero no hay `RolesGuard` implementado)
 
@@ -210,67 +221,67 @@ api/
 
 #### 4.4.1 Visión General
 
-| Archivos | Estado | Testing |
-|---|---|---|
+| Archivos    | Estado      | Testing          |
+| ----------- | ----------- | ---------------- |
 | 35 archivos | ✅ Completo | ✅ 10 spec files |
 
 #### 4.4.2 Dominio — Entidades
 
-| Entidad | Atributos | Método Factory |
-|---|---|---|
-| `User` | 18 readonly props | `User.create(data)` |
-| `Association` | 9 readonly props | `Association.create(data)` |
-| `DriverRequest` | 8 readonly props | `DriverRequest.create(data)` |
+| Entidad         | Atributos         | Método Factory               |
+| --------------- | ----------------- | ---------------------------- |
+| `User`          | 18 readonly props | `User.create(data)`          |
+| `Association`   | 9 readonly props  | `Association.create(data)`   |
+| `DriverRequest` | 8 readonly props  | `DriverRequest.create(data)` |
 
 **Patrón:** Todas usan `readonly` + constructor público con todos los campos + `static create()` con defaults.
 
 #### 4.4.3 Dominio — Puertos
 
-| Puerto | Token | Métodos |
-|---|---|---|
-| `UserRepositoryPort` | `USER_REPOSITORY_PORT` | findById, findByPhone, save, updateJwtKey |
-| `AssociationRepositoryPort` | `ASSOCIATION_REPOSITORY_PORT` | findById, findByRif, save |
+| Puerto                        | Token                            | Métodos                                    |
+| ----------------------------- | -------------------------------- | ------------------------------------------ |
+| `UserRepositoryPort`          | `USER_REPOSITORY_PORT`           | findById, findByPhone, save, updateJwtKey  |
+| `AssociationRepositoryPort`   | `ASSOCIATION_REPOSITORY_PORT`    | findById, findByRif, save                  |
 | `DriverRequestRepositoryPort` | `DRIVER_REQUEST_REPOSITORY_PORT` | findById, findByDriverAndAssociation, save |
-| `NotificationServicePort` | `NOTIFICATION_SERVICE_PORT` | sendEmail, sendSms |
-| `WalletServicePort` | `WALLET_SERVICE_PORT` | createWallet |
+| `NotificationServicePort`     | `NOTIFICATION_SERVICE_PORT`      | sendEmail, sendSms                         |
+| `WalletServicePort`           | `WALLET_SERVICE_PORT`            | createWallet                               |
 
 **Patrón:** Token string + interfaz TypeScript. Todos los tokens son strings únicos.
 
 #### 4.4.4 Dominio — Excepciones
 
-| Excepción | Extiende | Código HTTP |
-|---|---|---|
-| `InvalidCredentialsException` | `UnauthorizedException` (NestJS) | 401 |
-| `UserAlreadyExistsException` | `ConflictException` (NestJS) | 409 |
-| `UserNotFoundException` | `NotFoundException` (NestJS) | 404 |
+| Excepción                     | Extiende                         | Código HTTP |
+| ----------------------------- | -------------------------------- | ----------- |
+| `InvalidCredentialsException` | `UnauthorizedException` (NestJS) | 401         |
+| `UserAlreadyExistsException`  | `ConflictException` (NestJS)     | 409         |
+| `UserNotFoundException`       | `NotFoundException` (NestJS)     | 404         |
 
 **Inconsistencia:** Estas excepciones extienden `HttpException` de NestJS, no las excepciones de dominio puras de `shared/domain/exceptions/`. Esto acopla el dominio a NestJS.
 
 #### 4.4.5 Aplicación — Casos de Uso
 
-| Caso de Uso | Dependencias | Flujo |
-|---|---|---|
-| `CreateUserUseCase` | UserRepo, CryptoService, WalletService (opt) | validate phone → hash → create → save → create wallet |
-| `LoginUseCase` | UserRepo, CryptoService, JwtService | find → compare → check active → rotate key → sign token |
+| Caso de Uso         | Dependencias                                 | Flujo                                                   |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------- |
+| `CreateUserUseCase` | UserRepo, CryptoService, WalletService (opt) | validate phone → hash → create → save → create wallet   |
+| `LoginUseCase`      | UserRepo, CryptoService, JwtService          | find → compare → check active → rotate key → sign token |
 
 **Patrón:** `@Injectable()` + `@Inject(TOKEN)` para puertos + `@Optional()` para dependencias no esenciales.
 
 #### 4.4.6 Infraestructura — ORM
 
-| ORM Entity | Tabla | Esquema |
-|---|---|---|
-| `UserOrmEntity` | users | auth |
-| `AssociationOrmEntity` | associations | auth |
-| `DriverRequestOrmEntity` | driver_requests | auth |
+| ORM Entity               | Tabla           | Esquema |
+| ------------------------ | --------------- | ------- |
+| `UserOrmEntity`          | users           | auth    |
+| `AssociationOrmEntity`   | associations    | auth    |
+| `DriverRequestOrmEntity` | driver_requests | auth    |
 
 **Patrón:** Decoradores TypeORM + snake_case en BD, camelCase en TS.
 
 #### 4.4.7 Infraestructura — Repositorios
 
-| Repositorio | Puerto | DI Token |
-|---|---|---|
-| `UserRepositoryImpl` | `UserRepositoryPort` | `USER_REPOSITORY_PORT` |
-| `AssociationRepositoryImpl` | `AssociationRepositoryPort` | `ASSOCIATION_REPOSITORY_PORT` |
+| Repositorio                   | Puerto                        | DI Token                         |
+| ----------------------------- | ----------------------------- | -------------------------------- |
+| `UserRepositoryImpl`          | `UserRepositoryPort`          | `USER_REPOSITORY_PORT`           |
+| `AssociationRepositoryImpl`   | `AssociationRepositoryPort`   | `ASSOCIATION_REPOSITORY_PORT`    |
 | `DriverRequestRepositoryImpl` | `DriverRequestRepositoryPort` | `DRIVER_REQUEST_REPOSITORY_PORT` |
 
 **Patrón:** `@Injectable()` + `@InjectRepository()` + mappers `toDomain()` / `toOrm()` privados.
@@ -282,113 +293,116 @@ api/
 
 #### 4.4.9 Interfaces — Controladores
 
-| Controlador | Endpoints | Estado |
-|---|---|---|
-| `AuthController` | POST /auth/register, POST /auth/login, GET /auth/profile | ✅ Funcional |
-| `UserController` | GET /users/:id | ⚠️ Placeholder (retorna mock) |
-| `AssociationController` | GET /associations/:id, POST /associations | ⚠️ Placeholder |
+| Controlador             | Endpoints                                                | Estado                        |
+| ----------------------- | -------------------------------------------------------- | ----------------------------- |
+| `AuthController`        | POST /auth/register, POST /auth/login, GET /auth/profile | ✅ Funcional                  |
+| `UserController`        | GET /users/:id                                           | ⚠️ Placeholder (retorna mock) |
+| `AssociationController` | GET /associations/:id, POST /associations                | ⚠️ Placeholder                |
 
 **Patrón:** Controladores delgados que convierten DTOs de interfaz → DTOs de aplicación.
 
 #### 4.4.10 Interfaces — DTOs
 
-| DTO | Validación | Swagger |
-|---|---|---|
-| `RegisterDto` | ✅ class-validator completo | ✅ @ApiProperty |
-| `LoginDto` | ✅ class-validator básico | ✅ @ApiProperty |
-| `UserResponseDto` | ❌ Solo datos | ✅ @ApiProperty |
+| DTO               | Validación                  | Swagger         |
+| ----------------- | --------------------------- | --------------- |
+| `RegisterDto`     | ✅ class-validator completo | ✅ @ApiProperty |
+| `LoginDto`        | ✅ class-validator básico   | ✅ @ApiProperty |
+| `UserResponseDto` | ❌ Solo datos               | ✅ @ApiProperty |
 
 ### 4.5 Módulo Fin — Análisis Completo
 
 #### 4.5.1 Visión General
 
-| Archivos | Estado | Testing |
-|---|---|---|
+| Archivos    | Estado                    | Testing              |
+| ----------- | ------------------------- | -------------------- |
 | 46 archivos | ⚠️ Parcial (varios stubs) | ⚠️ Solo 4 spec files |
 
 #### 4.5.2 Dominio — Entidades (✅ Completas)
 
-| Entidad | Campos clave | Métodos |
-|---|---|---|
-| `Wallet` | balance, debtBalance, creditUsed, currency, version | `Wallet.create()` |
-| `Transaction` | type (enum), amount, status, referenceId | `create()`, `complete()`, `fail()`, `reverse()` |
-| `ExchangeRate` | fromCurrency, toCurrency, rate, validFrom/Until | `isEffective()`, `convert()` |
-| `CoopFare` | baseFare, perKmRate, active | `calculateTripCost()`, `deactivate()` |
-| `SagaState` | sagaId, step, status | `complete()`, `fail()`, `compensate()`, `compensated()` |
+| Entidad        | Campos clave                                        | Métodos                                                 |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------- |
+| `Wallet`       | balance, debtBalance, creditUsed, currency, version | `Wallet.create()`                                       |
+| `Transaction`  | type (enum), amount, status, referenceId            | `create()`, `complete()`, `fail()`, `reverse()`         |
+| `ExchangeRate` | fromCurrency, toCurrency, rate, validFrom/Until     | `isEffective()`, `convert()`                            |
+| `CoopFare`     | baseFare, perKmRate, active                         | `calculateTripCost()`, `deactivate()`                   |
+| `SagaState`    | sagaId, step, status                                | `complete()`, `fail()`, `compensate()`, `compensated()` |
 
 **Patrón consistente:** Todas inmutables (readonly), con método `static create()` factory y métodos que retornan nuevas instancias.
 
 #### 4.5.3 Dominio — Value Objects (✅ Completo solo Money)
 
-| VO | Estado | Operaciones |
-|---|---|---|
+| VO      | Estado       | Operaciones                                                                                          |
+| ------- | ------------ | ---------------------------------------------------------------------------------------------------- |
 | `Money` | ✅ Funcional | fromCents, fromDecimal, add, subtract, multiply, toDecimal, isZero, isNegative, isGreaterThanOrEqual |
 
 #### 4.5.4 Dominio — Excepciones (✅ Completas)
 
-| Excepción | Extiende | Campos extra |
-|---|---|---|
-| `InsufficientBalanceException` | `Error` | walletId, currentBalance, requiredAmount |
-| `WalletNotFoundException` | `Error` | identifier |
-| `TransactionFailedException` | `Error` | reason, transactionId |
+| Excepción                      | Extiende | Campos extra                             |
+| ------------------------------ | -------- | ---------------------------------------- |
+| `InsufficientBalanceException` | `Error`  | walletId, currentBalance, requiredAmount |
+| `WalletNotFoundException`      | `Error`  | identifier                               |
+| `TransactionFailedException`   | `Error`  | reason, transactionId                    |
 
 **Nota:** Estas extienden `Error` (dominio puro), a diferencia de auth que extiende `HttpException`. Son consistentes con `shared/domain/exceptions/`.
 
 #### 4.5.5 Aplicación — Casos de Uso (⚠️ Parcial)
 
-| Caso de Uso | Estado |
-|---|---|
-| `CreateWalletUseCase` | ✅ Funcional (39 líneas) |
-| `DepositUseCase` | ❌ STUB (archivo vacío, 1 línea) |
-| `WithdrawUseCase` | ❌ STUB (archivo vacío, 1 línea) |
-| `ProcessPaymentUseCase` | ❌ STUB (archivo vacío, 1 línea) |
-| `GetBalanceUseCase` | ❌ STUB (archivo vacío, 1 línea) |
+| Caso de Uso             | Estado                                              |
+| ----------------------- | --------------------------------------------------- |
+| `CreateWalletUseCase`   | ✅ Funcional (39 líneas)                            |
+| `CreateCoopFareUseCase` | ✅ Funcional (51 líneas)                            |
+| `DepositUseCase`        | ❌ STUB (archivo vacío, 1 línea)                    |
+| `WithdrawUseCase`       | ❌ STUB (archivo vacío, 1 línea)                    |
+| `ProcessPaymentUseCase` | ❌ STUB (archivo vacío, 1 línea)                    |
+| `GetBalanceUseCase`     | ❌ STUB (archivo vacío, 1 línea)                    |
+| `CreateCoopFareUseCase` | ✅ Funcional (valida tasa de cambio + nombre único) |
 
-**Hallazgo crítico:** Solo `CreateWalletUseCase` está implementado. Los otros 4 son archivos vacíos. La documentación (`DOCUMENTACION.md`) los describe como implementados, pero en realidad no lo están.
+**Hallazgo crítico:** Solo `CreateWalletUseCase` y `CreateCoopFareUseCase` están implementados. Los otros 4 son archivos vacíos. La documentación (`DOCUMENTACION.md`) los describe como implementados, pero en realidad no lo están.
 
 #### 4.5.6 Infraestructura — ORM (✅ 5 entidades completas)
 
-| ORM Entity | Tabla | Esquema |
-|---|---|---|
-| `WalletOrmEntity` | wallets | fin |
-| `TransactionOrmEntity` | transactions | fin |
-| `ExchangeRateOrmEntity` | exchange_rates | fin |
-| `CoopFareOrmEntity` | coop_fares | fin |
-| `SagaStateOrmEntity` | saga_states | fin |
+| ORM Entity              | Tabla          | Esquema |
+| ----------------------- | -------------- | ------- |
+| `WalletOrmEntity`       | wallets        | fin     |
+| `TransactionOrmEntity`  | transactions   | fin     |
+| `ExchangeRateOrmEntity` | exchange_rates | fin     |
+| `CoopFareOrmEntity`     | coop_fares     | fin     |
+| `SagaStateOrmEntity`    | saga_states    | fin     |
 
 #### 4.5.7 Infraestructura — Repositorios (✅ 5 implementaciones completas)
 
-| Repositorio | Puerto |
-|---|---|
-| `WalletRepositoryImpl` | `WalletRepositoryPort` |
-| `TransactionRepositoryImpl` | `TransactionRepositoryPort` |
+| Repositorio                  | Puerto                       |
+| ---------------------------- | ---------------------------- |
+| `WalletRepositoryImpl`       | `WalletRepositoryPort`       |
+| `TransactionRepositoryImpl`  | `TransactionRepositoryPort`  |
 | `ExchangeRateRepositoryImpl` | `ExchangeRateRepositoryPort` |
-| `CoopFareRepositoryImpl` | `CoopFareRepositoryPort` |
-| `SagaStateRepositoryImpl` | `SagaStateRepositoryPort` |
+| `CoopFareRepositoryImpl`     | `CoopFareRepositoryPort`     |
+| `SagaStateRepositoryImpl`    | `SagaStateRepositoryPort`    |
 
 **Patrón:** Consistentes con auth — `@Injectable()`, `@InjectRepository()`, mappers toDomain/toOrm.
 
 #### 4.5.8 Infraestructura — Servicio (⚠️ Parcial)
 
-| Servicio | Puerto | Estado |
-|---|---|---|
+| Servicio            | Puerto              | Estado                                      |
+| ------------------- | ------------------- | ------------------------------------------- |
 | `WalletServiceImpl` | `WalletServicePort` | ⚠️ Funcional (solo createWallet, 13 líneas) |
 
 **Nota:** El `WalletServiceImpl` solo implementa `createWallet()`. Los demás métodos del puerto (`getBalance`, `deposit`, `withdraw`, `processPayment`, `getWallet`) no están implementados.
 
 #### 4.5.9 Interfaces — Controladores (⚠️ Parcial)
 
-| Controlador | Endpoints | Estado |
-|---|---|---|
-| `WalletController` | POST /fin/wallets | ✅ Funcional (19 líneas) |
-| `TransactionController` | (ninguno) | ❌ STUB (archivo vacío, 7 líneas) |
+| Controlador             | Endpoints            | Estado                            |
+| ----------------------- | -------------------- | --------------------------------- |
+| `WalletController`      | POST /fin/wallets    | ✅ Funcional (19 líneas)          |
+| `CoopFareController`    | POST /fin/coop-fares | ✅ Funcional (32 líneas)          |
+| `TransactionController` | (ninguno)            | ❌ STUB (archivo vacío, 7 líneas) |
 
 #### 4.5.10 Interfaces — DTOs (⚠️ Sin validación)
 
-| DTO | Estado | class-validator |
-|---|---|---|
-| `DepositDto` | ⚠️ Sin decoradores | ❌ |
-| `TransferDto` | ⚠️ Sin decoradores | ❌ |
+| DTO           | Estado             | class-validator |
+| ------------- | ------------------ | --------------- |
+| `DepositDto`  | ⚠️ Sin decoradores | ❌              |
+| `TransferDto` | ⚠️ Sin decoradores | ❌              |
 
 **Hallazgo:** La documentación en `PROYECTO.md` ya registra esto como pendiente: "Agregar decoradores class-validator a DepositDto y TransferDto".
 
@@ -408,13 +422,15 @@ api/
 
 **Hallazgo:** FinModule solo registra `WalletOrmEntity`, `WalletRepositoryImpl`, `WalletServiceImpl` y `CreateWalletUseCase`. Las otras 4 entidades ORM (Transaction, ExchangeRate, CoopFare, SagaState) y sus repositorios NO están registrados en el módulo. Esto es porque el módulo está en construcción.
 
-### 4.6 Módulos Stub
+### 4.6 Módulos — Estado General
 
-| Módulo | Archivo | Funcionalidad planeada |
-|---|---|---|
-| `audit` | `index.ts` (38 líneas TODO) | Log inmutable de acciones críticas con triggers BD |
-| `ops` | `index.ts` (34 líneas TODO) | CRUD de rutas, vehículos, asignaciones |
-| `trip` | `index.ts` (40 líneas TODO) | Viajes, pagos, tracking GPS con WebSockets |
+| Módulo  | Estado         | Archivos clave                                            |
+| ------- | -------------- | --------------------------------------------------------- |
+| `auth`  | ✅ Completo    | 35 archivos, 10 spec files                                |
+| `fin`   | 🔄 En progreso | Wallet + CoopFare + ExchangeRate, 2 use cases funcionales |
+| `ops`   | 🔄 En progreso | Route entity, OpsModule, 2 use cases, 2 controllers       |
+| `trip`  | ⏳ Stub        | `index.ts` (40 líneas TODO)                               |
+| `audit` | ⏳ Stub        | `index.ts` (38 líneas TODO)                               |
 
 ---
 
@@ -423,12 +439,14 @@ api/
 ### 5.1 `PROYECTO.md` (297 líneas)
 
 **Aciertos:**
+
 - Excelente overview del stack y arquitectura
 - Diagrama de capas hexagonal claro
 - Tablas de endpoints y estado de implementación
 - Detalle de esquemas de BD
 
 **Desactualizaciones:**
+
 - Dice "FinModule: ⚠️ PARCIAL → ✅ COMPLETO" pero en realidad varios archivos son stubs vacíos
 - Dice "WalletServiceImpl real reemplazó mock" — verdad, pero solo implementa createWallet
 - Menciona que DepositDto/TransferDto necesitan decoradores (✅ correcto, sigue pendiente)
@@ -437,11 +455,13 @@ api/
 ### 5.2 `DOCUMENTACION.md` (2352 líneas)
 
 **Aciertos:**
+
 - Documentación exhaustiva por archivo (∼108 archivos documentados)
 - Explica el "por qué" de cada decisión técnica
 - Captura typos y deudas técnicas (ej: logint.dto.ts)
 
 **Desactualizaciones:**
+
 - Describe `DepositUseCase`, `WithdrawUseCase`, `ProcessPaymentUseCase`, `GetBalanceUseCase` como implementados con código, pero los archivos reales están vacíos
 - Describe `TransactionController` con endpoints deposit y transfer, pero el archivo está vacío
 - Describe wallet.service.impl.ts con delegación a múltiples casos de uso, pero el archivo real solo tiene createWallet
@@ -450,9 +470,11 @@ api/
 ### 5.3 `README.md` (96 líneas)
 
 **Aciertos:**
+
 - README funcional con stack, endpoints, esquemas y scripts
 
 **Desactualizaciones:**
+
 - Dice fin "⚠️ Wallet entity + ORM (falta servicio real)" — ya hay WalletServiceImpl (parcial)
 - Faltan endpoints de fin (/fin/wallets) en la tabla
 
@@ -462,42 +484,42 @@ api/
 
 ### 6.1 Código vs Documentación
 
-| # | Hallazgo | Severidad |
-|---|---|---|
-| 1 | `DepositUseCase`, `WithdrawUseCase`, `ProcessPaymentUseCase`, `GetBalanceUseCase` son archivos VACÍOS pero la documentación los describe como implementados | 🔴 Alta |
-| 2 | `TransactionController` está vacío (sin endpoints) pero `DOCUMENTACION.md` describe deposit y transfer | 🔴 Alta |
-| 3 | `WalletServiceImpl` solo implementa `createWallet()`, no los demás métodos del puerto | 🟡 Media |
-| 4 | `FinModule` no registra las otras 4 entidades ORM ni sus repositorios | 🟡 Media |
-| 5 | `typeorm.config.ts` no lista todas las entidades de `fin` (solo WalletOrmEntity) | 🟡 Media |
+| #   | Hallazgo                                                                                                                                                    | Severidad |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 1   | `DepositUseCase`, `WithdrawUseCase`, `ProcessPaymentUseCase`, `GetBalanceUseCase` son archivos VACÍOS pero la documentación los describe como implementados | 🔴 Alta   |
+| 2   | `TransactionController` está vacío (sin endpoints) pero `DOCUMENTACION.md` describe deposit y transfer                                                      | 🔴 Alta   |
+| 3   | `WalletServiceImpl` solo implementa `createWallet()`, no los demás métodos del puerto                                                                       | 🟡 Media  |
+| 4   | `FinModule` no registra TransactionOrmEntity ni SagaStateOrmEntity (solo 3 de 5)                                                                            | 🟡 Media  |
+| 5   | `typeorm.config.ts` no lista todas las entidades de `fin` (solo WalletOrmEntity)                                                                            | 🟡 Media  |
 
 ### 6.2 Inconsistencias Arquitectónicas
 
-| # | Hallazgo | Severidad |
-|---|---|---|
-| 1 | Excepciones de auth extienden `HttpException` (NestJS), mientras que las de fin extienden `Error`. Inconsistencia en pureza del dominio | 🟡 Media |
-| 2 | `BaseEntity` en `shared` no es usado por ninguna entidad de dominio | 🟢 Baja |
-| 3 | Value Objects de `shared` son TODOs mientras `fin` tiene su propio Money completo. Hay duplicación conceptual | 🟢 Baja |
-| 4 | `NotificationServiceImpl` tiene método `sendPushNotification` que no está en el puerto `NotificationServicePort` | 🟢 Baja |
-| 5 | `CreateWalletUseCase` lanza `Error` genérico si la wallet ya existe, en lugar de una excepción de dominio específica | 🟢 Baja |
+| #   | Hallazgo                                                                                                                                | Severidad |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Excepciones de auth extienden `HttpException` (NestJS), mientras que las de fin extienden `Error`. Inconsistencia en pureza del dominio | 🟡 Media  |
+| 2   | `BaseEntity` en `shared` no es usado por ninguna entidad de dominio                                                                     | 🟢 Baja   |
+| 3   | Value Objects de `shared` son TODOs mientras `fin` tiene su propio Money completo. Hay duplicación conceptual                           | 🟢 Baja   |
+| 4   | `NotificationServiceImpl` tiene método `sendPushNotification` que no está en el puerto `NotificationServicePort`                        | 🟢 Baja   |
+| 5   | `CreateWalletUseCase` lanza `Error` genérico si la wallet ya existe, en lugar de una excepción de dominio específica                    | 🟢 Baja   |
 
 ### 6.3 Deudas Técnicas
 
-| # | Hallazgo | Severidad |
-|---|---|---|
-| 1 | `logint.dto.ts` — typo histórico en nombre de archivo (debería ser `login.dto.ts`) | 🟢 Baja |
-| 2 | `UserController` y `AssociationController` son placeholders con `CreateUserUseCase` inyectado pero no usado | 🟢 Baja |
-| 3 | No hay `RolesGuard` implementado para el decorador `@Roles()` | 🟢 Baja |
-| 4 | `DepositDto` y `TransferDto` sin decoradores class-validator | 🟡 Media |
-| 5 | Las excepciones de dominio de fin no son capturadas por el filtro global (extienden `Error`, no `HttpException`) | 🟡 Media |
+| #   | Hallazgo                                                                                                         | Severidad |
+| --- | ---------------------------------------------------------------------------------------------------------------- | --------- |
+| 1   | `logint.dto.ts` — typo histórico en nombre de archivo (debería ser `login.dto.ts`)                               | 🟢 Baja   |
+| 2   | `UserController` y `AssociationController` son placeholders con `CreateUserUseCase` inyectado pero no usado      | 🟢 Baja   |
+| 3   | No hay `RolesGuard` implementado para el decorador `@Roles()`                                                    | 🟢 Baja   |
+| 4   | `DepositDto` y `TransferDto` sin decoradores class-validator                                                     | 🟡 Media  |
+| 5   | Las excepciones de dominio de fin no son capturadas por el filtro global (extienden `Error`, no `HttpException`) | 🟡 Media  |
 
 ### 6.4 Cobertura de Tests
 
-| Módulo | Spec files | Cobertura |
-|---|---|---|
-| auth | 10 | ✅ Buena (use cases, repos, controllers, DTOs, strategy) |
-| fin | 4 | ⚠️ Baja (solo create-wallet use case, create-wallet dto, wallet repo, wallet service) |
-| shared | 1 | ⚠️ Mínima (solo crypto.service) |
-| e2e | 1 | ⚠️ Mínima (solo GET /) |
+| Módulo | Spec files | Cobertura                                                                             |
+| ------ | ---------- | ------------------------------------------------------------------------------------- |
+| auth   | 10         | ✅ Buena (use cases, repos, controllers, DTOs, strategy)                              |
+| fin    | 4          | ⚠️ Baja (solo create-wallet use case, create-wallet dto, wallet repo, wallet service) |
+| shared | 1          | ⚠️ Mínima (solo crypto.service)                                                       |
+| e2e    | 1          | ⚠️ Mínima (solo GET /)                                                                |
 
 ---
 
@@ -534,7 +556,9 @@ export class Entidad {
     // ... readonly fields
   ) {}
 
-  static create(data: Omit<Entidad, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Entidad {
+  static create(
+    data: Omit<Entidad, 'id' | 'createdAt' | 'updatedAt'> & { id?: string },
+  ): Entidad {
     return new Entidad(
       data.id ?? crypto.randomUUID(),
       // ... con defaults
@@ -570,8 +594,12 @@ export class RepoImpl implements RepoPort {
     return this.toDomain(saved);
   }
 
-  private toDomain(orm: OrmEntity): Entity { /* mapper */ }
-  private toOrm(domain: Entity): OrmEntity { /* mapper */ }
+  private toDomain(orm: OrmEntity): Entity {
+    /* mapper */
+  }
+  private toOrm(domain: Entity): OrmEntity {
+    /* mapper */
+  }
 }
 ```
 
@@ -589,8 +617,10 @@ export class RepoImpl implements RepoPort {
 1. **Implementar casos de uso faltantes de fin:** DepositUseCase, WithdrawUseCase, ProcessPaymentUseCase, GetBalanceUseCase
 2. **Implementar TransactionController** con endpoints deposit y transfer
 3. **Completar WalletServiceImpl** con los métodos faltantes del puerto
-4. **Agregar las 4 entidades ORM restantes y sus repositorios a FinModule**
-5. **Actualizar DOCUMENTACION.md** para reflejar el estado real del código
+4. **Registrar TransactionOrmEntity y SagaStateOrmEntity en FinModule** (ya existen como archivos)
+5. **Actualizar DOCUMENTACION.md** — ✅ Parcialmente actualizado (refleja estado real del código)
+
+> **Nota:** Los puntos 4 y 5 de la versión anterior de este análisis ya fueron abordados parcialmente: FinModule está integrado en app.module.ts, y DOCUMENTACION.md ha sido corregido para reflejar el estado real del código. Queda pendiente registrar TransactionOrmEntity y SagaStateOrmEntity en FinModule.
 
 ### 8.2 Prioridad Media
 
@@ -611,18 +641,19 @@ export class RepoImpl implements RepoPort {
 
 ## 9. ESTADÍSTICAS DEL PROYECTO
 
-| Métrica | Valor |
-|---|---|
-| Archivos totales en `src/` | 111 |
-| Archivos de código fuente | ∼85 |
-| Archivos de test (`*.spec.ts`) | ∼18 |
-| Archivos de documentación | 3 (PROYECTO.md, DOCUMENTACION.md, README.md) |
-| Archivos de configuración | 7 |
-| Archivos stub (vacíos/TODO) | ∼8 |
-| Líneas en DOCUMENTACION.md | 2,352 |
-| Líneas totales de código (est.) | ∼6,000 |
-| Módulos completos | 2 de 5 (auth, fin paricial) |
-| Módulos stub | 3 (audit, ops, trip) |
+| Métrica                         | Valor                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| Archivos totales en `src/`      | ~120                                                                              |
+| Archivos de código fuente       | ∼90                                                                               |
+| Archivos de test (`*.spec.ts`)  | ∼20                                                                               |
+| Archivos de documentación       | 5 (PROYECTO.md, DOCUMENTACION.md, README.md, ANALISIS.md, DOCUMENTATION_GUIDE.md) |
+| Archivos de configuración       | 7                                                                                 |
+| Archivos stub (vacíos/TODO)     | ∼6                                                                                |
+| Líneas en DOCUMENTACION.md      | ~2,400                                                                            |
+| Líneas totales de código (est.) | ∼6,500                                                                            |
+| Módulos completos               | 1 de 5 (auth)                                                                     |
+| Módulos en progreso             | 2 de 5 (fin, ops)                                                                 |
+| Módulos stub                    | 2 de 5 (audit, trip)                                                              |
 
 ---
 
@@ -630,9 +661,9 @@ export class RepoImpl implements RepoPort {
 
 La API BOLO es un proyecto NestJS bien estructurado que sigue **Arquitectura Hexagonal (Puertos y Adaptadores)** con una separación clara de capas. Los módulos `auth` y `shared` están completos y funcionales con buena cobertura de tests.
 
-El módulo `fin` tiene una base sólida (entidades de dominio, value objects, puertos, ORM entities, repositorios) pero los casos de uso y controladores están mayormente vacíos. La documentación existente (`DOCUMENTACION.md`) describe un estado más avanzado del que realmente tiene el código.
+El módulo `fin` tiene una base sólida (entidades de dominio, value objects, puertos, ORM entities, repositorios) pero los casos de uso y controladores están parcialmente implementados (2 de 6 casos de uso funcionales). El módulo `ops` ha avanzado con la entidad Route, su caso de uso y controlador, y está registrado en app.module.ts.
 
-Los módulos `audit`, `ops` y `trip` son stubs con planeación detallada en comentarios TODO.
+Los módulos `trip` y `audit` son stubs con planeación detallada en comentarios TODO.
 
 La documentación en el código fuente (JSDoc) es excelente: cada archivo tiene un bloque documentando su propósito, capa, dependencias y notas técnicas. Esto facilita enormemente el mantenimiento y la incorporación de nuevos desarrolladores.
 
@@ -834,6 +865,7 @@ Barrel que exporta InsufficientBalanceException, WalletNotFoundException, Transa
 **Qué hace:** Se lanza cuando el saldo disponible (incluyendo crédito de emergencia) no alcanza para la operación.
 
 **Bloques:**
+
 - Extiende `Error` (dominio puro, sin dependencia de NestJS).
 - Campos públicos adicionales: `walletId`, `currentBalance`, `requiredAmount` para debugging y respuesta al cliente.
 - Constructor formatea el mensaje: `"Insufficient balance in wallet {id}: current={x}, required={y}"`.
@@ -881,15 +913,16 @@ export type { WalletRepositoryPort } from './wallet.repository.port';
 
 Todos siguen el mismo patrón:
 
-| Archivo | Token | Métodos |
-|---|---|---|
-| `wallet.repository.port.ts` | `WALLET_REPOSITORY_PORT` | findById, findByUserId, save, update, delete |
-| `transaction.repository.port.ts` | `TRANSACTION_REPOSITORY_PORT` | findById, findByWalletId, save, update |
-| `exchange-rate.repository.port.ts` | `EXCHANGE_RATE_REPOSITORY_PORT` | findCurrent, findById, save |
-| `coop-fare.repository.port.ts` | `COOP_FARE_REPOSITORY_PORT` | findById, findByCooperativeId, save, update |
-| `saga-state.repository.port.ts` | `SAGA_STATE_REPOSITORY_PORT` | findById, findBySagaId, save, update |
+| Archivo                            | Token                           | Métodos                                      |
+| ---------------------------------- | ------------------------------- | -------------------------------------------- |
+| `wallet.repository.port.ts`        | `WALLET_REPOSITORY_PORT`        | findById, findByUserId, save, update, delete |
+| `transaction.repository.port.ts`   | `TRANSACTION_REPOSITORY_PORT`   | findById, findByWalletId, save, update       |
+| `exchange-rate.repository.port.ts` | `EXCHANGE_RATE_REPOSITORY_PORT` | findCurrent, findById, save                  |
+| `coop-fare.repository.port.ts`     | `COOP_FARE_REPOSITORY_PORT`     | findById, findByCooperativeId, save, update  |
+| `saga-state.repository.port.ts`    | `SAGA_STATE_REPOSITORY_PORT`    | findById, findBySagaId, save, update         |
 
 **Patrón común:**
+
 - Token string exportado como constante (ej: `export const WALLET_REPOSITORY_PORT = 'WalletRepositoryPort'`).
 - Interfaz con métodos asíncronos que trabajan con entidades de dominio (nunca con ORM entities).
 - Cada interfaz importa solo la entidad de dominio que le corresponde.
@@ -957,12 +990,12 @@ export { CreateWalletUseCase } from './create-wallet.use-case';
 
 #### 11.6.3 Archivos VACÍOS — Casos de Uso No Implementados
 
-| Archivo | Contenido |
-|---|---|
-| `deposit.use-case.ts` | Solo comentario de ruta `// src/modules/fin/application/use-cases/deposit.use-case.ts` |
-| `withdraw.use-case.ts` | Solo comentario de ruta |
-| `process-payment.use-case.ts` | Solo comentario de ruta |
-| `get-balance.use-case.ts` | Solo comentario de ruta |
+| Archivo                       | Contenido                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| `deposit.use-case.ts`         | Solo comentario de ruta `// src/modules/fin/application/use-cases/deposit.use-case.ts` |
+| `withdraw.use-case.ts`        | Solo comentario de ruta                                                                |
+| `process-payment.use-case.ts` | Solo comentario de ruta                                                                |
+| `get-balance.use-case.ts`     | Solo comentario de ruta                                                                |
 
 **Impacto:** Estos 4 archivos son archivos vacíos (1 línea cada uno). `DOCUMENTACION.md` los describe como si tuvieran implementación completa, pero el código real no tiene nada. Esto es el gap más crítico del módulo fin. Sin estos casos de uso, las operaciones básicas (depositar, retirar, pagar, consultar saldo) no existen.
 
@@ -1001,8 +1034,19 @@ currency?: string;
 **Qué hace:** DTO de respuesta para transacciones. Tiene enums duplicados de `TransactionType` y `TransactionStatus` (prefijo Dto para distinguirlos).
 
 ```typescript
-export enum TransactionTypeDto { DEPOSIT, WITHDRAWAL, PAYMENT, REFUND, FEE }
-export enum TransactionStatusDto { PENDING, COMPLETED, FAILED, REVERSED }
+export enum TransactionTypeDto {
+  DEPOSIT,
+  WITHDRAWAL,
+  PAYMENT,
+  REFUND,
+  FEE,
+}
+export enum TransactionStatusDto {
+  PENDING,
+  COMPLETED,
+  FAILED,
+  REVERSED,
+}
 ```
 
 **Observación:** Hay duplicación de enums: `TransactionType` en domain/entities, `TransactionTypeDto` en application/dto, y `TransactionOrmType` en infrastructure/orm. Esto es coherente con la arquitectura hexagonal (cada capa tiene sus propios tipos), pero aumenta el mantenimiento. Al agregar un nuevo tipo, hay que actualizar 3 archivos.
@@ -1056,6 +1100,7 @@ Barrel de ORM entities. Exporta las 5 entidades: WalletOrmEntity, TransactionOrm
 **Qué hace:** Mapeo para tabla `fin.transactions`.
 
 **Bloques clave:**
+
 - `type` como VARCHAR(20) en lugar de enum nativo PostgreSQL — más flexible, no requiere migrations de tipo ENUM.
 - `amount` como BIGINT (centavos).
 - `metadata` como JSONB nullable — datos dinámicos del gateway de pago.
@@ -1068,6 +1113,7 @@ Barrel de ORM entities. Exporta las 5 entidades: WalletOrmEntity, TransactionOrm
 **Qué hace:** Mapeo para tabla `fin.exchange_rates`.
 
 **Bloques clave:**
+
 - `rate` como `DECIMAL(18,8)` — precisión financiera: 18 dígitos totales, 8 decimales. Suficiente para tasas de cambio (ej: 1 USD = 4,350.12345678 VES).
 - `valid_from` / `valid_until` como timestamptz.
 
@@ -1078,6 +1124,7 @@ Barrel de ORM entities. Exporta las 5 entidades: WalletOrmEntity, TransactionOrm
 **Qué hace:** Mapeo para tabla `fin.coop_fares`.
 
 **Bloques clave:**
+
 - `base_fare` y `per_km_rate` como BIGINT (centavos).
 - `cooperative_id` referencia a `auth.associations.id` (relación entre esquemas).
 - `active` boolean — permite desactivar tarifas sin eliminar historial.
@@ -1089,6 +1136,7 @@ Barrel de ORM entities. Exporta las 5 entidades: WalletOrmEntity, TransactionOrm
 **Qué hace:** Mapeo para tabla `fin.saga_states`.
 
 **Bloques clave:**
+
 - `saga_id` UUID que agrupa todos los pasos de una transacción.
 - `step` como VARCHAR(30) con enum SagaOrmStep.
 - `payload` JSONB nullable.
@@ -1198,6 +1246,7 @@ export class WalletServiceImpl implements WalletServicePort {
 ```
 
 **Observación crítica:** Este servicio solo implementa `createWallet`. No tiene los métodos `getBalance`, `deposit`, `withdraw`, `processPayment`, `getWallet` que `WalletServicePort` debería tener según `DOCUMENTACION.md`. El puerto real (`WalletServicePort`) tampoco declara esos métodos — solo tiene `createWallet`. Cuando esos casos de uso se implementen, habrá que:
+
 1. Expandir `WalletServicePort` con los nuevos métodos.
 2. Implementarlos en `WalletServiceImpl`.
 3. Registrarlos en `FinModule`.
@@ -1268,6 +1317,7 @@ export class WalletController {
 ```
 
 **Bloques:**
+
 - Inyecta `WalletServicePort` (no el caso de uso directamente). Esto abstrae al controlador de los detalles de implementación.
 - Convierte el DTO de interfaz en parámetros del servicio.
 - Retorna mensaje de éxito (sin datos de la wallet creada).
@@ -1335,17 +1385,18 @@ export class TransferDto {
 
 ### 11.14 Tests del Módulo Fin
 
-| Archivo | Tests | Cobertura |
-|---|---|---|
-| `create-wallet.use-case.spec.ts` | 2 | Creación y error por duplicado |
-| `create-wallet.dto.spec.ts` | 3 | Validación, falta userId, moneda inválida |
-| `wallet.repository.impl.spec.ts` | 3 | Save, findByUserId (encontrado/no encontrado) |
-| `wallet.service.impl.spec.ts` | 2 | Delegación en use case, propagación de error |
-| `wallet.controller.spec.ts` | 2 | Creación exitosa, error propagado |
+| Archivo                          | Tests | Cobertura                                     |
+| -------------------------------- | ----- | --------------------------------------------- |
+| `create-wallet.use-case.spec.ts` | 2     | Creación y error por duplicado                |
+| `create-wallet.dto.spec.ts`      | 3     | Validación, falta userId, moneda inválida     |
+| `wallet.repository.impl.spec.ts` | 3     | Save, findByUserId (encontrado/no encontrado) |
+| `wallet.service.impl.spec.ts`    | 2     | Delegación en use case, propagación de error  |
+| `wallet.controller.spec.ts`      | 2     | Creación exitosa, error propagado             |
 
 **Total: 12 tests en 5 spec files.**
 
 **Faltan tests para:**
+
 - TransactionRepositoryImpl (0 tests)
 - ExchangeRateRepositoryImpl (0 tests)
 - CoopFareRepositoryImpl (0 tests)
@@ -1360,5 +1411,5 @@ export class TransferDto {
 
 ---
 
-*Documento generado el 2026-06-24 por el Analista Comentador.*
-*Basado en la revisión de 111 archivos fuente y 4 archivos de documentación.*
+_Documento generado el 2026-06-24 por el Analista Comentador._
+_Basado en la revisión de 111 archivos fuente y 4 archivos de documentación._

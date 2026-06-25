@@ -18,7 +18,9 @@ export class TransactionFailedException extends Error {
   public readonly reason: string;
 
   constructor(reason: string, transactionId?: string) {
-    super(`Transaction failed: ${reason}${transactionId ? ` (id: ${transactionId})` : ''}`);
+    super(
+      `Transaction failed: ${reason}${transactionId ? ` (id: ${transactionId})` : ''}`,
+    );
     this.name = 'TransactionFailedException';
     this.transactionId = transactionId ?? null;
     this.reason = reason;

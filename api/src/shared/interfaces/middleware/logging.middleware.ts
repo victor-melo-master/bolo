@@ -16,35 +16,31 @@
  * @module LoggingMiddleware
  */
 
-// Importa decoradores y clases de NestJS para crear un middleware inyectable
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-// Importa los tipos de Express para tipar el request, response y next function
-import { Request, Response, NextFunction } from 'express';
+// ─── Importaciones de NestJS ───
+import { Injectable, NestMiddleware, Logger } from '@nestjs/common'; // Injectable: registro en IoC; NestMiddleware: interfaz; Logger: logging nativo NestJS
+// ─── Tipos de Express ───
+import { Request, Response, NextFunction } from 'express'; // Request: petición entrante; Response: respuesta saliente; NextFunction: callback para continuar la cadena
 
-// Decorador que marca la clase como inyectable para el sistema DI de NestJS
+// @Injectable(): registra esta clase en el contenedor IoC para que NestJS pueda inyectarla como middleware global
 @Injectable()
 export class LoggingMiddleware implements NestMiddleware {
-  // Logger de NestJS con contexto 'HTTP' para identificar los logs de este middleware
-  private logger = new Logger('HTTP');
+  private logger = new Logger('HTTP'); // Logger con contexto 'HTTP' para identificar los mensajes de este middleware en los logs
 
-  // Método obligatorio de NestMiddleware; se ejecuta en cada petición entrante
+  // Método obligatorio de NestMiddleware: se ejecuta en cada petición entrante
+  // req: petición HTTP entrante; res: respuesta HTTP saliente; next: función que pasa el control al siguiente middleware
   use(req: Request, res: Response, next: NextFunction) {
-    // Extrae el método HTTP (GET, POST, etc.) y la URL original de la petición
-    const { method, originalUrl } = req;
-    // Toma la marca de tiempo justo antes de procesar la petición
-    const start = Date.now();
+    const { method, originalUrl } = req; // Extrae método (GET, POST, PUT, DELETE) y URL solicitada (ej: /api/auth/login)
+    const start = Date.now(); // Toma la marca de tiempo justo antes de procesar la petición
 
-    // Escucha el evento 'finish' de la respuesta (se dispara cuando la respuesta se envía al cliente)
+    // Escucha el evento 'finish' de la respuesta (se dispara automáticamente cuando Express envía la respuesta al cliente)
     res.on('finish', () => {
-      // Calcula la duración total de la petición en milisegundos
-      const duration = Date.now() - start;
-      // Registra método, ruta, código de estado y duración en un solo mensaje
+      const duration = Date.now() - start; // Calcula cuánto tardó la petición en milisegundos (incluye tiempo de procesamiento y DB)
+      // Registro estructurado: "GET /api/users 200 - 45ms"
       this.logger.log(
         `${method} ${originalUrl} ${res.statusCode} - ${duration}ms`,
       );
     });
 
-    // Llama a next() para pasar el control al siguiente middleware o manejador de ruta
-    next();
+    next(); // Llama a next() para continuar la cadena de middleware sin interrumpir el flujo de la petición
   }
 }

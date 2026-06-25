@@ -19,12 +19,12 @@
 export * from './domain/entities';
 // export * from './domain/value-objects';       // Pendiente de implementar
 // export * from './domain/exceptions';          // Pendiente de implementar
-export * from './domain/interfaces';             // Puertos (repositorios + servicios externos)
+export * from './domain/interfaces'; // Puertos (repositorios + servicios externos)
 
 // ─── Capa de Aplicación ───────────────────────────────────────
 // export * from './application/use-cases';      // Pendiente de implementar
-export * from './application/dto';               // Data Transfer Objects (ej. CreateUserDto)
+export * from './application/dto'; // Data Transfer Objects (ej. CreateUserDto)
 // export * from './application/services';       // Pendiente de implementar
 
 // ─── Capa de Infraestructura ──────────────────────────────────
-export * from './infrastructure/auth.module';    // Módulo raíz de NestJS para auth
+export * from './infrastructure/auth.module'; // Módulo raíz de NestJS para auth

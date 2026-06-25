@@ -20,9 +20,10 @@
  * @module audit/index
  */
 
-// Stub: el módulo de auditoría aún no tiene implementación concreta.
-// Este barrel exporta (vacío) para que el sistema de módulos de NestJS no falle
-// al resolver la ruta. Se planea implementar:
+// ─── Stub: Módulo de Auditoría (Pendiente de implementación) ───
+// Este barrel exporta vacío para que la resolución de módulos de NestJS no falle
+// al encontrar la ruta de importación. El módulo completo está por implementarse.
+// Se planea implementar:
 //
 //   - Entidad de dominio AuditEntry con campos: id, entityType, entityId, action,
 //     actorId, payload (JSONB), timestamp, ipAddress

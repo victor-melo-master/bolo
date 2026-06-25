@@ -23,8 +23,8 @@
 
 export class Money {
   private constructor(
-    public readonly amount: number,    // Monto en centavos (entero)
-    public readonly currency: string,  // Código ISO 4217 (3 letras, mayúsculas)
+    public readonly amount: number, // Monto en centavos (entero)
+    public readonly currency: string, // Código ISO 4217 (3 letras, mayúsculas)
   ) {
     if (!Number.isInteger(amount)) {
       throw new Error('Money amount must be in cents (integer)');

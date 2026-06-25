@@ -14,7 +14,10 @@
  * @module Email
  */
 
-// ─── Placeholder: Pendiente de implementación ───
-// Este archivo es un esqueleto (TODO) que se completará cuando se definan
-// los requisitos exactos de validación (formatos aceptados, reglas de negocio, etc.).
-// Mientras tanto, el sistema usa string directamente para los emails.
+// ─── Placeholder: Value Object de Email (Pendiente de implementación) ───
+// Este archivo es un esqueleto (TODO) que se implementará cuando se definan los
+// requisitos exactos de validación: formato regex (RFC 5322 simplificado o similar),
+// normalización a minúsculas, verificación de dominio MX (opcional), etc.
+// Mientras tanto, el sistema maneja los correos como string directamente en las
+// entidades y DTOs. La implementación futura garantizará inmutabilidad y validación
+// en el momento de construcción (fail-fast).

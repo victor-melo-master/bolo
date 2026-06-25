@@ -13,12 +13,15 @@
  * @module AppService
  */
 
-import { Injectable } from '@nestjs/common';  // @Injectable() registra la clase en el contenedor IoC para poder inyectarla
+// ─── Importaciones de NestJS ───
+import { Injectable } from '@nestjs/common'; // @Injectable(): registra la clase como provider en el contenedor IoC para inyección de dependencias
 
+// @Injectable() permite que AppService sea inyectado en cualquier controlador u otro servicio de NestJS
 @Injectable()
 export class AppService {
+  // Retorna el mensaje de bienvenida del endpoint raíz
+  // Placeholder: en el futuro podría redirigir a documentación Swagger o devolver metadata del sistema
   getHello(): string {
-    // Placeholder: retorna un mensaje simple. En producción podría redirigir a Swagger o devolver estado
     return 'Hello World!';
   }
 }

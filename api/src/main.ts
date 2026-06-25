@@ -17,15 +17,24 @@
  * @module main
  */
 
-import 'dotenv/config'; // Carga .env ANTES que nada para que todas las variables de entorno estén disponibles desde el inicio
-import { NestFactory } from '@nestjs/core'; // Fábrica que crea y configura la aplicación NestJS
-import { AppModule } from './app.module'; // Módulo raíz que orquesta todos los submódulos funcionales
+// ─── Carga de variables de entorno ───
+// dotenv/config se importa antes que cualquier otro módulo para que todas las variables
+// de entorno (DB_HOST, JWT_SECRET, etc.) estén disponibles desde la inicialización del
+// contenedor IoC de NestJS. Sin esto, TypeORM y otros módulos arrancarían sin configuración.
+import 'dotenv/config';
+// ─── NestJS: fábrica de aplicaciones ───
+// NestFactory.create() compila el módulo raíz y construye el árbol de dependencias completo
+import { NestFactory } from '@nestjs/core';
+// AppModule es el módulo raíz que importa TypeOrmModule, AuthModule, FinModule, OpsModule y ConfigModule
+import { AppModule } from './app.module';
 
+// Función de arranque asíncrona: NestJS requiere async porque la creación del contenedor es asíncrona
 async function bootstrap() {
-  // Se crea la aplicación compilando AppModule y resolviendo todo el árbol de dependencias
+  // NestFactory.create(AppModule) compila el módulo, resuelve dependencias e inicia el servidor HTTP interno
   const app = await NestFactory.create(AppModule);
-  // Se inicia el servidor HTTP en el puerto definido en PORT, o 3000 si no está definido
+  // app.listen() inicia el servidor Express/Koa subyacente en el puerto especificado
+  // process.env.PORT se define en docker-compose o .env; si no existe, usa 3000 como fallback de desarrollo
   await app.listen(process.env.PORT ?? 3000);
 }
-// Se ejecuta la función bootstrap para arrancar la aplicación
+// Se invoca bootstrap() al arrancar el proceso; Captura errores no manejados durante el inicio
 bootstrap();

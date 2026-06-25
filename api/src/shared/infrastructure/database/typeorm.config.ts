@@ -26,51 +26,49 @@
  * @see DataSourceOptions
  */
 
-// Importa el tipo de opciones de configuración para el DataSource de TypeORM
-import { DataSourceOptions } from 'typeorm';
-// Importa readFileSync para leer archivos de secretos montados por Docker/K8s
-import { readFileSync } from 'fs';
-// Entidades ORM del módulo auth que se registrarán en la conexión
-import { UserOrmEntity } from '../../../modules/auth/infrastructure/orm/user.orm-entity';
-import { AssociationOrmEntity } from '../../../modules/auth/infrastructure/orm/association.orm-entity';
-import { DriverRequestOrmEntity } from '../../../modules/auth/infrastructure/orm/driver-request.orm-entity';
-import { CoopFareOrmEntity, WalletOrmEntity } from 'src/modules/fin';
-import { RouteOrmEntity } from 'src/modules/ops/infrastructure/orm/route.orm-entity';
-import { ExchangeRateOrmEntity } from '../../../modules/fin/infrastructure/orm/exchange-rate.orm-entity';
+// ─── Tipos de TypeORM ───
+import { DataSourceOptions } from 'typeorm'; // Tipo para la configuración del DataSource (conexión a la base de datos)
+// ─── Sistema de archivos (lectura de secretos Docker/K8s) ───
+import { readFileSync } from 'fs'; // readFileSync: lee archivos de secretos montados en /run/secrets/ por Docker Swarm o K8s
+// ─── Entidades ORM registradas en la conexión ───
+import { UserOrmEntity } from '../../../modules/auth/infrastructure/orm/user.orm-entity'; // Usuarios del sistema (auth.users)
+import { AssociationOrmEntity } from '../../../modules/auth/infrastructure/orm/association.orm-entity'; // Cooperativas/asociaciones (auth.associations)
+import { DriverRequestOrmEntity } from '../../../modules/auth/infrastructure/orm/driver-request.orm-entity'; // Solicitudes de conductor (auth.driver_requests)
+import { WalletOrmEntity, CoopFareOrmEntity } from 'src/modules/fin'; // Billetera digital y tarifas por cooperativa (fin.*)
+import { RouteOrmEntity } from 'src/modules/ops/infrastructure/orm/route.orm-entity'; // Rutas predefinidas (ops.routes)
+import { ExchangeRateOrmEntity } from '../../../modules/fin/infrastructure/orm/exchange-rate.orm-entity'; // Tasas de cambio (fin.exchange_rates)
 
-// Lee un secreto desde archivo (Docker Swarm/K8s) o de variable de entorno como fallback
+// ─── Función auxiliar: leer secretos desde archivos Docker/K8s ───
+// Busca primero en un archivo de secreto montado por Docker Swarm o Kubernetes (ruta en variable fileEnvKey).
+// Si no existe el archivo o falla la lectura, usa la variable de entorno fallbackEnvKey como respaldo.
+// Esto permite el mismo código funcione tanto en producción orquestada como en desarrollo local.
 function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string {
-  // Obtiene la ruta del archivo de secreto desde la variable de entorno
-  const filePath = process.env[fileEnvKey];
+  const filePath = process.env[fileEnvKey]; // Obtiene la ruta del archivo de secreto desde una variable de entorno
   if (filePath) {
     try {
-      // Lee el archivo y elimina espacios/blancos alrededor del valor
-      return readFileSync(filePath, 'utf8').trim();
+      return readFileSync(filePath, 'utf8').trim(); // Lee el archivo completo y recorta espacios en blanco
     } catch {
-      // Si falla la lectura del archivo, muestra error pero continúa con el fallback
+      // Si el archivo no existe o no se puede leer (ej. permisos), se loggea el error
+      // pero se continúa con el fallback para no bloquear el arranque del servicio
       console.error(`Error reading secret from ${filePath}`);
     }
   }
-  // Retorna el valor de la variable de entorno de respaldo o cadena vacía si no existe
+  // Fallback a variable de entorno directa, o cadena vacía si ninguna está definida
   return process.env[fallbackEnvKey ?? ''] ?? '';
 }
 
-// Configuración exportada del DataSource de TypeORM para PostgreSQL
+// ─── Configuración del DataSource de TypeORM para PostgreSQL 18 + PostGIS 3 ───
+// Se exporta como constante para ser usada en AppModule (TypeOrmModule.forRoot(typeOrmConfig))
+// y también podría ser usada por TypeORM CLI para migraciones (data-source.ts).
 export const typeOrmConfig: DataSourceOptions = {
-  // Dialecto de base de datos: PostgreSQL
-  type: 'postgres',
-  // Host de la base de datos, por defecto localhost
-  host: process.env.DB_HOST ?? 'localhost',
-  // Puerto de PostgreSQL, por defecto 5432, convertido a número entero base 10
-  port: parseInt(process.env.DB_PORT ?? '5432', 10),
-  // Usuario de conexión, por defecto postgres
-  username: process.env.DB_USER ?? 'postgres',
-  // Contraseña: intenta desde archivo secreto primero, luego variable de entorno
-  password: readSecret('DB_PASSWORD_FILE', 'DB_PASSWORD'),
-  // Nombre de la base de datos, por defecto bolo
-  database: process.env.DB_NAME ?? 'bolo',
-  // Lista explícita de entidades registradas en esta conexión
+  type: 'postgres', // Dialecto de base de datos: PostgreSQL con extensiones PostGIS
+  host: process.env.DB_HOST ?? 'localhost', // Host de la base de datos (definido en .env o docker-compose)
+  port: parseInt(process.env.DB_PORT ?? '5432', 10), // Puerto PostgreSQL (por defecto 5432), parseado a entero base 10
+  username: process.env.DB_USER ?? 'postgres', // Usuario de conexión a la base de datos
+  password: readSecret('DB_PASSWORD_FILE', 'DB_PASSWORD'), // Contraseña: prioriza archivo secreto Docker, luego variable de entorno
+  database: process.env.DB_NAME ?? 'bolo', // Nombre de la base de datos (por defecto 'bolo')
   entities: [
+    // Lista explícita de entidades ORM registradas en esta conexión
     UserOrmEntity,
     AssociationOrmEntity,
     DriverRequestOrmEntity,
@@ -79,8 +77,10 @@ export const typeOrmConfig: DataSourceOptions = {
     ExchangeRateOrmEntity,
     RouteOrmEntity,
   ],
-  // sincronización automática deshabilitada: los cambios de esquema se manejan con migraciones manuales
+  // synchronize: false — DESHABILITADO en producción. Los cambios de esquema se controlan mediante
+  // migraciones manuales (init.sql, archivos SQL versionados) para evitar pérdida de datos.
   synchronize: false,
-  // En desarrollo solo se loggean errores y advertencias; en producción no hay logging de queries
+  // logging: en desarrollo solo se registran errores y advertencias de TypeORM para no saturar los logs;
+  // en producción se desactiva completamente el logging de TypeORM (se usa Winston en su lugar).
   logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : false,
 };

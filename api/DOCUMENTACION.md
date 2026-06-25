@@ -7,15 +7,16 @@
 ## `src/main.ts` — Punto de entrada (bootstrap)
 
 ```typescript
-import 'dotenv/config';                        // Carga .env ANTES que nada para que todas las variables de entorno estén disponibles
-import { NestFactory } from '@nestjs/core';    // Fábrica que crea el contenedor IoC de NestJS
-import { AppModule } from './app.module';      // Módulo raíz que importa toda la app
+import 'dotenv/config'; // Carga .env ANTES que nada para que todas las variables de entorno estén disponibles
+import { NestFactory } from '@nestjs/core'; // Fábrica que crea el contenedor IoC de NestJS
+import { AppModule } from './app.module'; // Módulo raíz que importa toda la app
 
-async function bootstrap() {                   // Función asíncrona auto-ejecutada
-  const app = await NestFactory.create(AppModule);  // Crea la app NestJS compilando el módulo raíz y todas sus dependencias
-  await app.listen(process.env.PORT ?? 3000);       // Escucha en el puerto de la variable PORT, o 3000 por defecto
+async function bootstrap() {
+  // Función asíncrona auto-ejecutada
+  const app = await NestFactory.create(AppModule); // Crea la app NestJS compilando el módulo raíz y todas sus dependencias
+  await app.listen(process.env.PORT ?? 3000); // Escucha en el puerto de la variable PORT, o 3000 por defecto
 }
-bootstrap();                                   // Ejecuta el bootstrap
+bootstrap(); // Ejecuta el bootstrap
 ```
 
 **¿Por qué?**: `dotenv` debe cargarse antes de NestFactory para que las variables de entorno estén disponibles durante la inicialización del contenedor (TypeORM, JWT, etc.).
@@ -30,7 +31,9 @@ bootstrap();                                   // Ejecuta el bootstrap
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),  // Carga .env y lo hace global para no repetirlo en cada módulo
     TypeOrmModule.forRoot(typeOrmConfig),                           // Configura TypeORM con PostgreSQL usando la configuración compartida
     AuthModule,                                                      // Módulo de autenticación (usuarios, login, JWT)
-    // FinModule, TripModule, AuditModule (comentados — pendientes de implementar)
+    FinModule,                                                       // Módulo financiero (billetera, tarifas, transacciones)
+    OpsModule,                                                       // Módulo de operaciones (rutas, vehículos)
+    // TripModule, AuditModule (comentados — pendientes de implementar)
   ],
   controllers: [AppController],   // Controlador raíz (GET /)
   providers: [AppService],        // Servicio raíz
@@ -44,13 +47,13 @@ bootstrap();                                   // Ejecuta el bootstrap
 ## `src/app.controller.ts` — Controlador raíz
 
 ```typescript
-@Controller()                    // Prefijo vacío → responde en /
+@Controller() // Prefijo vacío → responde en /
 export class AppController {
-  constructor(private readonly appService: AppService) {}  // Inyección de dependencia del servicio
+  constructor(private readonly appService: AppService) {} // Inyección de dependencia del servicio
 
-  @Get()                         // GET /
+  @Get() // GET /
   getHello(): string {
-    return this.appService.getHello();  // Delega la respuesta al servicio
+    return this.appService.getHello(); // Delega la respuesta al servicio
   }
 }
 ```
@@ -62,10 +65,10 @@ export class AppController {
 ## `src/app.service.ts` — Servicio raíz
 
 ```typescript
-@Injectable()                    // Decorador que permite inyectar esta clase en otros componentes
+@Injectable() // Decorador que permite inyectar esta clase en otros componentes
 export class AppService {
   getHello(): string {
-    return 'Hello World!';       // Placeholder: será reemplazado por Swagger o redirección
+    return 'Hello World!'; // Placeholder: será reemplazado por Swagger o redirección
   }
 }
 ```
@@ -77,14 +80,14 @@ export class AppService {
 ## `src/health.controller.ts` — Healthcheck
 
 ```typescript
-@Controller('health')            // Prefijo /health
+@Controller('health') // Prefijo /health
 export class HealthController {
-  constructor(private health: HealthCheckService) {}  // Servicio de Terminus para healthchecks
+  constructor(private health: HealthCheckService) {} // Servicio de Terminus para healthchecks
 
   @Get()
-  @HealthCheck()                 // Decorador que formatea la respuesta de healthcheck
+  @HealthCheck() // Decorador que formatea la respuesta de healthcheck
   check() {
-    return this.health.check([]);  // Array vacío = sin indicadores registrados (solo reporta estado genérico)
+    return this.health.check([]); // Array vacío = sin indicadores registrados (solo reporta estado genérico)
   }
 }
 ```
@@ -103,13 +106,13 @@ describe('AppController', () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [AppService],
-    }).compile();                                   // Compila un módulo de testing aislado (sin infraestructura real)
-    appController = app.get<AppController>(AppController);  // Obtiene la instancia del controlador desde el contenedor de testing
+    }).compile(); // Compila un módulo de testing aislado (sin infraestructura real)
+    appController = app.get<AppController>(AppController); // Obtiene la instancia del controlador desde el contenedor de testing
   });
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');  // Verifica que el endpoint raíz devuelva el mensaje esperado
+      expect(appController.getHello()).toBe('Hello World!'); // Verifica que el endpoint raíz devuelva el mensaje esperado
     });
   });
 });
@@ -164,9 +167,9 @@ Archivo con variables para desarrollo local (no se incluye su contenido por segu
 
 ```typescript
 export abstract class BaseEntity {
-  id: string;          // UUID v7 — identificador único universal
-  createdAt: Date;     // Timestamp de creación (clock_timestamp() en PostgreSQL)
-  updatedAt: Date;     // Timestamp de última modificación
+  id: string; // UUID v7 — identificador único universal
+  createdAt: Date; // Timestamp de creación (clock_timestamp() en PostgreSQL)
+  updatedAt: Date; // Timestamp de última modificación
 
   constructor(id: string) {
     this.id = id;
@@ -183,12 +186,13 @@ export abstract class BaseEntity {
 ## `src/shared/domain/interfaces/base-repository.port.ts` — Puerto genérico de repositorio
 
 ```typescript
-export interface IBaseRepository<T> {  // Interfaz genérica con tipo T (la entidad de dominio)
-  findById(id: string): Promise<T | null>;   // Buscar por UUID
-  findAll(): Promise<T[]>;                    // Obtener todos
-  create(entity: T): Promise<T>;              // Crear nuevo
-  update(id: string, entity: Partial<T>): Promise<T>;  // Actualizar parcialmente
-  delete(id: string): Promise<void>;          // Eliminar (soft-delete según implementación)
+export interface IBaseRepository<T> {
+  // Interfaz genérica con tipo T (la entidad de dominio)
+  findById(id: string): Promise<T | null>; // Buscar por UUID
+  findAll(): Promise<T[]>; // Obtener todos
+  create(entity: T): Promise<T>; // Crear nuevo
+  update(id: string, entity: Partial<T>): Promise<T>; // Actualizar parcialmente
+  delete(id: string): Promise<void>; // Eliminar (soft-delete según implementación)
 }
 ```
 
@@ -202,7 +206,7 @@ export interface IBaseRepository<T> {  // Interfaz genérica con tipo T (la enti
 export class NotFoundException extends Error {
   constructor(message: string = 'Resource not found') {
     super(message);
-    this.name = 'NotFoundException';  // Nombre personalizado para identificar en filtros
+    this.name = 'NotFoundException'; // Nombre personalizado para identificar en filtros
   }
 }
 ```
@@ -264,11 +268,11 @@ export class UnauthorizedException extends Error {
 
 ```typescript
 export interface ICache {
-  get(key: string): Promise<string | null>;          // Obtener valor por clave
-  set(key: string, value: string, ttl?: number): Promise<void>;  // Guardar con TTL opcional
-  del(key: string): Promise<void>;                   // Eliminar clave
-  delPattern(pattern: string): Promise<void>;         // Eliminar por patrón (ej: "sessions:*")
-  flushAll(): Promise<void>;                          // Limpiar toda la caché
+  get(key: string): Promise<string | null>; // Obtener valor por clave
+  set(key: string, value: string, ttl?: number): Promise<void>; // Guardar con TTL opcional
+  del(key: string): Promise<void>; // Eliminar clave
+  delPattern(pattern: string): Promise<void>; // Eliminar por patrón (ej: "sessions:*")
+  flushAll(): Promise<void>; // Limpiar toda la caché
 }
 ```
 
@@ -280,8 +284,8 @@ export interface ICache {
 
 ```typescript
 export interface ILogger {
-  log(message: string, context?: string): void;       // Info
-  error(message: string, trace?: string, context?: string): void;  // Error con stack trace
+  log(message: string, context?: string): void; // Info
+  error(message: string, trace?: string, context?: string): void; // Error con stack trace
   warn(message: string, context?: string): void;
   debug(message: string, context?: string): void;
   verbose(message: string, context?: string): void;
@@ -295,16 +299,16 @@ export interface ILogger {
 ## `src/shared/application/services/crypto.service.ts` — Servicio de criptografía
 
 ```typescript
-import * as bcrypt from 'bcrypt';  // Librería de hashing de contraseñas
+import * as bcrypt from 'bcrypt'; // Librería de hashing de contraseñas
 
 export class CryptoService {
   async hash(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);  // Genera sal con costo 10 (balance seguridad/rendimiento)
-    return bcrypt.hash(password, salt);     // Retorna hash en formato $2b$10$...
+    const salt = await bcrypt.genSalt(10); // Genera sal con costo 10 (balance seguridad/rendimiento)
+    return bcrypt.hash(password, salt); // Retorna hash en formato $2b$10$...
   }
 
   async compare(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);  // Compara contraseña contra hash (extrae la sal del hash automáticamente)
+    return bcrypt.compare(password, hash); // Compara contraseña contra hash (extrae la sal del hash automáticamente)
   }
 }
 ```
@@ -317,26 +321,26 @@ export class CryptoService {
 
 ```typescript
 function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string {
-  const filePath = process.env[fileEnvKey];     // Busca variable que contiene RUTA a un archivo secreto
+  const filePath = process.env[fileEnvKey]; // Busca variable que contiene RUTA a un archivo secreto
   if (filePath) {
     try {
-      return readFileSync(filePath, 'utf8').trim();  // Lee el archivo (Docker Swarm/K8s montan secrets como archivos)
+      return readFileSync(filePath, 'utf8').trim(); // Lee el archivo (Docker Swarm/K8s montan secrets como archivos)
     } catch {
       console.error(`Error reading secret from ${filePath}`);
     }
   }
-  return process.env[fallbackEnvKey ?? ''] ?? '';   // Fallback a variable de entorno directa (desarrollo local)
+  return process.env[fallbackEnvKey ?? ''] ?? ''; // Fallback a variable de entorno directa (desarrollo local)
 }
 
 export const typeOrmConfig: DataSourceOptions = {
-  type: 'postgres',                   // Driver PostgreSQL
+  type: 'postgres', // Driver PostgreSQL
   host: process.env.DB_HOST ?? 'localhost',
   port: parseInt(process.env.DB_PORT ?? '5432', 10),
   username: process.env.DB_USER ?? 'postgres',
-  password: readSecret('DB_PASSWORD_FILE', 'DB_PASSWORD'),  // Intenta archivo secreto, luego variable
+  password: readSecret('DB_PASSWORD_FILE', 'DB_PASSWORD'), // Intenta archivo secreto, luego variable
   database: process.env.DB_NAME ?? 'bolo',
-  entities: [UserOrmEntity, AssociationOrmEntity, DriverRequestOrmEntity],  // Solo entidades registradas
-  synchronize: false,                 // ¡Deshabilitado! Los cambios de esquema son manuales (init.sql)
+  entities: [UserOrmEntity, AssociationOrmEntity, DriverRequestOrmEntity], // Solo entidades registradas
+  synchronize: false, // ¡Deshabilitado! Los cambios de esquema son manuales (init.sql)
   logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : false,
 };
 ```
@@ -353,15 +357,15 @@ export class WinstonLogger implements ILogger {
 
   constructor() {
     this.logger = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',      // Nivel mínimo desde variable de entorno
+      level: process.env.LOG_LEVEL || 'info', // Nivel mínimo desde variable de entorno
       format: winston.format.combine(
-        winston.format.timestamp(),                  // Añade timestamp ISO a cada log
-        winston.format.json(),                       // Formato JSON estructurado
+        winston.format.timestamp(), // Añade timestamp ISO a cada log
+        winston.format.json(), // Formato JSON estructurado
       ),
       transports: [
-        new winston.transports.Console(),             // Salida a consola (stdout/stderr)
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),  // Solo errores
-        new winston.transports.File({ filename: 'combined.log' }),               // Todos los niveles
+        new winston.transports.Console(), // Salida a consola (stdout/stderr)
+        new winston.transports.File({ filename: 'error.log', level: 'error' }), // Solo errores
+        new winston.transports.File({ filename: 'combined.log' }), // Todos los niveles
       ],
     });
   }
@@ -377,16 +381,17 @@ export class WinstonLogger implements ILogger {
 
 ```typescript
 export class RedisClient {
-  private static instance: Redis;    // Variable estática para el singleton
+  private static instance: Redis; // Variable estática para el singleton
 
   static getInstance(): Redis {
-    if (!RedisClient.instance) {      // Si no existe instancia, la crea
+    if (!RedisClient.instance) {
+      // Si no existe instancia, la crea
       RedisClient.instance = new Redis({
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379'),
       });
     }
-    return RedisClient.instance;      // Siempre retorna la misma instancia
+    return RedisClient.instance; // Siempre retorna la misma instancia
   }
 }
 ```
@@ -400,8 +405,8 @@ export class RedisClient {
 ```typescript
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();  // Obtiene el request HTTP del contexto de ejecución
-    return request.user;                               // Retorna el objeto user inyectado por Passport tras validar JWT
+    const request = ctx.switchToHttp().getRequest(); // Obtiene el request HTTP del contexto de ejecución
+    return request.user; // Retorna el objeto user inyectado por Passport tras validar JWT
   },
 );
 ```
@@ -413,8 +418,8 @@ export const CurrentUser = createParamDecorator(
 ## `src/shared/interfaces/decorators/roles.decorator.ts` — Decorador @Roles
 
 ```typescript
-export const ROLES_KEY = 'roles';                                   // Clave para almacenar metadatos
-export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);  // Asigna roles como metadatos de la ruta
+export const ROLES_KEY = 'roles'; // Clave para almacenar metadatos
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles); // Asigna roles como metadatos de la ruta
 ```
 
 **¿Por qué?**: Los metadatos son leídos por un guard (RolesGuard, no implementado) para verificar que el usuario tenga uno de los roles permitidos.
@@ -424,25 +429,27 @@ export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);  // 
 ## `src/shared/interfaces/filters/all-exceptions.filter.ts` — Filtro global de excepciones
 
 ```typescript
-@Catch()                           // Atrapa TODAS las excepciones (sin filtro de tipo)
+@Catch() // Atrapa TODAS las excepciones (sin filtro de tipo)
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const status = exception instanceof HttpException
-      ? exception.getStatus()                    // Si es HttpException, usa su código HTTP
-      : HttpStatus.INTERNAL_SERVER_ERROR;        // Si no, 500
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus() // Si es HttpException, usa su código HTTP
+        : HttpStatus.INTERNAL_SERVER_ERROR; // Si no, 500
 
-    const message = exception instanceof HttpException
-      ? exception.message
-      : 'Internal server error';
+    const message =
+      exception instanceof HttpException
+        ? exception.message
+        : 'Internal server error';
 
     response.status(status).json({
       statusCode: status,
-      timestamp: new Date().toISOString(),        // Momento exacto del error
-      path: request.url,                           // Ruta que originó el error
+      timestamp: new Date().toISOString(), // Momento exacto del error
+      path: request.url, // Ruta que originó el error
       message,
     });
   }
@@ -458,18 +465,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
 ```typescript
 @Injectable()
 export class LoggingMiddleware implements NestMiddleware {
-  private logger = new Logger('HTTP');       // Logger de NestJS con contexto "HTTP"
+  private logger = new Logger('HTTP'); // Logger de NestJS con contexto "HTTP"
 
   use(req: Request, res: Response, next: NextFunction) {
     const { method, originalUrl } = req;
-    const start = Date.now();                  // Marca de tiempo inicial
+    const start = Date.now(); // Marca de tiempo inicial
 
-    res.on('finish', () => {                   // Evento cuando la respuesta se envía
-      const duration = Date.now() - start;     // Duración de la petición
-      this.logger.log(`${method} ${originalUrl} ${res.statusCode} - ${duration}ms`);
+    res.on('finish', () => {
+      // Evento cuando la respuesta se envía
+      const duration = Date.now() - start; // Duración de la petición
+      this.logger.log(
+        `${method} ${originalUrl} ${res.statusCode} - ${duration}ms`,
+      );
     });
 
-    next();                                    // Continúa al siguiente middleware/handler
+    next(); // Continúa al siguiente middleware/handler
   }
 }
 ```
@@ -485,10 +495,10 @@ export class LoggingMiddleware implements NestMiddleware {
 ## `src/modules/auth/index.ts` — Barrel exports del módulo auth
 
 ```typescript
-export * from './domain/entities';        // User, Association, DriverRequest
-export * from './domain/interfaces';      // Puertos (repositorios y servicios)
-export * from './application/dto';        // CreateUserDto (DTO interno)
-export * from './infrastructure/auth.module';  // Módulo NestJS de infraestructura
+export * from './domain/entities'; // User, Association, DriverRequest
+export * from './domain/interfaces'; // Puertos (repositorios y servicios)
+export * from './application/dto'; // CreateUserDto (DTO interno)
+export * from './infrastructure/auth.module'; // Módulo NestJS de infraestructura
 ```
 
 **¿Por qué?**: Barrel file para centralizar exports y simplificar importaciones desde otros módulos. Lo comentado está pendiente de implementación.
@@ -546,13 +556,13 @@ export class User {
 ```typescript
 export class Association {
   constructor(
-    public readonly id: string,                  // UUID v7
-    public readonly name: string,                // Nombre único de la cooperativa
-    public readonly rif: string,                 // RIF (registro fiscal venezolano, único)
-    public readonly address: string | null,      // Dirección física
-    public readonly phone: string | null,        // Teléfono de contacto
-    public readonly adminId: string | null,      // ID del administrador (referencia a User)
-    public readonly isActive: boolean,           // Cooperativa activa?
+    public readonly id: string, // UUID v7
+    public readonly name: string, // Nombre único de la cooperativa
+    public readonly rif: string, // RIF (registro fiscal venezolano, único)
+    public readonly address: string | null, // Dirección física
+    public readonly phone: string | null, // Teléfono de contacto
+    public readonly adminId: string | null, // ID del administrador (referencia a User)
+    public readonly isActive: boolean, // Cooperativa activa?
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}
@@ -571,12 +581,12 @@ export type DriverRequestStatus = 'pending' | 'approved' | 'rejected';
 
 export class DriverRequest {
   constructor(
-    public readonly id: string,                  // UUID v7
-    public readonly driverId: string,            // ID del conductor solicitante
-    public readonly associationId: string,       // ID de la cooperativa destino
+    public readonly id: string, // UUID v7
+    public readonly driverId: string, // ID del conductor solicitante
+    public readonly associationId: string, // ID de la cooperativa destino
     public readonly status: DriverRequestStatus, // Estado actual
-    public readonly documentsUrls: Record<string, any> | null,  // JSONB con URLs de documentos
-    public readonly rejectionReason: string | null,             // Razón de rechazo (si aplica)
+    public readonly documentsUrls: Record<string, any> | null, // JSONB con URLs de documentos
+    public readonly rejectionReason: string | null, // Razón de rechazo (si aplica)
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}
@@ -601,7 +611,8 @@ export { DriverRequest } from './driver-request.entity';
 ## `src/modules/auth/domain/exceptions/invalid-credentials.exception.ts` — Credenciales inválidas
 
 ```typescript
-export class InvalidCredentialsException extends UnauthorizedException {  // Extiende HttpException de NestJS
+export class InvalidCredentialsException extends UnauthorizedException {
+  // Extiende HttpException de NestJS
   constructor(message: string = 'Credenciales inválidas') {
     super(message);
   }
@@ -615,7 +626,8 @@ export class InvalidCredentialsException extends UnauthorizedException {  // Ext
 ## `src/modules/auth/domain/exceptions/user-already-exists.exception.ts` — Usuario duplicado
 
 ```typescript
-export class UserAlreadyExistsException extends ConflictException {  // Extiende ConflictException (HTTP 409)
+export class UserAlreadyExistsException extends ConflictException {
+  // Extiende ConflictException (HTTP 409)
   constructor(message: string = 'El teléfono ya está registrado') {
     super(message);
   }
@@ -629,7 +641,8 @@ export class UserAlreadyExistsException extends ConflictException {  // Extiende
 ## `src/modules/auth/domain/exceptions/user-not-found.exception.ts` — Usuario no encontrado
 
 ```typescript
-export class UserNotFoundException extends NotFoundException {  // Extiende NotFoundException de NestJS (HTTP 404)
+export class UserNotFoundException extends NotFoundException {
+  // Extiende NotFoundException de NestJS (HTTP 404)
   constructor(message: string = 'Usuario no encontrado') {
     super(message);
   }
@@ -641,13 +654,13 @@ export class UserNotFoundException extends NotFoundException {  // Extiende NotF
 ## `src/modules/auth/domain/interfaces/repositories/user.repository.port.ts` — Puerto de repositorio de usuarios
 
 ```typescript
-export const USER_REPOSITORY_PORT = 'USER_REPOSITORY_PORT';  // Token de inyección (string único)
+export const USER_REPOSITORY_PORT = 'USER_REPOSITORY_PORT'; // Token de inyección (string único)
 
 export interface UserRepositoryPort {
-  findById(id: string): Promise<User | null>;          // Buscar por UUID
-  findByPhone(phone: string): Promise<User | null>;    // Buscar por teléfono (único)
-  save(user: User): Promise<User>;                     // Persistir (insert o update)
-  updateJwtKey(userId: string, jwtKey: string): Promise<void>;  // Rotar clave JWT
+  findById(id: string): Promise<User | null>; // Buscar por UUID
+  findByPhone(phone: string): Promise<User | null>; // Buscar por teléfono (único)
+  save(user: User): Promise<User>; // Persistir (insert o update)
+  updateJwtKey(userId: string, jwtKey: string): Promise<void>; // Rotar clave JWT
 }
 ```
 
@@ -660,7 +673,7 @@ export interface UserRepositoryPort {
 ```typescript
 export interface AssociationRepositoryPort {
   findById(id: string): Promise<Association | null>;
-  findByRif(rif: string): Promise<Association | null>;   // Búsqueda por RIF (único)
+  findByRif(rif: string): Promise<Association | null>; // Búsqueda por RIF (único)
   save(association: Association): Promise<Association>;
 }
 ```
@@ -672,7 +685,10 @@ export interface AssociationRepositoryPort {
 ```typescript
 export interface DriverRequestRepositoryPort {
   findById(id: string): Promise<DriverRequest | null>;
-  findByDriverAndAssociation(driverId: string, associationId: string): Promise<DriverRequest | null>;  // Evita solicitudes duplicadas
+  findByDriverAndAssociation(
+    driverId: string,
+    associationId: string,
+  ): Promise<DriverRequest | null>; // Evita solicitudes duplicadas
   save(request: DriverRequest): Promise<DriverRequest>;
 }
 ```
@@ -693,8 +709,8 @@ export * from './driver-request.repository.port';
 
 ```typescript
 export interface NotificationServicePort {
-  sendEmail(to: string, subject: string, body: string): Promise<void>;  // Email
-  sendSms(phone: string, message: string): Promise<void>;                // SMS
+  sendEmail(to: string, subject: string, body: string): Promise<void>; // Email
+  sendSms(phone: string, message: string): Promise<void>; // SMS
 }
 ```
 
@@ -706,7 +722,7 @@ export interface NotificationServicePort {
 
 ```typescript
 export interface WalletServicePort {
-  createWallet(userId: string): Promise<void>;  // Crea billetera al registrar usuario
+  createWallet(userId: string): Promise<void>; // Crea billetera al registrar usuario
 }
 ```
 
@@ -727,13 +743,13 @@ export * from './wallet.service.port';
 
 ```typescript
 export class CreateUserDto {
-  phone: string;             // Teléfono obligatorio
-  email?: string;            // Email opcional
-  password: string;          // Contraseña en texto plano (se hashea en el use case)
-  fullName: string;          // Nombre completo
-  cedula?: string;           // Cédula opcional
-  role: UserRole;            // Rol (enum)
-  category: UserCategory;    // Categoría tarifaria (enum)
+  phone: string; // Teléfono obligatorio
+  email?: string; // Email opcional
+  password: string; // Contraseña en texto plano (se hashea en el use case)
+  fullName: string; // Nombre completo
+  cedula?: string; // Cédula opcional
+  role: UserRole; // Rol (enum)
+  category: UserCategory; // Categoría tarifaria (enum)
 }
 ```
 
@@ -745,8 +761,8 @@ export class CreateUserDto {
 
 ```typescript
 export class LoginDto {
-  phone: string;       // Teléfono
-  password: string;    // Contraseña
+  phone: string; // Teléfono
+  password: string; // Contraseña
 }
 ```
 
@@ -772,8 +788,8 @@ export class CreateUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY_PORT) private readonly userRepo: UserRepositoryPort,
     //                                          ↑ Inyecta por token (permite cambiar implementación)
-    private readonly cryptoService: CryptoService,      // Servicio de hashing
-    @Optional()                                          // Opcional: puede no estar disponible
+    private readonly cryptoService: CryptoService, // Servicio de hashing
+    @Optional() // Opcional: puede no estar disponible
     @Inject(WALLET_SERVICE_PORT)
     private readonly walletService?: WalletServicePort, // Mock hasta implementar fin
   ) {}
@@ -781,13 +797,18 @@ export class CreateUserUseCase {
   async execute(dto: CreateUserDto): Promise<User> {
     // 1. Verificar que el teléfono no exista (unicidad)
     const existing = await this.userRepo.findByPhone(dto.phone);
-    if (existing) throw new UserAlreadyExistsException('User with this phone already exists');
+    if (existing)
+      throw new UserAlreadyExistsException(
+        'User with this phone already exists',
+      );
 
     // 2. Hashear contraseña (nunca almacenar en texto plano)
     const hashedPassword = await this.cryptoService.hash(dto.password);
 
     // 3. Crear entidad User mediante fábrica (aplica defaults)
-    const user = User.create({ /* ... datos del dto + hash */ });
+    const user = User.create({
+      /* ... datos del dto + hash */
+    });
 
     // 4. Persistir
     const savedUser = await this.userRepo.save(user);
@@ -807,7 +828,8 @@ export class CreateUserUseCase {
 }
 ```
 
-**¿Por qué?**: 
+**¿Por qué?**:
+
 - `@Inject(USER_REPOSITORY_PORT)` usa el token string en lugar del tipo para desacoplar.
 - `@Optional()` en walletService permite que el módulo fin no esté implementado sin romper auth.
 - El bloque try-catch en wallet asegura que un error en fin no impida el registro.
@@ -822,21 +844,28 @@ export class CreateUserUseCase {
 export class LoginUseCase {
   constructor(
     @Inject(USER_REPOSITORY_PORT) private readonly userRepo: UserRepositoryPort,
-    private readonly cryptoService: CryptoService,  // Para comparar contraseñas
-    private readonly jwtService: JwtService,         // Para firmar token
+    private readonly cryptoService: CryptoService, // Para comparar contraseñas
+    private readonly jwtService: JwtService, // Para firmar token
   ) {}
 
-  async execute(phone: string, password: string): Promise<{ accessToken: string; user: any }> {
+  async execute(
+    phone: string,
+    password: string,
+  ): Promise<{ accessToken: string; user: any }> {
     // 1. Buscar usuario por teléfono
     const user = await this.userRepo.findByPhone(phone);
     if (!user) throw new InvalidCredentialsException('Invalid credentials');
 
     // 2. Verificar contraseña contra hash almacenado
-    const isValid = await this.cryptoService.compare(password, user.passwordHash);
+    const isValid = await this.cryptoService.compare(
+      password,
+      user.passwordHash,
+    );
     if (!isValid) throw new InvalidCredentialsException('Invalid credentials');
 
     // 3. Verificar que el usuario esté activo
-    if (!user.isActive) throw new InvalidCredentialsException('User is inactive');
+    if (!user.isActive)
+      throw new InvalidCredentialsException('User is inactive');
 
     // 4. Rotar clave JWT (nueva clave por cada login — invalida tokens anteriores)
     const newJwtKey = randomUUID();
@@ -848,13 +877,19 @@ export class LoginUseCase {
 
     return {
       accessToken,
-      user: { id: user.id, phone: user.phone, fullName: user.fullName, role: user.role },
+      user: {
+        id: user.id,
+        phone: user.phone,
+        fullName: user.fullName,
+        role: user.role,
+      },
     };
   }
 }
 ```
 
-**¿Por qué?**: 
+**¿Por qué?**:
+
 - Se usan mensajes de error genéricos ("Invalid credentials") para no filtrar si el usuario existe o no (seguridad).
 - Rotación de JWT key: cada login genera una nueva clave, invalidando tokens anteriores. Esto permite revocar sesiones.
 - `InvalidCredentialsException` extiende `UnauthorizedException` (HTTP 401).
@@ -901,9 +936,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @Inject(USER_REPOSITORY_PORT) private readonly userRepo: UserRepositoryPort,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),  // Extrae token del header Authorization
-      ignoreExpiration: false,                                     // Rechaza tokens expirados
-      secretOrKeyProvider: (request, rawJwtToken, done) => {       // Proveedor DINÁMICO de clave secreta
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extrae token del header Authorization
+      ignoreExpiration: false, // Rechaza tokens expirados
+      secretOrKeyProvider: (request, rawJwtToken, done) => {
+        // Proveedor DINÁMICO de clave secreta
         this.resolveSecretKey(rawJwtToken)
           .then((key) => done(null, key))
           .catch((err) => done(err));
@@ -921,13 +957,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Busca al usuario y usa su jwtKey personal como SECRETO para verificar la firma
     const user = await this.userRepo.findById(userId);
-    if (!user || !user.jwtKey) throw new Error('Usuario no encontrado o sin llave');
+    if (!user || !user.jwtKey)
+      throw new Error('Usuario no encontrado o sin llave');
 
-    return user.jwtKey;  // ← Clave secreta individual por usuario
+    return user.jwtKey; // ← Clave secreta individual por usuario
   }
 
   validate(payload: any) {
-    return { userId: payload.sub, phone: payload.phone, role: payload.role };  // Objeto inyectado en req.user
+    return { userId: payload.sub, phone: payload.phone, role: payload.role }; // Objeto inyectado en req.user
   }
 }
 ```
@@ -940,7 +977,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
 ```typescript
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {}  // Simplemente extiende el guard genérico de Passport
+export class JwtAuthGuard extends AuthGuard('jwt') {} // Simplemente extiende el guard genérico de Passport
 ```
 
 **¿Por qué?**: NestJS Passport provee `AuthGuard('jwt')` que automáticamente usa JwtStrategy. Esta clase permite inyectarlo como dependencia y añadir lógica adicional si es necesario.
@@ -950,27 +987,35 @@ export class JwtAuthGuard extends AuthGuard('jwt') {}  // Simplemente extiende e
 ## `src/modules/auth/infrastructure/orm/user.orm-entity.ts` — Entidad TypeORM de usuario
 
 ```typescript
-@Entity({ name: 'users', schema: 'auth' })  // Tabla auth.users
+@Entity({ name: 'users', schema: 'auth' }) // Tabla auth.users
 export class UserOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', length: 20, unique: true })
-  phone: string;                      // Teléfono único
+  phone: string; // Teléfono único
 
-  @Column({ type: 'text', name: 'password_hash' })  // name: define nombre real en BD (snake_case)
-  passwordHash: string;               // Hash de contraseña
+  @Column({ type: 'text', name: 'password_hash' }) // name: define nombre real en BD (snake_case)
+  passwordHash: string; // Hash de contraseña
 
-  @Column({ type: 'enum', enum: ['passenger', 'driver', 'association_admin', 'super_admin'] })
-  role: UserRole;                     // Enumerado de PostgreSQL
+  @Column({
+    type: 'enum',
+    enum: ['passenger', 'driver', 'association_admin', 'super_admin'],
+  })
+  role: UserRole; // Enumerado de PostgreSQL
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at', default: () => 'clock_timestamp()' })
-  createdAt: Date;                    // clock_timestamp() de PG, no la fecha del servidor Node
+  @CreateDateColumn({
+    type: 'timestamptz',
+    name: 'created_at',
+    default: () => 'clock_timestamp()',
+  })
+  createdAt: Date; // clock_timestamp() de PG, no la fecha del servidor Node
   // ... más columnas
 }
 ```
 
 **¿Por qué?**: Separación de entidad de dominio (User) y entidad ORM (UserOrmEntity) permite:
+
 1. Dominio puro sin decoradores TypeORM
 2. Cambiar de ORM sin afectar dominio
 3. Nombres de columna en snake_case en BD vs camelCase en TypeScript
@@ -1013,19 +1058,19 @@ export { DriverRequestOrmEntity } from './driver-request.orm-entity';
 @Injectable()
 export class UserRepositoryImpl implements UserRepositoryPort {
   constructor(
-    @InjectRepository(UserOrmEntity)  // Inyecta el repositorio TypeORM para UserOrmEntity
+    @InjectRepository(UserOrmEntity) // Inyecta el repositorio TypeORM para UserOrmEntity
     private readonly userRepository: Repository<UserOrmEntity>,
   ) {}
 
   async save(user: User): Promise<User> {
-    const ormUser = this.toOrm(user);           // Convierte de dominio → ORM
-    const savedOrmUser = await this.userRepository.save(ormUser);  // Persiste
-    return this.toDomain(savedOrmUser);          // Convierte de ORM → dominio
+    const ormUser = this.toOrm(user); // Convierte de dominio → ORM
+    const savedOrmUser = await this.userRepository.save(ormUser); // Persiste
+    return this.toDomain(savedOrmUser); // Convierte de ORM → dominio
   }
 
   async findById(id: string): Promise<User | null> {
     const ormUser = await this.userRepository.findOne({ where: { id } });
-    return ormUser ? this.toDomain(ormUser) : null;  // Siempre retorna entidad de dominio
+    return ormUser ? this.toDomain(ormUser) : null; // Siempre retorna entidad de dominio
   }
 
   // Mappers privados para convertir entre representaciones
@@ -1042,7 +1087,7 @@ export class UserRepositoryImpl implements UserRepositoryPort {
   }
 
   async updateJwtKey(userId: string, jwtKey: string): Promise<void> {
-    await this.userRepository.update(userId, { jwtKey });  // Update directo sin mapeo
+    await this.userRepository.update(userId, { jwtKey }); // Update directo sin mapeo
   }
 }
 ```
@@ -1079,12 +1124,16 @@ export { DriverRequestRepositoryImpl } from './driver-request.repository.impl';
 @Injectable()
 export class NotificationServiceImpl implements NotificationServicePort {
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
-    console.log(`Sending email to ${to}: ${subject}`);  // Solo log, no envía realmente
+    console.log(`Sending email to ${to}: ${subject}`); // Solo log, no envía realmente
   }
   async sendSms(to: string, message: string): Promise<void> {
     console.log(`Sending SMS to ${to}: ${message}`);
   }
-  async sendPushNotification(userId: string, title: string, body: string): Promise<void> {
+  async sendPushNotification(
+    userId: string,
+    title: string,
+    body: string,
+  ): Promise<void> {
     console.log(`Sending push to user ${userId}: ${title}`);
   }
 }
@@ -1105,16 +1154,16 @@ export { NotificationServiceImpl } from './notification.service.impl';
 ## `src/modules/auth/interfaces/rest/auth.controller.ts` — Controlador de autenticación
 
 ```typescript
-@ApiTags('auth')       // Agrupa endpoints en Swagger
-@Controller('auth')    // Prefijo /auth
+@ApiTags('auth') // Agrupa endpoints en Swagger
+@Controller('auth') // Prefijo /auth
 export class AuthController {
   constructor(
-    private readonly createUserUseCase: CreateUserUseCase,  // Caso de uso de registro
-    private readonly loginUseCase: LoginUseCase,             // Caso de uso de login
+    private readonly createUserUseCase: CreateUserUseCase, // Caso de uso de registro
+    private readonly loginUseCase: LoginUseCase, // Caso de uso de login
   ) {}
 
-  @Post('register')              // POST /auth/register
-  @HttpCode(HttpStatus.CREATED)  // 201 Created
+  @Post('register') // POST /auth/register
+  @HttpCode(HttpStatus.CREATED) // 201 Created
   async register(@Body() registerDto: RegisterDto): Promise<UserResponseDto> {
     // Convierte DTO de validación (RegisterDto) a DTO interno (CreateUserDto)
     const createUserDto: CreateUserDto = {
@@ -1125,20 +1174,20 @@ export class AuthController {
     };
     const user = await this.createUserUseCase.execute(createUserDto);
     // Mapea a DTO de respuesta (nunca expone passwordHash, jwtKey, etc.)
-    return { id: user.id, phone: user.phone, /* ... campos seguros */ };
+    return { id: user.id, phone: user.phone /* ... campos seguros */ };
   }
 
-  @Post('login')                 // POST /auth/login
-  @HttpCode(HttpStatus.OK)       // 200 OK
+  @Post('login') // POST /auth/login
+  @HttpCode(HttpStatus.OK) // 200 OK
   async login(@Body() loginDto: LoginDto) {
     return this.loginUseCase.execute(loginDto.phone, loginDto.password);
   }
 
-  @ApiBearerAuth()               // Swagger: requiere token
-  @UseGuards(JwtAuthGuard)       // Protege la ruta con JWT
-  @Get('profile')                // GET /auth/profile
+  @ApiBearerAuth() // Swagger: requiere token
+  @UseGuards(JwtAuthGuard) // Protege la ruta con JWT
+  @Get('profile') // GET /auth/profile
   getProfile(@Request() req) {
-    return req.user;             // Datos inyectados por JwtStrategy.validate()
+    return req.user; // Datos inyectados por JwtStrategy.validate()
   }
 }
 ```
@@ -1156,7 +1205,7 @@ export class UserController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return { message: 'Get user endpoint', id };  // Placeholder
+    return { message: 'Get user endpoint', id }; // Placeholder
   }
 }
 ```
@@ -1172,11 +1221,11 @@ export class UserController {
 export class AssociationController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return { message: 'Get association endpoint', id };  // Placeholder
+    return { message: 'Get association endpoint', id }; // Placeholder
   }
   @Post()
   async create(@Body() createAssociationDto: any) {
-    return { message: 'Create association endpoint' };   // Placeholder
+    return { message: 'Create association endpoint' }; // Placeholder
   }
 }
 ```
@@ -1198,12 +1247,12 @@ export { AssociationController } from './association.controller';
 ```typescript
 export class RegisterDto {
   @ApiProperty({ description: 'Número de teléfono', example: '+584121234567' })
-  @IsPhoneNumber()             // Valida formato E.164
+  @IsPhoneNumber() // Valida formato E.164
   phone: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsEmail()                   // Valida formato email
+  @IsEmail() // Valida formato email
   email?: string;
 
   @IsString()
@@ -1236,14 +1285,18 @@ export class RegisterDto {
 
 ```typescript
 export class LoginDto {
-  @IsOptional() @IsEmail()
-  email?: string;               // Reservado para futuro login por email
+  @IsOptional()
+  @IsEmail()
+  email?: string; // Reservado para futuro login por email
 
-  @IsString() @IsNotEmpty()
-  phone: string;                // Teléfono obligatorio
+  @IsString()
+  @IsNotEmpty()
+  phone: string; // Teléfono obligatorio
 
-  @IsString() @IsNotEmpty() @MinLength(6)
-  password: string;             // Contraseña
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string; // Contraseña
 }
 ```
 
@@ -1289,20 +1342,24 @@ export { UserResponseDto } from './user-response.dto';
 ```typescript
 describe('CreateUserUseCase', () => {
   let useCase: CreateUserUseCase;
-  let userRepo: any;        // Mock del repositorio
-  let walletService: any;   // Mock del servicio de billetera
-  let cryptoService: any;   // Mock del servicio de criptografía
+  let userRepo: any; // Mock del repositorio
+  let walletService: any; // Mock del servicio de billetera
+  let cryptoService: any; // Mock del servicio de criptografía
 
   beforeEach(async () => {
     // Crea mocks con Jest
-    userRepo = { findByPhone: jest.fn(), save: jest.fn(), updateJwtKey: jest.fn() };
+    userRepo = {
+      findByPhone: jest.fn(),
+      save: jest.fn(),
+      updateJwtKey: jest.fn(),
+    };
     walletService = { createWallet: jest.fn() };
     cryptoService = { hash: jest.fn(), compare: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateUserUseCase,
-        { provide: USER_REPOSITORY_PORT, useValue: userRepo },  // Mock del puerto
+        { provide: USER_REPOSITORY_PORT, useValue: userRepo }, // Mock del puerto
         { provide: WALLET_SERVICE_PORT, useValue: walletService },
         { provide: CryptoService, useValue: cryptoService },
       ],
@@ -1312,20 +1369,22 @@ describe('CreateUserUseCase', () => {
   });
 
   it('should create a user successfully', async () => {
-    userRepo.findByPhone.mockResolvedValue(null);              // Teléfono no existe
-    cryptoService.hash.mockResolvedValue('hashed_password');   // Hash simulado
-    userRepo.save.mockResolvedValue(/* User simulado */);      // Save exitoso
+    userRepo.findByPhone.mockResolvedValue(null); // Teléfono no existe
+    cryptoService.hash.mockResolvedValue('hashed_password'); // Hash simulado
+    userRepo.save.mockResolvedValue(/* User simulado */); // Save exitoso
 
     const result = await useCase.execute(dto);
 
-    expect(walletService.createWallet).toHaveBeenCalledWith('uuid');  // Wallet creada
+    expect(walletService.createWallet).toHaveBeenCalledWith('uuid'); // Wallet creada
     expect(result.phone).toBe(dto.phone);
   });
 
   it('should throw UserAlreadyExistsException if phone exists', async () => {
-    userRepo.findByPhone.mockResolvedValue(mockUser);  // Usuario ya existe
-    await expect(useCase.execute(dto)).rejects.toThrow(UserAlreadyExistsException);
-    expect(userRepo.save).not.toHaveBeenCalled();      // No debe persistir
+    userRepo.findByPhone.mockResolvedValue(mockUser); // Usuario ya existe
+    await expect(useCase.execute(dto)).rejects.toThrow(
+      UserAlreadyExistsException,
+    );
+    expect(userRepo.save).not.toHaveBeenCalled(); // No debe persistir
   });
 });
 ```
@@ -1348,7 +1407,9 @@ Verifica login exitoso (retorna token y datos), credenciales inválidas (usuario
 describe('JwtStrategy', () => {
   // Helper que genera un token JWT falso pero con estructura decodificable
   const createFakeToken = (payload: any) => {
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const header = Buffer.from(
+      JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
+    ).toString('base64url');
     const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
     const signature = 'fake-signature';
     return `${header}.${body}.${signature}`;
@@ -1356,15 +1417,21 @@ describe('JwtStrategy', () => {
 
   it('should return jwtKey when user exists and has key', async () => {
     const token = createFakeToken({ sub: 'user-id' });
-    userRepo.findById.mockResolvedValue(mockUser);  // Usuario con jwtKey
+    userRepo.findById.mockResolvedValue(mockUser); // Usuario con jwtKey
 
     const key = await (strategy as any).resolveSecretKey(token);
     expect(key).toBe('current-jwt-key');
   });
 
-  it('should throw error if token has no sub', async () => { /* ... */ });
-  it('should throw error if user not found', async () => { /* ... */ });
-  it('should throw error if user has no jwtKey', async () => { /* ... */ });
+  it('should throw error if token has no sub', async () => {
+    /* ... */
+  });
+  it('should throw error if user not found', async () => {
+    /* ... */
+  });
+  it('should throw error if user has no jwtKey', async () => {
+    /* ... */
+  });
 });
 ```
 
@@ -1377,22 +1444,30 @@ describe('JwtStrategy', () => {
 ```typescript
 describe('UserRepositoryImpl', () => {
   let repo: UserRepositoryImpl;
-  let mockTypeOrmRepo: any;  // Mock del TypeORM Repository
+  let mockTypeOrmRepo: any; // Mock del TypeORM Repository
 
   beforeEach(() => {
-    mockTypeOrmRepo = { findOne: jest.fn(), save: jest.fn(), update: jest.fn() };
-    repo = new UserRepositoryImpl(mockTypeOrmRepo);  // Inyecta mock directamente
+    mockTypeOrmRepo = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
+    };
+    repo = new UserRepositoryImpl(mockTypeOrmRepo); // Inyecta mock directamente
   });
 
   it('should convert domain to orm and save', async () => {
     mockTypeOrmRepo.save.mockResolvedValue(mockOrmUser);
     const result = await repo.save(mockDomainUser);
-    expect(result).toBeInstanceOf(User);           // Retorna entidad de dominio
-    expect(mockTypeOrmRepo.save).toHaveBeenCalled();  // TypeORM fue llamado
+    expect(result).toBeInstanceOf(User); // Retorna entidad de dominio
+    expect(mockTypeOrmRepo.save).toHaveBeenCalled(); // TypeORM fue llamado
   });
 
-  it('should find user by phone', async () => { /* ... */ });
-  it('should call update with correct params', async => { /* ... */ });
+  it('should find user by phone', async () => {
+    /* ... */
+  });
+  it('should call update with correct params', (async) => {
+    /* ... */
+  });
 });
 ```
 
@@ -1421,9 +1496,15 @@ describe('AuthController', () => {
     expect(result).toEqual(mockUserResponse);
   });
 
-  it('should throw ConflictException when phone already exists', async () => { /* ... */ });
-  it('should login and return access token', async () => { /* ... */ });
-  it('should return user from request (set by guard)', async () => { /* ... */ });
+  it('should throw ConflictException when phone already exists', async () => {
+    /* ... */
+  });
+  it('should login and return access token', async () => {
+    /* ... */
+  });
+  it('should return user from request (set by guard)', async () => {
+    /* ... */
+  });
 });
 ```
 
@@ -1436,18 +1517,32 @@ describe('AuthController', () => {
 ```typescript
 describe('RegisterDto', () => {
   it('should pass with all required fields', async () => {
-    const dto = plainToInstance(RegisterDto, validDto);  // plainToInstance para activar decoradores
-    const errors = await validate(dto);                   // class-validator validate()
-    expect(errors).toHaveLength(0);                       // Sin errores = válido
+    const dto = plainToInstance(RegisterDto, validDto); // plainToInstance para activar decoradores
+    const errors = await validate(dto); // class-validator validate()
+    expect(errors).toHaveLength(0); // Sin errores = válido
   });
 
-  it('should fail if phone is missing', async () => { /* phone ausente → error */ });
-  it('should fail if phone is empty', async () => { /* phone vacío → error */ });
-  it('should fail if phone is not valid phone number', async () => { /* formato inválido → error */ });
-  it('should fail if password is too short', async () => { /* < 6 caracteres → error */ });
-  it('should fail if role is not valid enum', async () => { /* rol inválido → error */ });
-  it('should pass with valid optional email', async () => { /* email válido → sin error */ });
-  it('should fail with invalid email', async () => { /* email inválido → error */ });
+  it('should fail if phone is missing', async () => {
+    /* phone ausente → error */
+  });
+  it('should fail if phone is empty', async () => {
+    /* phone vacío → error */
+  });
+  it('should fail if phone is not valid phone number', async () => {
+    /* formato inválido → error */
+  });
+  it('should fail if password is too short', async () => {
+    /* < 6 caracteres → error */
+  });
+  it('should fail if role is not valid enum', async () => {
+    /* rol inválido → error */
+  });
+  it('should pass with valid optional email', async () => {
+    /* email válido → sin error */
+  });
+  it('should fail with invalid email', async () => {
+    /* email inválido → error */
+  });
 });
 ```
 
@@ -1461,11 +1556,109 @@ Similar a register.dto.spec.ts pero para LoginDto. Verifica phone (requerido, no
 
 ---
 
-# MÓDULOS PENDIENTES (STUBS)
+# MÓDULOS — ESTADO ACTUAL
 
 ---
 
-## `src/modules/audit/index.ts` — Auditoría (stub)
+## `src/modules/ops/` — Operaciones (🔄 en progreso)
+
+### `src/modules/ops/domain/entities/route.entity.ts` — Entidad Route
+
+```typescript
+export class Route {
+  constructor(
+    public readonly id: string,
+    public readonly associationId: string,
+    public readonly name: string,
+    public readonly description: string | null,
+    public readonly coopFareId: string,
+    public readonly isActive: boolean,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
+  ) {}
+
+  static create(data: {
+    associationId: string;
+    name: string;
+    description?: string;
+    coopFareId: string;
+  }): Route {
+    return new Route(
+      crypto.randomUUID(),
+      data.associationId,
+      data.name,
+      data.description ?? null,
+      data.coopFareId,
+      true,
+      new Date(),
+      new Date(),
+    );
+  }
+}
+```
+
+**¿Por qué?**: Entidad de dominio para rutas de transporte. Pertenece a una asociación y está vinculada a un tarifario (coopFareId) para calcular costos de viaje. Inmutable con `readonly` y factory method `create()`.
+
+### `src/modules/ops/application/use-cases/create-route.use-case.ts` — Caso de uso: crear ruta
+
+```typescript
+@Injectable()
+export class CreateRouteUseCase {
+  constructor(
+    @Inject(ROUTE_REPOSITORY_PORT)
+    private readonly routeRepo: RouteRepositoryPort,
+    @Inject(COOP_FARE_REPOSITORY_PORT)
+    private readonly coopFareRepo: CoopFareRepositoryPort,
+  ) {}
+
+  async execute(associationId: string, dto: CreateRouteDto): Promise<Route> {
+    const fare = await this.coopFareRepo.findByAssociationId(associationId);
+    // Valida que exista al menos un tarifario
+    const route = Route.create({ associationId, ...dto });
+    return this.routeRepo.save(route);
+  }
+}
+```
+
+### `src/modules/ops/interfaces/rest/route.controller.ts` — Controlador de rutas
+
+```typescript
+@Controller('ops/routes')
+export class RouteController {
+  constructor(private readonly createRouteUseCase: CreateRouteUseCase) {}
+
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('association_admin')
+  async create(@Req() req: any, @Body() dto: CreateRouteDto) {
+    const associationId = req.user.associationId;
+    if (!associationId) throw new Error('No perteneces a una asociación');
+    return this.createRouteUseCase.execute(associationId, dto);
+  }
+}
+```
+
+**¿Por qué?**: Endpoint `POST /ops/routes` protegido con JWT + RolesGuard. `associationId` se obtiene del token JWT del admin autenticado. Delega en CreateRouteUseCase que valida contra el repositorio de tarifarios.
+
+### `src/modules/ops/infrastructure/ops.module.ts` — Módulo NestJS
+
+```typescript
+@Module({
+  imports: [AuthModule, FinModule, TypeOrmModule.forFeature([RouteOrmEntity])],
+  controllers: [RouteController],
+  providers: [
+    { provide: ROUTE_REPOSITORY_PORT, useClass: RouteRepositoryImpl },
+    CreateRouteUseCase,
+  ],
+})
+export class OpsModule {}
+```
+
+**¿Por qué?**: Módulo de operaciones registrado en app.module.ts. Importa AuthModule (para guards JWT) y FinModule (para usar COOP_FARE_REPOSITORY_PORT). Actualmente solo tiene la entidad Route implementada; faltan Vehicle, AssignedRoute y sus controladores.
+
+---
+
+## `src/modules/audit/index.ts` — Auditoría (⏳ stub)
 
 ```typescript
 // Pendiente: Log de acciones críticas en audit.audit_log
@@ -1478,7 +1671,7 @@ export {};
 
 ---
 
-## `src/modules/fin/index.ts` — Financiero (completo)
+## `src/modules/fin/index.ts` — Financiero (🔄 en progreso)
 
 ```typescript
 export * from './domain';
@@ -1487,11 +1680,11 @@ export * from './infrastructure';
 export * from './interfaces';
 ```
 
-**¿Por qué?**: Barrel público del módulo financiero. Ahora exporta todas las capas (dominio, aplicación, infraestructura, interfaces) con todas las entidades, casos de uso, repositorios y controladores implementados.
+**¿Por qué?**: Barrel público del módulo financiero. Exporta todas las capas (dominio, aplicación, infraestructura, interfaces). El dominio está completo (5 entidades, value objects, puertos), pero la aplicación e interfaces están parciales (solo 2 casos de uso implementados de 6, TransactionController vacío).
 
 ---
 
-# MÓDULO FIN — DOCUMENTACIÓN COMPLETA
+# MÓDULO FIN — DOCUMENTACIÓN (🔄 PARCIAL)
 
 ---
 
@@ -1546,11 +1739,11 @@ export class Transaction {
 export class ExchangeRate {
   constructor(
     public readonly id: string,
-    public readonly fromCurrency: string,  // Ej: "USD"
-    public readonly toCurrency: string,    // Ej: "VED"
+    public readonly fromCurrency: string, // Ej: "USD"
+    public readonly toCurrency: string, // Ej: "VED"
     public readonly rate: number,
     public readonly validFrom: Date,
-    public readonly validUntil: Date | null,  // null = vigente indefinidamente
+    public readonly validUntil: Date | null, // null = vigente indefinidamente
     public readonly version: number,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
@@ -1561,7 +1754,7 @@ export class ExchangeRate {
   }
 
   convert(amount: number): number {
-    return Math.round(amount * this.rate);  // Redondeo a centavos
+    return Math.round(amount * this.rate); // Redondeo a centavos
   }
 }
 ```
@@ -1576,10 +1769,10 @@ export class ExchangeRate {
 export class CoopFare {
   constructor(
     public readonly id: string,
-    public readonly cooperativeId: string,   // Referencia a auth.associations
-    public readonly name: string,             // Ej: "Tarifa estándar"
-    public readonly baseFare: number,         // Centavos
-    public readonly perKmRate: number,        // Centavos por km
+    public readonly cooperativeId: string, // Referencia a auth.associations
+    public readonly name: string, // Ej: "Tarifa estándar"
+    public readonly baseFare: number, // Centavos
+    public readonly perKmRate: number, // Centavos por km
     public readonly currency: string,
     public readonly active: boolean,
     public readonly version: number,
@@ -1591,7 +1784,9 @@ export class CoopFare {
     return this.baseFare + Math.round(this.perKmRate * distanceKm);
   }
 
-  deactivate(): CoopFare { /* active=false, version+1 */ }
+  deactivate(): CoopFare {
+    /* active=false, version+1 */
+  }
 }
 ```
 
@@ -1602,13 +1797,25 @@ export class CoopFare {
 ## `src/modules/fin/domain/entities/saga-state.entity.ts` — Estado de saga distribuida
 
 ```typescript
-export enum SagaStatus { PENDING, COMPLETED, FAILED, COMPENSATING, COMPENSATED }
-export enum SagaStep { AUTH_HOLD, DEBIT_WALLET, RECORD_TRANSACTION, NOTIFY_USER, RELEASE_HOLD }
+export enum SagaStatus {
+  PENDING,
+  COMPLETED,
+  FAILED,
+  COMPENSATING,
+  COMPENSATED,
+}
+export enum SagaStep {
+  AUTH_HOLD,
+  DEBIT_WALLET,
+  RECORD_TRANSACTION,
+  NOTIFY_USER,
+  RELEASE_HOLD,
+}
 
 export class SagaState {
   constructor(
     public readonly id: string,
-    public readonly sagaId: string,           // Agrupa pasos de una transacción
+    public readonly sagaId: string, // Agrupa pasos de una transacción
     public readonly step: SagaStep,
     public readonly status: SagaStatus,
     public readonly payload: Record<string, unknown> | null,
@@ -1634,7 +1841,9 @@ export class InsufficientBalanceException extends Error {
     public readonly currentBalance: number,
     public readonly requiredAmount: number,
   ) {
-    super(`Insufficient balance in wallet ${walletId}: current=${currentBalance}, required=${requiredAmount}`);
+    super(
+      `Insufficient balance in wallet ${walletId}: current=${currentBalance}, required=${requiredAmount}`,
+    );
   }
 }
 ```
@@ -1663,7 +1872,9 @@ export class TransactionFailedException extends Error {
     public readonly reason: string,
     public readonly transactionId?: string,
   ) {
-    super(`Transaction failed: ${reason}${transactionId ? ` (id: ${transactionId})` : ''}`);
+    super(
+      `Transaction failed: ${reason}${transactionId ? ` (id: ${transactionId})` : ''}`,
+    );
   }
 }
 ```
@@ -1677,17 +1888,31 @@ export class TransactionFailedException extends Error {
 ```typescript
 export class Money {
   private constructor(
-    public readonly amount: number,    // Centavos (entero)
-    public readonly currency: string,  // ISO 4217
+    public readonly amount: number, // Centavos (entero)
+    public readonly currency: string, // ISO 4217
   ) {}
 
-  static fromCents(amount: number, currency: string): Money { /* ... */ }
-  static fromDecimal(amount: number, currency: string): Money { /* amount * 100 */ }
-  add(other: Money): Money { /* valida misma moneda */ }
-  subtract(other: Money): Money { /* valida misma moneda */ }
-  multiply(factor: number): Money { /* Math.round(amount * factor) */ }
-  isGreaterThanOrEqual(other: Money): boolean { /* ... */ }
-  toDecimal(): number { return this.amount / 100; }
+  static fromCents(amount: number, currency: string): Money {
+    /* ... */
+  }
+  static fromDecimal(amount: number, currency: string): Money {
+    /* amount * 100 */
+  }
+  add(other: Money): Money {
+    /* valida misma moneda */
+  }
+  subtract(other: Money): Money {
+    /* valida misma moneda */
+  }
+  multiply(factor: number): Money {
+    /* Math.round(amount * factor) */
+  }
+  isGreaterThanOrEqual(other: Money): boolean {
+    /* ... */
+  }
+  toDecimal(): number {
+    return this.amount / 100;
+  }
 }
 ```
 
@@ -1778,16 +2003,13 @@ export interface SagaStateRepositoryPort {
 export const WALLET_SERVICE_PORT = 'WalletServicePort';
 
 export interface WalletServicePort {
-  createWallet(userId: string, currency?: string): Promise<Wallet>;
-  getBalance(userId: string): Promise<{ balance: number; debtBalance: number; currency: string }>;
-  deposit(userId: string, amount: number, referenceId?: string): Promise<Transaction>;
-  withdraw(userId: string, amount: number, referenceId?: string): Promise<Transaction>;
-  processPayment(userId: string, amount: number, referenceId: string): Promise<Transaction>;
-  getWallet(userId: string): Promise<Wallet>;
+  createWallet(userId: string, currency?: string): Promise<void>;
 }
 ```
 
-**¿Por qué?**: Puerto de servicio que define las operaciones de alto nivel. Es el contrato que consume AuthModule (createWallet) y los controladores REST. La implementación concreta (WalletServiceImpl) orquesta casos de uso.
+**¿Por qué?**: Puerto de servicio que define la operación de alto nivel para crear billeteras. Es el contrato que consume AuthModule al registrar usuarios. Actualmente solo expone `createWallet()` — cuando se implementen los casos de uso restantes (deposit, withdraw, processPayment, getBalance, getWallet), este puerto deberá expandirse con los nuevos métodos.
+
+> **Nota:** La documentación anterior describía este puerto con 6 métodos (createWallet, getBalance, deposit, withdraw, processPayment, getWallet), pero el puerto REAL solo define `createWallet`. Los demás métodos son planeados para implementación futura.
 
 ---
 
@@ -1797,12 +2019,13 @@ export interface WalletServicePort {
 @Injectable()
 export class CreateWalletUseCase {
   constructor(
-    @Inject(WALLET_REPOSITORY_PORT) private readonly walletRepo: WalletRepositoryPort,
+    @Inject(WALLET_REPOSITORY_PORT)
+    private readonly walletRepo: WalletRepositoryPort,
   ) {}
 
   async execute(userId: string, currency: string = 'USD'): Promise<Wallet> {
     const existing = await this.walletRepo.findByUserId(userId);
-    if (existing) return existing;  // Idempotente
+    if (existing) return existing; // Idempotente
     const wallet = Wallet.create(userId, currency);
     return this.walletRepo.save(wallet);
   }
@@ -1813,132 +2036,83 @@ export class CreateWalletUseCase {
 
 ---
 
-## `src/modules/fin/application/use-cases/deposit.use-case.ts` — Caso de uso: depositar
+## `src/modules/fin/application/use-cases/deposit.use-case.ts` — Caso de uso: depositar (❌ STUB)
 
 ```typescript
-@Injectable()
-export class DepositUseCase {
-  async execute(userId: string, amount: number, referenceId?: string): Promise<Transaction> {
-    const wallet = await this.walletRepo.findByUserId(userId);
-    if (!wallet) throw new WalletNotFoundException(userId);
-
-    // Crea nueva instancia con saldo incrementado y version+1 (OCC)
-    const updatedWallet = new Wallet(
-      wallet.id, wallet.userId, wallet.balance + amount,
-      wallet.debtBalance, wallet.creditUsed, wallet.currency,
-      new Date(), wallet.version + 1, wallet.createdAt, new Date(),
-    );
-    await this.walletRepo.update(wallet.id, updatedWallet);
-
-    const transaction = Transaction.create(wallet.id, DEPOSIT, amount, wallet.currency, referenceId);
-    return this.transactionRepo.save(transaction.complete());
-  }
-}
+// src/modules/fin/application/use-cases/deposit.use-case.ts
+// ⚠️ ARCHIVO VACÍO — Pendiente de implementación
 ```
 
-**¿Por qué?**: Actualiza el saldo creando una nueva instancia de Wallet (inmutabilidad del dominio). La transacción se crea y marca como COMPLETED atómicamente.
+**Estado:** ❌ **No implementado.** El archivo existe pero solo contiene un comentario de ruta. Cuando se implemente, deberá:
+
+1. Buscar la wallet por userId
+2. Validar que exista (WalletNotFoundException si no)
+3. Incrementar el saldo creando una nueva instancia de Wallet (inmutabilidad)
+4. Crear una transacción de tipo DEPOSIT
+5. Persistir ambos cambios con OCC (optimistic concurrency control)
 
 ---
 
-## `src/modules/fin/application/use-cases/withdraw.use-case.ts` — Caso de uso: retirar
+## `src/modules/fin/application/use-cases/withdraw.use-case.ts` — Caso de uso: retirar (❌ STUB)
 
 ```typescript
-@Injectable()
-export class WithdrawUseCase {
-  async execute(userId: string, amount: number, referenceId?: string): Promise<Transaction> {
-    const wallet = await this.walletRepo.findByUserId(userId);
-    if (!wallet) throw new WalletNotFoundException(userId);
-    if (wallet.balance < amount) throw new InsufficientBalanceException(wallet.id, wallet.balance, amount);
-
-    const updatedWallet = new Wallet(/* balance - amount, version + 1 */);
-    await this.walletRepo.update(wallet.id, updatedWallet);
-
-    const transaction = Transaction.create(wallet.id, WITHDRAWAL, amount, wallet.currency, referenceId);
-    return this.transactionRepo.save(transaction.complete());
-  }
-}
+// src/modules/fin/application/use-cases/withdraw.use-case.ts — Ruta relativa desde src/
+// ⚠️ ARCHIVO VACÍO — Pendiente de implementación
 ```
 
-**¿Por qué?**: Valida balance >= amount antes de operar. Si no hay saldo suficiente, lanza InsufficientBalanceException.
+**Estado:** ❌ **No implementado.** El archivo existe pero solo contiene un comentario de ruta. Cuando se implemente, deberá:
+
+1. Buscar la wallet por userId
+2. Validar que exista
+3. Validar que `balance >= amount` (InsufficientBalanceException si no)
+4. Debitar el saldo y persistir con OCC
+5. Registrar transacción de tipo WITHDRAWAL
 
 ---
 
-## `src/modules/fin/application/use-cases/process-payment.use-case.ts` — Caso de uso: procesar pago
+## `src/modules/fin/application/use-cases/process-payment.use-case.ts` — Caso de uso: procesar pago (❌ STUB)
 
 ```typescript
-@Injectable()
-export class ProcessPaymentUseCase {
-  async execute(userId: string, amount: number, referenceId: string): Promise<Transaction> {
-    const wallet = await this.walletRepo.findByUserId(userId);
-    if (!wallet) throw new WalletNotFoundException(userId);
-
-    // Usa balance + crédito de emergencia (si no usado antes)
-    const totalDebt = wallet.balance + (wallet.creditUsed ? 0 : wallet.debtBalance);
-    if (totalDebt < amount) throw new InsufficientBalanceException(wallet.id, totalDebt, amount);
-
-    // Primero descuenta de balance, el resto a debtBalance
-    let newBalance = wallet.balance;
-    let newDebt = wallet.debtBalance;
-    let creditUsed = wallet.creditUsed;
-
-    if (newBalance >= amount) {
-      newBalance -= amount;
-    } else {
-      const remaining = amount - newBalance;
-      newBalance = 0;
-      newDebt += remaining;
-      creditUsed = true;  // Marca crédito como usado (única vez)
-    }
-
-    const updatedWallet = new Wallet(/* newBalance, newDebt, creditUsed, version+1 */);
-    await this.walletRepo.update(wallet.id, updatedWallet);
-
-    const transaction = Transaction.create(wallet.id, PAYMENT, amount, wallet.currency, referenceId);
-    return this.transactionRepo.save(transaction.complete());
-  }
-}
+// src/modules/fin/application/use-cases/process-payment.use-case.ts
+// ⚠️ ARCHIVO VACÍO — Pendiente de implementación
 ```
 
-**¿Por qué?**: Lógica de crédito de emergencia: si el saldo disponible no alcanza, usa el crédito (debtBalance). El crédito es de uso único (creditUsed flag). Una vez usado, no puede volver a activarse hasta que se salde la deuda.
+**Estado:** ❌ **No implementado.** Cuando se implemente, deberá incluir:
+
+1. Buscar wallet por userId
+2. Calcular fondos disponibles (balance + crédito de emergencia si no usado)
+3. Si no alcanza, lanzar InsufficientBalanceException
+4. Descontar primero de balance, luego de debtBalance si es necesario
+5. Marcar creditUsed = true si se usa crédito de emergencia
+6. Persistir wallet y crear transacción PAYMENT
 
 ---
 
-## `src/modules/fin/application/use-cases/get-balance.use-case.ts` — Caso de uso: consultar saldo
+## `src/modules/fin/application/use-cases/get-balance.use-case.ts` — Caso de uso: consultar saldo (❌ STUB)
 
 ```typescript
-@Injectable()
-export class GetBalanceUseCase {
-  async execute(userId: string): Promise<{ balance: number; debtBalance: number; currency: string }> {
-    const wallet = await this.walletRepo.findByUserId(userId);
-    if (!wallet) throw new WalletNotFoundException(userId);
-    return { balance: wallet.balance, debtBalance: wallet.debtBalance, currency: wallet.currency };
-  }
-}
+// src/modules/fin/application/use-cases/get-balance.use-case.ts
+// ⚠️ ARCHIVO VACÍO — Pendiente de implementación
 ```
+
+**Estado:** ❌ **No implementado.** Deberá buscar wallet por userId y retornar `{ balance, debtBalance, currency }` o lanzar WalletNotFoundException.
 
 ---
 
-## `src/modules/fin/application/services/wallet.service.impl.ts` — Implementación del servicio
+## `src/modules/fin/infrastructure/services/wallet.service.impl.ts` — Implementación del servicio
 
 ```typescript
 @Injectable()
 export class WalletServiceImpl implements WalletServicePort {
-  constructor(
-    private readonly createWalletUseCase: CreateWalletUseCase,
-    private readonly getBalanceUseCase: GetBalanceUseCase,
-    private readonly depositUseCase: DepositUseCase,
-    private readonly withdrawUseCase: WithdrawUseCase,
-    private readonly processPaymentUseCase: ProcessPaymentUseCase,
-  ) {}
+  constructor(private readonly createWalletUseCase: CreateWalletUseCase) {}
 
-  async createWallet(userId: string, currency?: string): Promise<Wallet> {
-    return this.createWalletUseCase.execute(userId, currency);
+  async createWallet(userId: string, currency?: string): Promise<void> {
+    await this.createWalletUseCase.execute(userId, currency);
   }
-  // ...delega cada método al caso de uso correspondiente
 }
 ```
 
-**¿Por qué?**: Implementación concreta de WalletServicePort que orquesta los casos de uso. Esta clase reemplaza el mock no-op que AuthModule usaba para crear billeteras. Al inyectarla via `{ provide: WALLET_SERVICE_PORT, useClass: WalletServiceImpl }`, AuthModule obtiene la implementación real automáticamente.
+**¿Por qué?**: Implementación concreta de WalletServicePort que orquesta `CreateWalletUseCase`. Actualmente solo implementa `createWallet()`. Los demás métodos del puerto (getBalance, deposit, withdraw, processPayment, getWallet) no están implementados — cuando los casos de uso correspondientes se desarrollen, este servicio se expandirá para delegar en ellos. Reemplaza el mock no-op que AuthModule usaba inicialmente.
 
 ---
 
@@ -1948,27 +2122,33 @@ export class WalletServiceImpl implements WalletServicePort {
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      WalletOrmEntity, TransactionOrmEntity,
-      ExchangeRateOrmEntity, CoopFareOrmEntity, SagaStateOrmEntity,
+      WalletOrmEntity,
+      CoopFareOrmEntity,
+      ExchangeRateOrmEntity,
     ]),
   ],
-  controllers: [WalletController, TransactionController],
+  controllers: [WalletController, CoopFareController],
   providers: [
     { provide: WALLET_REPOSITORY_PORT, useClass: WalletRepositoryImpl },
-    { provide: TRANSACTION_REPOSITORY_PORT, useClass: TransactionRepositoryImpl },
-    { provide: EXCHANGE_RATE_REPOSITORY_PORT, useClass: ExchangeRateRepositoryImpl },
     { provide: COOP_FARE_REPOSITORY_PORT, useClass: CoopFareRepositoryImpl },
-    { provide: SAGA_STATE_REPOSITORY_PORT, useClass: SagaStateRepositoryImpl },
-    CreateWalletUseCase, DepositUseCase, WithdrawUseCase,
-    ProcessPaymentUseCase, GetBalanceUseCase,
+    {
+      provide: EXCHANGE_RATE_REPOSITORY_PORT,
+      useClass: ExchangeRateRepositoryImpl,
+    },
     { provide: WALLET_SERVICE_PORT, useClass: WalletServiceImpl },
+    CreateWalletUseCase,
+    CreateCoopFareUseCase,
   ],
-  exports: [WALLET_SERVICE_PORT, /* ...repos */],
+  exports: [
+    WALLET_SERVICE_PORT,
+    COOP_FARE_REPOSITORY_PORT,
+    EXCHANGE_RATE_REPOSITORY_PORT,
+  ],
 })
 export class FinModule {}
 ```
 
-**¿Por qué?**: Ensambla todas las piezas del módulo financiero. Los tokens string vinculan puertos abstractos a implementaciones concretas. Exporta WALLET_SERVICE_PORT para que AuthModule lo inyecte al crear usuarios.
+**¿Por qué?**: Ensambla las piezas actualmente implementadas del módulo financiero. Solo 3 de 5 entidades ORM están registradas (Wallet, CoopFare, ExchangeRate). Faltan TransactionOrmEntity y SagaStateOrmEntity (existen como archivos pero no están en el módulo). Exporta COOP_FARE_REPOSITORY_PORT para que OpsModule pueda usarlo al crear rutas con referencias a tarifarios.
 
 ---
 
@@ -1982,12 +2162,20 @@ export class TransactionOrmEntity {
   @Column({ type: 'varchar', length: 20 }) type: TransactionOrmType;
   @Column({ type: 'bigint' }) amount: number;
   @Column({ type: 'varchar', length: 3, default: 'USD' }) currency: string;
-  @Column({ type: 'varchar', length: 20, default: 'PENDING' }) status: TransactionOrmStatus;
-  @Column({ type: 'uuid', name: 'reference_id', nullable: true }) referenceId: string | null;
-  @Column({ type: 'jsonb', nullable: true }) metadata: Record<string, unknown> | null;
+  @Column({ type: 'varchar', length: 20, default: 'PENDING' })
+  status: TransactionOrmStatus;
+  @Column({ type: 'uuid', name: 'reference_id', nullable: true }) referenceId:
+    | string
+    | null;
+  @Column({ type: 'jsonb', nullable: true }) metadata: Record<
+    string,
+    unknown
+  > | null;
   @Column({ type: 'int', default: 1 }) version: number;
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' }) createdAt: Date;
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' }) updatedAt: Date;
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  createdAt: Date;
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  updatedAt: Date;
 }
 ```
 
@@ -2003,7 +2191,8 @@ export class ExchangeRateOrmEntity {
   // ...
   @Column({ type: 'decimal', precision: 18, scale: 8 }) rate: number;
   @Column({ type: 'timestamptz', name: 'valid_from' }) validFrom: Date;
-  @Column({ type: 'timestamptz', name: 'valid_until', nullable: true }) validUntil: Date | null;
+  @Column({ type: 'timestamptz', name: 'valid_until', nullable: true })
+  validUntil: Date | null;
   // ...
 }
 ```
@@ -2034,8 +2223,12 @@ export class CoopFareOrmEntity {
 export class SagaStateOrmEntity {
   @Column({ type: 'uuid', name: 'saga_id' }) sagaId: string;
   @Column({ type: 'varchar', length: 30 }) step: SagaOrmStep;
-  @Column({ type: 'varchar', length: 20, default: 'PENDING' }) status: SagaOrmStatus;
-  @Column({ type: 'jsonb', nullable: true }) payload: Record<string, unknown> | null;
+  @Column({ type: 'varchar', length: 20, default: 'PENDING' })
+  status: SagaOrmStatus;
+  @Column({ type: 'jsonb', nullable: true }) payload: Record<
+    string,
+    unknown
+  > | null;
   @Column({ type: 'text', nullable: true }) error: string | null;
   // ...
 }
@@ -2054,13 +2247,17 @@ export class WalletRepositoryImpl implements WalletRepositoryPort {
   ) {}
 
   async save(wallet: Wallet): Promise<Wallet> {
-    const entity = this.toOrm(wallet);           // Dominio → ORM
-    const saved = await this.repo.save(entity);  // Persiste
-    return this.toDomain(saved);                 // ORM → Dominio
+    const entity = this.toOrm(wallet); // Dominio → ORM
+    const saved = await this.repo.save(entity); // Persiste
+    return this.toDomain(saved); // ORM → Dominio
   }
 
-  private toDomain(entity: WalletOrmEntity): Wallet { /* mapeo campo por campo */ }
-  private toOrm(domain: Wallet): WalletOrmEntity { /* mapeo inverso */ }
+  private toDomain(entity: WalletOrmEntity): Wallet {
+    /* mapeo campo por campo */
+  }
+  private toOrm(domain: Wallet): WalletOrmEntity {
+    /* mapeo inverso */
+  }
 }
 ```
 
@@ -2118,12 +2315,18 @@ export class WalletController {
     private readonly walletService: WalletServicePort,
   ) {}
 
-  @Post()                           // POST /fin/wallets
+  @Post() // POST /fin/wallets
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateWalletDto) { /* ... */ }
+  async create(@Body() dto: CreateWalletDto) {
+    /* ... */
+  }
 
-  @Get(':userId/balance')           // GET /fin/wallets/:userId/balance
-  async getBalance(@Param('userId') userId: string): Promise<BalanceResponseDto> { /* ... */ }
+  @Get(':userId/balance') // GET /fin/wallets/:userId/balance
+  async getBalance(
+    @Param('userId') userId: string,
+  ): Promise<BalanceResponseDto> {
+    /* ... */
+  }
 }
 ```
 
@@ -2131,20 +2334,16 @@ export class WalletController {
 
 ---
 
-## `src/modules/fin/interfaces/rest/transaction.controller.ts` — Controlador de transacciones
+## `src/modules/fin/interfaces/rest/transaction.controller.ts` — Controlador de transacciones (❌ STUB)
 
 ```typescript
 @Controller('fin/transactions')
 export class TransactionController {
-  @Post('deposit')                  // POST /fin/transactions/deposit
-  async deposit(@Body() dto: DepositDto): Promise<TransactionDto> { /* ... */ }
-
-  @Post('transfer')                 // POST /fin/transactions/transfer
-  async transfer(@Body() dto: TransferDto): Promise<TransactionDto> { /* ... */ }
+  // Endpoints deposit y transfer se implementarán en futuras sesiones
 }
 ```
 
-**¿Por qué?**: Endpoints POST específicos para cada operación financiera. deposit acredita fondos, transfer debita (pago de viaje). Ambos retornan TransactionDto con el resultado.
+**Estado:** ❌ **No implementado.** El archivo existe con la anotación `@Controller('fin/transactions')` pero no tiene endpoints. Cuando se implemente, deberá contener `POST /fin/transactions/deposit` y `POST /fin/transactions/transfer` delegando en los casos de uso correspondientes.
 
 ---
 
@@ -2168,37 +2367,82 @@ export class DepositDto {
 export class TransferDto {
   userId: string;
   amount: number;
-  referenceId: string;  // Obligatorio: ID del viaje o servicio
+  referenceId: string; // Obligatorio: ID del viaje o servicio
 }
 ```
 
 **¿Por qué?**: referenceId obligatorio porque un pago siempre debe asociarse a un viaje o servicio.
 
+---
+
+## `src/modules/fin/application/use-cases/create-coop-fare.use-case.ts` — Caso de uso: crear tarifario
+
 ```typescript
-export class Wallet {
+@Injectable()
+export class CreateCoopFareUseCase {
   constructor(
-    public readonly id: string,
-    public readonly userId: string,           // Usuario propietario (1 wallet por usuario)
-    public readonly balance: number,          // Saldo en centavos (BIGINT, no float)
-    public readonly debtBalance: number,      // Crédito de emergencia usado
-    public readonly creditUsed: boolean,      // ¿Ya usó el crédito de emergencia?
-    public readonly currency: string,         // Código ISO 4217 (USD, VED, etc.)
-    public readonly lastTransactionAt: Date | null,
-    public readonly version: number,          // Control concurrencia optimista (OCC)
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date,
+    @Inject(COOP_FARE_REPOSITORY_PORT)
+    private readonly coopFareRepo: CoopFareRepositoryPort,
+    @Inject(EXCHANGE_RATE_REPOSITORY_PORT)
+    private readonly exchangeRateRepo: ExchangeRateRepositoryPort,
   ) {}
+
+  async execute(
+    associationId: string,
+    dto: CreateCoopFareDto,
+  ): Promise<CoopFare> {
+    const rate = await this.exchangeRateRepo.findById(dto.exchangeRateId);
+    if (!rate) throw new BadRequestException('Tasa de cambio no encontrada');
+
+    const existingFares =
+      await this.coopFareRepo.findByAssociationId(associationId);
+    const duplicate = existingFares.find((f) => f.name === dto.name);
+    if (duplicate)
+      throw new BadRequestException('Ya existe un tarifario con ese nombre');
+
+    const coopFare = CoopFare.create({ associationId, ...dto });
+    return this.coopFareRepo.save(coopFare);
+  }
 }
 ```
 
-**¿Por qué?**: `balance` en centavos (entero) evita errores de redondeo por punto flotante. `version` se usa para optimistic concurrency control: si dos operaciones concurrentes leen distinta versión, una debe reintentar.
+**¿Por qué?**: Caso de uso que crea un tarifario para una asociación. Valida que la tasa de cambio referenciada exista y que no haya duplicados de nombre dentro de la misma asociación. Usa `BadRequestException` de NestJS para errores de validación.
 
 ---
+
+## `src/modules/fin/interfaces/rest/coop-fare.controller.ts` — Controlador de tarifarios
+
+```typescript
+@Controller('fin/coop-fares')
+export class CoopFareController {
+  constructor(private readonly createCoopFareUseCase: CreateCoopFareUseCase) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('association_admin')
+  async create(@Req() req: any, @Body() dto: CreateCoopFareDto) {
+    const associationId = req.user.associationId;
+    if (!associationId) throw new Error('No perteneces a una asociación');
+    return this.createCoopFareUseCase.execute(associationId, dto);
+  }
+}
+```
+
+**¿Por qué?**: Endpoint `POST /fin/coop-fares` protegido con JWT + RolesGuard. Solo admins de asociación pueden crear tarifarios. Obtiene el `associationId` del token JWT (inyectado por JwtStrategy).
 
 ## `src/modules/fin/domain/entities/index.ts` — Barrel
 
 ```typescript
 export { Wallet } from './wallet.entity';
+export {
+  Transaction,
+  TransactionType,
+  TransactionStatus,
+} from './transaction.entity';
+export { ExchangeRate } from './exchange-rate.entity';
+export { CoopFare } from './coop-fare.entity';
+export { SagaState, SagaStatus, SagaStep } from './saga-state.entity';
 ```
 
 ---
@@ -2209,9 +2453,9 @@ export { Wallet } from './wallet.entity';
 @Entity({ name: 'wallets', schema: 'fin' })
 export class WalletOrmEntity {
   @Column({ type: 'bigint', default: 0 })
-  balance: number;              // BIGINT en PostgreSQL (centavos)
+  balance: number; // BIGINT en PostgreSQL (centavos)
   @Column({ type: 'int', default: 1 })
-  version: number;              // Para OCC
+  version: number; // Para OCC
   // ...
 }
 ```
@@ -2222,23 +2466,29 @@ export class WalletOrmEntity {
 
 ```typescript
 export { WalletOrmEntity } from './wallet.orm-entity';
+export { TransactionOrmEntity } from './transaction.orm-entity';
+export { ExchangeRateOrmEntity } from './exchange-rate.orm-entity';
+export { CoopFareOrmEntity } from './coop-fare.orm-entity';
+export { SagaStateOrmEntity } from './saga-state.orm-entity';
 ```
 
 ---
 
-## `src/modules/ops/index.ts` — Operaciones (stub)
+## `src/modules/ops/index.ts` — Operaciones (🔄 en progreso)
 
 ```typescript
 // Pendiente:
-// - CRUD de rutas (ops.routes) con referencia a fin.coop_fares
-// - CRUD de vehículos (ops.vehicles)
-// - Asignación de rutas a conductores (ops.assigned_routes)
+// - CRUD de rutas (ops.routes) con referencia a fin.coop_fares — ✅ EN PROGRESO (Route entity implementada)
+// - CRUD de vehículos (ops.vehicles) — ❌ PENDIENTE
+// - Asignación de rutas a conductores (ops.assigned_routes) — ❌ PENDIENTE
 export {};
 ```
 
+**Estado actual:** El módulo ops tiene implementada la entidad Route con su caso de uso (CreateRouteUseCase), repositorio TypeORM (RouteRepositoryImpl), controlador REST (RouteController) y módulo NestJS (OpsModule) registrado en app.module.ts. Faltan Vehicle, AssignedRoute y sus respectivos CRUDs.
+
 ---
 
-## `src/modules/trip/index.ts` — Viajes (stub)
+## `src/modules/trip/index.ts` — Viajes (⏳ pendiente)
 
 ```typescript
 // Pendiente:
@@ -2262,37 +2512,37 @@ export {};
   "scripts": {
     "build": "nest build",
     "start": "nest start",
-    "start:dev": "nest start --watch",     // Hot-reload para desarrollo
-    "start:prod": "node dist/main",        // Sin NestJS CLI, solo Node
+    "start:dev": "nest start --watch", // Hot-reload para desarrollo
+    "start:prod": "node dist/main", // Sin NestJS CLI, solo Node
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.1",           // Decoradores, pipes, guards
-    "@nestjs/config": "^4.0.4",            // Variables de entorno
-    "@nestjs/core": "^11.0.1",             // Contenedor IoC
-    "@nestjs/jwt": "^11.0.2",              // JWT module
-    "@nestjs/passport": "^11.0.5",         // Integración Passport
+    "@nestjs/common": "^11.0.1", // Decoradores, pipes, guards
+    "@nestjs/config": "^4.0.4", // Variables de entorno
+    "@nestjs/core": "^11.0.1", // Contenedor IoC
+    "@nestjs/jwt": "^11.0.2", // JWT module
+    "@nestjs/passport": "^11.0.5", // Integración Passport
     "@nestjs/platform-express": "^11.0.1", // Servidor HTTP Express
-    "@nestjs/swagger": "^11.4.4",          // Documentación OpenAPI
-    "@nestjs/terminus": "^11.1.1",         // Healthchecks
-    "@nestjs/typeorm": "^11.0.2",          // TypeORM integration
-    "bcrypt": "^6.0.0",                    // Hashing de contraseñas
-    "class-transformer": "^0.5.1",         // Transformar planos a clases
-    "class-validator": "^0.15.1",          // Validación por decoradores
-    "ioredis": "^5.11.1",                 // Cliente Redis
+    "@nestjs/swagger": "^11.4.4", // Documentación OpenAPI
+    "@nestjs/terminus": "^11.1.1", // Healthchecks
+    "@nestjs/typeorm": "^11.0.2", // TypeORM integration
+    "bcrypt": "^6.0.0", // Hashing de contraseñas
+    "class-transformer": "^0.5.1", // Transformar planos a clases
+    "class-validator": "^0.15.1", // Validación por decoradores
+    "ioredis": "^5.11.1", // Cliente Redis
     "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1",             // Estrategia JWT para Passport
-    "pg": "^8.22.0",                      // Driver PostgreSQL
-    "typeorm": "^1.0.0",                  // ORM
-    "winston": "^3.19.0"                  // Logger
+    "passport-jwt": "^4.0.1", // Estrategia JWT para Passport
+    "pg": "^8.22.0", // Driver PostgreSQL
+    "typeorm": "^1.0.0", // ORM
+    "winston": "^3.19.0" // Logger
   },
   "jest": {
     "moduleFileExtensions": ["js", "json", "ts"],
-    "rootDir": "src",                     // Tests buscan desde src/
-    "testRegex": ".*\\.spec\\.ts$",       // Patrón de archivos de test
+    "rootDir": "src", // Tests buscan desde src/
+    "testRegex": ".*\\.spec\\.ts$", // Patrón de archivos de test
     "transform": { "^.+\\.(t|j)s$": "ts-jest" },
     "testEnvironment": "node"
   }
@@ -2343,10 +2593,16 @@ Documentación exhaustiva del proyecto: stack, arquitectura, estructura, endpoin
 
 ---
 
-## `README.md` — README en inglés
+## `README.md` — README del proyecto
 
-README simplificado con stack, endpoints funcionales, esquemas de BD y scripts.
+README con stack, endpoints funcionales, esquemas de BD y scripts.
 
 ---
 
-**Fin de la documentación — 108 archivos documentados.**
+## `ANALISIS.md` — Análisis completo del código fuente
+
+Documento generado por revisión exhaustiva de todos los archivos fuente. Incluye hallazgos, inconsistencias, patrones y recomendaciones.
+
+---
+
+**Fin de la documentación — ~120 archivos documentados.**

@@ -72,10 +72,18 @@ export class WalletOrmEntity {
   // Timestamp de creación con zona horaria. Usa clock_timestamp() de PostgreSQL para
   // obtener hora real (no la del inicio de la transacción) y evitar inconsistencias
   // en operaciones concurrentes dentro de una misma transacción.
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at', default: () => 'clock_timestamp()' })
+  @CreateDateColumn({
+    type: 'timestamptz',
+    name: 'created_at',
+    default: () => 'clock_timestamp()',
+  })
   createdAt: Date;
 
   // Timestamp de última actualización, también con clock_timestamp().
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at', default: () => 'clock_timestamp()' })
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    name: 'updated_at',
+    default: () => 'clock_timestamp()',
+  })
   updatedAt: Date;
 }

@@ -8,21 +8,21 @@ La base de datos corre sobre **PostgreSQL 18 + PostGIS 3**, con esquemas separad
 
 ## 2. Stack Tecnológico
 
-| Componente               | Versión        | Propósito                             |
-|--------------------------|----------------|---------------------------------------|
-| Node.js                  | 24 Alpine      | Runtime JavaScript                    |
-| NestJS                   | ^11.0          | Framework backend (DI, módulos, guards) |
-| TypeScript               | ^5.7           | Lenguaje                              |
-| TypeORM                  | ^1.0           | ORM para PostgreSQL                   |
-| PostgreSQL               | 18 + PostGIS 3 | Base de datos relacional + geoespacial |
-| Redis                    | 7 Alpine       | Caché / sesiones / rate-limiting      |
-| passport-jwt             | ^4.0           | Autenticación JWT                     |
-| bcrypt                   | ^6.0           | Hashing de contraseñas                |
-| class-validator          | ^0.15          | Validación de DTOs                    |
-| @nestjs/swagger          | ^11.4          | Documentación OpenAPI automática      |
-| Winston                  | ^3.19          | Logging estructurado                  |
-| ioredis                  | ^5.11          | Cliente Redis                         |
-| Jest                     | ^30.0          | Tests unitarios y e2e                 |
+| Componente      | Versión        | Propósito                               |
+| --------------- | -------------- | --------------------------------------- |
+| Node.js         | 24 Alpine      | Runtime JavaScript                      |
+| NestJS          | ^11.0          | Framework backend (DI, módulos, guards) |
+| TypeScript      | ^5.7           | Lenguaje                                |
+| TypeORM         | ^1.0           | ORM para PostgreSQL                     |
+| PostgreSQL      | 18 + PostGIS 3 | Base de datos relacional + geoespacial  |
+| Redis           | 7 Alpine       | Caché / sesiones / rate-limiting        |
+| passport-jwt    | ^4.0           | Autenticación JWT                       |
+| bcrypt          | ^6.0           | Hashing de contraseñas                  |
+| class-validator | ^0.15          | Validación de DTOs                      |
+| @nestjs/swagger | ^11.4          | Documentación OpenAPI automática        |
+| Winston         | ^3.19          | Logging estructurado                    |
+| ioredis         | ^5.11          | Cliente Redis                           |
+| Jest            | ^30.0          | Tests unitarios y e2e                   |
 
 ## 3. Arquitectura Hexagonal (Puertos y Adaptadores)
 
@@ -107,7 +107,7 @@ api/
 │       │       ├── auth/                   # JwtStrategy, JwtAuthGuard
 │       │       ├── services/               # NotificationServiceImpl (stub)
 │       │       └── auth.module.ts          # Composición del módulo
-│       ├── fin/               # ⚠️ PARCIAL → ✅ COMPLETO
+│       ├── fin/               # 🔄 PARCIAL
 │       │   ├── domain/
 │       │   │   ├── entities/              # Wallet, Transaction, ExchangeRate, CoopFare, SagaState
 │       │   │   ├── exceptions/            # InsufficientBalance, WalletNotFound, TransactionFailed
@@ -116,19 +116,31 @@ api/
 │       │   │       ├── repositories/      # 5 puertos de repositorio
 │       │   │       └── services/          # WalletServicePort
 │       │   ├── application/
-│       │   │   ├── use-cases/             # create, deposit, withdraw, payment, balance
-│       │   │   ├── dto/                   # CreateWalletDto, TransactionDto, BalanceResponseDto
-│       │   │   └── services/              # WalletServiceImpl
+│       │   │   ├── use-cases/             # CreateWallet, CreateCoopFare (Deposit/Withdraw/etc stubs)
+│       │   │   ├── dto/                   # CreateWalletDto, TransactionDto, BalanceResponseDto, CreateCoopFareDto
+│       │   │   └── services/              # (vacío)
 │       │   ├── infrastructure/
-│       │   │   ├── orm/                   # 5 entidades TypeORM
-│       │   │   ├── persistence/           # 5 repositorios TypeORM
-│       │   │   └── fin.module.ts          # DI con TypeOrmModule.forFeature
+│       │   │   ├── orm/                   # 5 entidades (3 registradas en módulo)
+│       │   │   ├── persistence/           # 3 repositorios registrados en módulo
+│       │   │   └── fin.module.ts          # DI parcial
 │       │   └── interfaces/
-│       │       ├── rest/                  # WalletController, TransactionController
+│       │       ├── rest/                  # WalletController, CoopFareController, TransactionController (stub)
 │       │       └── dto/                   # DepositDto, TransferDto
-│       ├── trip/              # ❌ STUB
-│       ├── ops/               # ❌ STUB
-│       └── audit/             # ❌ STUB
+│       ├── ops/               # 🔄 EN PROGRESO
+│       │   ├── domain/
+│       │   │   ├── entities/              # Route
+│       │   │   ├── exceptions/
+│       │   │   └── interfaces/
+│       │   ├── application/
+│       │   │   └── use-cases/             # CreateRouteUseCase, CreateAssociationUseCase
+│       │   ├── infrastructure/
+│       │   │   ├── orm/                   # RouteOrmEntity
+│       │   │   ├── persistence/           # RouteRepositoryImpl
+│       │   │   └── ops.module.ts          # DI con AuthModule + FinModule
+│       │   └── interfaces/
+│       │       └── rest/                  # RouteController, OpsAssociationController
+│       ├── trip/              # ⏳ PENDIENTE
+│       └── audit/             # ⏳ PENDIENTE
 └── test/
     ├── jest-e2e.json           # Config Jest e2e
     └── app.e2e-spec.ts         # Test e2e básico
@@ -138,18 +150,19 @@ api/
 
 ### Endpoints
 
-| Método | Ruta              | Auth     | Descripción                          | Implementado |
-|--------|-------------------|----------|--------------------------------------|:---:|
-| POST   | /auth/register    | No       | Registro de usuario con billetera    | ✅  |
-| POST   | /auth/login       | No       | Login con phone + password → JWT     | ✅  |
-| GET    | /auth/profile     | JWT      | Perfil del usuario autenticado       | ✅  |
-| GET    | /users/:id        | No       | Obtener usuario por ID (placeholder) | ⚠️  |
-| GET    | /associations/:id | No       | Obtener asociación (placeholder)     | ⚠️  |
-| POST   | /associations     | No       | Crear asociación (placeholder)       | ⚠️  |
+| Método | Ruta              | Auth | Descripción                          | Implementado |
+| ------ | ----------------- | ---- | ------------------------------------ | :----------: |
+| POST   | /auth/register    | No   | Registro de usuario con billetera    |      ✅      |
+| POST   | /auth/login       | No   | Login con phone + password → JWT     |      ✅      |
+| GET    | /auth/profile     | JWT  | Perfil del usuario autenticado       |      ✅      |
+| GET    | /users/:id        | No   | Obtener usuario por ID (placeholder) |      ⚠️      |
+| GET    | /associations/:id | No   | Obtener asociación (placeholder)     |      ⚠️      |
+| POST   | /associations     | No   | Crear asociación (placeholder)       |      ⚠️      |
 
 ### Casos de Uso
 
 #### CreateUserUseCase
+
 1. Verifica unicidad de teléfono
 2. Hashea contraseña con bcrypt (costo 10)
 3. Crea entidad User mediante factory method
@@ -157,6 +170,7 @@ api/
 5. Crea billetera digital (mock WalletServicePort no-op)
 
 #### LoginUseCase
+
 1. Busca usuario por teléfono
 2. Compara contraseña contra hash
 3. Verifica isActive
@@ -172,6 +186,7 @@ api/
 ### Tablas en Base de Datos
 
 **auth.users** — Usuarios del sistema
+
 - UUID v7, phone único, email único nullable
 - Role enum: passenger, driver, association_admin, super_admin
 - Category enum: normal, student, elderly
@@ -179,10 +194,12 @@ api/
 - QR fields para identificación rápida de conductores
 
 **auth.associations** — Cooperativas/Asociaciones
+
 - UUID v7, name único, RIF único
 - admin_id referencia a auth.users
 
 **auth.driver_requests** — Solicitudes de afiliación
+
 - Estados: pending, approved, rejected
 - documents_urls: JSONB para documentos adjuntos
 - rejection_reason opcional
@@ -190,11 +207,12 @@ api/
 ## 6. Módulo fin — Estado Actual
 
 ### Implementado — Dominio (✅ Completo)
+
 - **Entidades:**
   - `Wallet` — billetera digital con balance/debtBalance en centavos (BigInt), OCC por version, crédito de emergencia de uso único
   - `Transaction` — transacciones financieras con ciclo de estados (PENDING → COMPLETED | FAILED → REVERSED)
   - `ExchangeRate` — tipo de cambio con vigencia temporal (validFrom/validUntil)
-  - `CoopFare` — tarifario por cooperativa (baseFare + perKmRate * distance)
+  - `CoopFare` — tarifario por cooperativa (baseFare + perKmRate \* distance)
   - `SagaState` — paso de saga distribuida con estados y compensación
 - **Value Object:** `Money` — monto inmutable en centavos con operaciones aritméticas seguras
 - **Excepciones:** `InsufficientBalanceException`, `WalletNotFoundException`, `TransactionFailedException`
@@ -202,47 +220,62 @@ api/
   - 5 repositorios: Wallet, Transaction, ExchangeRate, CoopFare, SagaState
   - 1 servicio: WalletServicePort (usado por AuthModule para crear billeteras)
 
-### Implementado — Aplicación (✅ Completo)
-- **Casos de uso:**
+### Implementado — Aplicación (🔄 Parcial)
+
+- **Casos de uso implementados:**
   - `CreateWalletUseCase` — crea wallet o retorna existente (idempotente)
-  - `DepositUseCase` — acredita fondos con creación de transacción
-  - `WithdrawUseCase` — debita fondos con validación de saldo
-  - `ProcessPaymentUseCase` — pago con consumo de crédito de emergencia si es necesario
+  - `CreateCoopFareUseCase` — crea tarifario con validación de tasa de cambio
+- **Casos de uso pendientes (archivos vacíos):**
+  - `DepositUseCase` — acreditar fondos
+  - `WithdrawUseCase` — debitar fondos con validación de saldo
+  - `ProcessPaymentUseCase` — pago con crédito de emergencia
   - `GetBalanceUseCase` — consulta de saldo y deuda
-- **DTOs:** CreateWalletDto, TransactionDto, BalanceResponseDto
-- **Servicio:** `WalletServiceImpl` — implementación real del puerto (reemplaza mock en AuthModule)
+- **DTOs:** CreateWalletDto, TransactionDto, BalanceResponseDto, CreateCoopFareDto
+- **Servicio:** `WalletServiceImpl` — solo implementa `createWallet()`
 
-### Implementado — Infraestructura (✅ Completo)
-- **ORM (TypeORM):** 5 entidades en esquema `fin`: wallets, transactions, exchange_rates, coop_fares, saga_states
-- **Repositorios:** 5 implementaciones TypeORM con mapeo toDomain/toOrm
-- **Módulo NestJS:** `FinModule` con DI completa (puertos → implementaciones), controladores y exports
+### Implementado — Infraestructura (🔄 Parcial)
 
-### Implementado — Interfaces (✅ Completo)
+- **ORM (TypeORM):** 3 entidades registradas en FinModule: wallets, exchange_rates, coop_fares
+- **Repositorios:** 3 implementaciones TypeORM registradas: Wallet, CoopFare, ExchangeRate
+- **Faltan:** TransactionOrmEntity, SagaStateOrmEntity y sus repositorios (no registrados en FinModule)
+- **Módulo NestJS:** `FinModule` con DI parcial
+
+### Implementado — Interfaces (🔄 Parcial)
+
 - **REST:**
-  - `WalletController`: POST /fin/wallets, GET /fin/wallets/:userId/balance
-  - `TransactionController`: POST /fin/transactions/deposit, POST /fin/transactions/transfer
-- **DTOs:** DepositDto, TransferDto (pendientes decoradores de validación)
+  - `WalletController`: POST /fin/wallets (funcional)
+  - `CoopFareController`: POST /fin/coop-fares (funcional)
+  - `TransactionController`: vacío (stub pendiente)
+- **DTOs:** DepositDto, TransferDto (sin decoradores class-validator)
 
 ### Pendiente
+
 - Agregar decoradores class-validator a DepositDto y TransferDto
-- Integrar FinModule en app.module.ts (descomentar import)
+- Implementar DepositUseCase, WithdrawUseCase, ProcessPaymentUseCase, GetBalanceUseCase
+- Implementar TransactionController
+- Registrar TransactionOrmEntity y SagaStateOrmEntity en FinModule
 - Tests unitarios para casos de uso y repositorios
 - Endpoint para historial de transacciones por wallet
 
 ## 7. Módulos Pendientes
 
-### Ops (Operaciones)
-- CRUD de rutas con referencia a tarifarios
-- CRUD de vehículos (capacidad, tipo, estado)
-- Asignación de rutas a conductores
+### Ops (Operaciones) 🔄 En Progreso
 
-### Trip (Viajes)
+- Route entity implementada (src/modules/ops/domain/entities/route.entity.ts)
+- CreateRouteUseCase funcional con repositorio TypeORM
+- CreateAssociationUseCase para sub-asociaciones operativas
+- OpsModule registrado en app.module.ts con RouteOrmEntity
+- Pendiente: CRUD de vehículos, asignaciones, validaciones de disponibilidad
+
+### Trip (Viajes) ⏳ Pendiente
+
 - Inicio/finalización de viajes
 - Cálculo de tarifa dinámica
 - Tracking GPS con PostGIS (GEOGRAPHY Point, 4326)
 - Pagos y comisiones por viaje
 
-### Audit (Auditoría)
+### Audit (Auditoría) ⏳ Pendiente
+
 - Log inmutable de acciones críticas
 - Trigger BD para prevenir UPDATE/DELETE
 - Consulta de historial por entidad
@@ -250,6 +283,7 @@ api/
 ## 8. Configuración de Base de Datos
 
 ### Conexión (typeorm.config.ts)
+
 ```typescript
 type: 'postgres',
 host: DB_HOST || 'localhost',
@@ -261,8 +295,9 @@ synchronize: false,  // ¡Deshabilitado! Usar init.sql o migraciones
 ```
 
 ### Lectura de Secrets
+
 ```typescript
-function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string
+function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string;
 // 1. Si existe variable <fileEnvKey> (path a archivo secreto), lo lee
 // 2. Sino, usa <fallbackEnvKey> como variable directa
 // 3. Sino, retorna string vacío
@@ -272,14 +307,17 @@ function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string
 
 - [x] Implementar WalletServiceImpl real en fin/infrastructure
 - [x] Crear repositorios WalletRepository (port + impl) y resto de entidades fin
-- [x] Transacciones financieras (fin.transactions)
 - [x] Tarifas por cooperativa (fin.coop_fares)
 - [x] Tipos de cambio (fin.exchange_rates)
 - [x] Saga pattern para pagos distribuidos (fin.saga_states)
-- [x] Módulo FinModule completo
+- [x] Módulo ops básico con Route entity, OpsModule, controllers
+- [x] FinModule integrado en app.module.ts
+- [x] OpsModule integrado en app.module.ts
+- [ ] Implementar casos de uso de fin: Deposit, Withdraw, ProcessPayment, GetBalance
+- [ ] Implementar TransactionController
 - [ ] Agregar decoradores class-validator a DepositDto y TransferDto
-- [ ] Integrar FinModule en app.module.ts (descomentar import)
-- [ ] Desarrollar CRUD de módulo ops (rutas, vehículos)
+- [ ] Registrar TransactionOrmEntity y SagaStateOrmEntity en FinModule
+- [ ] Desarrollar CRUD de vehículos en módulo ops (ops.vehicles)
 - [ ] Implementar módulo trip con tracking GPS
 - [ ] Configurar módulo audit con triggers de BD
 - [ ] Integrar Redis para caché de sesiones

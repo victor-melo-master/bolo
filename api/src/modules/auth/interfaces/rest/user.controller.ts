@@ -16,7 +16,8 @@
  * @module UserController
  */
 
-// Decoradores de NestJS para definir rutas y extraer parámetros de la URL
+// ─── Decoradores de NestJS para definir rutas HTTP, extraer parámetros,
+//     proteger endpoints con guards y manejar excepciones ──────────────────────
 import {
   Controller,
   Get,
@@ -27,17 +28,27 @@ import {
   BadRequestException,
   Req,
 } from '@nestjs/common';
+// ─── Casos de uso de la capa de aplicación ──────────────────────────────────
 // Se importa CreateUserUseCase por compatibilidad con el módulo, aunque
-// todavía no se usa directamente; se reemplazará por GetUserUseCase en el futuro
+// todavía no se usa directamente en todos los endpoints; se reemplazará
+// por GetUserUseCase en el futuro para el GET /users/:id
 import { CreateUserUseCase } from '../../application/use-cases/create-user.use-case';
+// ─── Guards de autenticación y autorización ─────────────────────────────────
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../../../shared/infrastructure/auth/roles.guard';
+// ─── Decorador personalizado para verificación de roles ─────────────────────
 import { Roles } from '../../../../shared/interfaces/decorators/roles.decorator';
+// ─── DTO de aplicación: estructura con la que trabaja el caso de uso ────────
 import { CreateUserDto } from '../../application/dto/create-user.dto';
+
 // Prefijo base: todas las rutas empiezan con /users
 @Controller('users')
 export class UserController {
-  constructor(private readonly createUserUseCase: CreateUserUseCase) {}
+  constructor(
+    // Inyección del caso de uso CreateUserUseCase para la creación de
+    // usuarios administradores de asociación (POST /users/admins)
+    private readonly createUserUseCase: CreateUserUseCase,
+  ) {}
 
   // ────────────────────────────────────────────────────────────────────────────
   // GET /users/:id — Obtener usuario por ID (PLACEHOLDER)
@@ -52,22 +63,37 @@ export class UserController {
     return { message: 'Get user endpoint', id };
   }
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // POST /users/admins — Crear administrador de asociación
+  // ────────────────────────────────────────────────────────────────────────────
+  // Endpoint protegido: requiere JWT válido Y rol super_admin o association_admin.
+  // El association_admin solo puede crear admins dentro de su propia asociación.
+  // El super_admin puede crear admins sin asociación (associationId undefined).
   @Post('admins')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'association_admin') // ambos roles permitidos
+  @Roles('super_admin', 'association_admin')
   async createAssociationAdmin(@Req() req: any, @Body() dto: CreateUserDto) {
+    // Forza el rol del nuevo usuario a association_admin, independientemente
+    // de lo que el creador haya enviado en el body (seguridad: evitar que
+    // un super_admin cree usuarios con roles no deseados en este endpoint).
     dto.role = 'association_admin';
 
-    // Si el creador es un association_admin, hereda su asociación
+    // Si el creador es un association_admin, hereda su asociación al nuevo admin
     if (req.user.role === 'association_admin') {
+      // Verifica que el creador pertenezca a una asociación; si no, rechaza
+      // la operación porque no se puede crear un admin sin asociación asignada
       if (!req.user.associationId) {
         throw new BadRequestException(
           'No perteneces a ninguna asociación. Crea tu asociación primero.',
         );
       }
+      // Asigna la misma associationId del creador al nuevo admin.
+      // Esto garantiza que un association_admin solo pueda crear admins
+      // dentro de su propia cooperativa, no en otras.
       dto.associationId = req.user.associationId;
     }
-    // Si es super_admin, dto.associationId queda undefined (sin asociación)
+    // Si el creador es super_admin, dto.associationId queda undefined,
+    // permitiendo crear admins sin asociación (se asignará después).
 
     return this.createUserUseCase.execute(dto);
   }

@@ -20,10 +20,13 @@
  * @see ROLES_KEY
  */
 
-// Importa la función SetMetadata de NestJS para asignar metadatos personalizados a rutas/controladores
-import { SetMetadata } from '@nestjs/common';
+// ─── Importaciones de NestJS ───
+import { SetMetadata } from '@nestjs/common'; // SetMetadata: asigna pares clave-valor en los metadatos del manejador de ruta
 
-// Clave bajo la cual se almacenan los roles permitidos en los metadatos del manejador
-export const ROLES_KEY = 'roles';
-// Decorador que asigna los roles permitidos a un controlador/ruta para su verificación posterior por un guard
-export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+// ─── Decorador: @Roles() para control de acceso ───
+// NOTA: Este decorador usa `string[]` como tipo genérico, mientras que la versión en
+// infraestructura (shared/infrastructure/decorators/roles.decorator.ts) usa `UserRole[]`.
+// Ambas son funcionalmente equivalentes; la de interfaces es más flexible (acepta strings),
+// mientras que la de infraestructura ofrece tipado más estricto con el enum UserRole.
+export const ROLES_KEY = 'roles'; // Clave única para almacenar roles en metadatos (usada por RolesGuard con Reflector.get)
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles); // Asigna los roles a la ruta/controlador

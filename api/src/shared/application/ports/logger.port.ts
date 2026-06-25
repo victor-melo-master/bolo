@@ -17,15 +17,30 @@
  * @module ILogger
  */
 
+// ─── Puerto de salida: Sistema de Logging (Arquitectura Hexagonal) ───
+// Define el contrato para el registro de logs en la aplicación. La implementación
+// concreta (WinstonLogger en infraestructura) determina el destino (consola, archivos,
+// sistema externo como ELK/Loki). Los casos de uso dependen de esta interfaz, no de
+// la implementación específica, lo que permite cambiar el sistema de logging sin
+// modificar la lógica de negocio.
 export interface ILogger {
-  // Registra un mensaje informativo estándar; context identifica el módulo origen
+  // Nivel INFO: registra un mensaje informativo estándar (operaciones normales del sistema).
+  // context identifica el módulo o clase que origina el mensaje (ej: "CreateUserUseCase").
   log(message: string, context?: string): void;
-  // Registra un error; trace puede contener el stack trace y context el módulo origen
+
+  // Nivel ERROR: registra un error del sistema. trace puede contener el stack trace
+  // completo y context el módulo origen. Este nivel siempre se persiste (error.log).
   error(message: string, trace?: string, context?: string): void;
-  // Registra una advertencia; context identifica el módulo origen
+
+  // Nivel WARN: registra una advertencia (situaciones anómalas pero no críticas).
+  // context identifica el módulo o clase que origina la advertencia.
   warn(message: string, context?: string): void;
-  // Registra un mensaje de depuración (solo visible en desarrollo si LOG_LEVEL lo permite)
+
+  // Nivel DEBUG: registra mensajes de depuración para diagnóstico durante desarrollo.
+  // Solo visible si LOG_LEVEL está configurado como 'debug' (oculto en producción).
   debug(message: string, context?: string): void;
-  // Registra un mensaje detallado para trazas finas de diagnóstico
+
+  // Nivel VERBOSE: registra trazas finas de diagnóstico, más detalladas que debug.
+  // Útil para rastrear flujos complejos (ej: ciclo de vida de una solicitud HTTP).
   verbose(message: string, context?: string): void;
 }
