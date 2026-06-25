@@ -14,10 +14,7 @@
 import { CoopFare } from '../../entities/coop-fare.entity';
 
 export const COOP_FARE_REPOSITORY_PORT = 'CoopFareRepositoryPort';
-
 export interface CoopFareRepositoryPort {
-  findById(id: string): Promise<CoopFare | null>;
-  findByCooperativeId(cooperativeId: string): Promise<CoopFare | null>;
-  save(fare: CoopFare): Promise<CoopFare>;
-  update(id: string, fare: Partial<CoopFare>): Promise<CoopFare>;
+  save(coopFare: CoopFare): Promise<CoopFare>;
+  findByAssociationId(associationId: string): Promise<CoopFare[]>;
 }

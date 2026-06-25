@@ -34,7 +34,9 @@ import { readFileSync } from 'fs';
 import { UserOrmEntity } from '../../../modules/auth/infrastructure/orm/user.orm-entity';
 import { AssociationOrmEntity } from '../../../modules/auth/infrastructure/orm/association.orm-entity';
 import { DriverRequestOrmEntity } from '../../../modules/auth/infrastructure/orm/driver-request.orm-entity';
-import { WalletOrmEntity } from 'src/modules/fin';
+import { CoopFareOrmEntity, WalletOrmEntity } from 'src/modules/fin';
+import { RouteOrmEntity } from 'src/modules/ops/infrastructure/orm/route.orm-entity';
+import { ExchangeRateOrmEntity } from '../../../modules/fin/infrastructure/orm/exchange-rate.orm-entity';
 
 // Lee un secreto desde archivo (Docker Swarm/K8s) o de variable de entorno como fallback
 function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string {
@@ -73,6 +75,9 @@ export const typeOrmConfig: DataSourceOptions = {
     AssociationOrmEntity,
     DriverRequestOrmEntity,
     WalletOrmEntity,
+    CoopFareOrmEntity,
+    ExchangeRateOrmEntity,
+    RouteOrmEntity,
   ],
   // sincronización automática deshabilitada: los cambios de esquema se manejan con migraciones manuales
   synchronize: false,

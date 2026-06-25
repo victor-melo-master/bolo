@@ -17,7 +17,6 @@ import { ExchangeRate } from '../../entities/exchange-rate.entity';
 export const EXCHANGE_RATE_REPOSITORY_PORT = 'ExchangeRateRepositoryPort';
 
 export interface ExchangeRateRepositoryPort {
-  findCurrent(from: string, to: string): Promise<ExchangeRate | null>;
   findById(id: string): Promise<ExchangeRate | null>;
   save(rate: ExchangeRate): Promise<ExchangeRate>;
 }

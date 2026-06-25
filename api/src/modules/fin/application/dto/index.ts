@@ -7,6 +7,11 @@
  * @module fin/application/dto
  */
 
-export { CreateWalletDto } from './create-wallet.dto';
-export { TransactionDto, TransactionTypeDto, TransactionStatusDto } from './transaction.dto';
 export { BalanceResponseDto } from './balance-response.dto';
+export { CreateWalletDto } from './create-wallet.dto';
+export { CreateCoopFareDto } from './create-coop-fare.dto';
+export {
+  TransactionDto,
+  TransactionTypeDto,
+  TransactionStatusDto,
+} from './transaction.dto';

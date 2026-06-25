@@ -1,79 +1,43 @@
 // src/modules/fin/domain/entities/exchange-rate.entity.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
- * ExchangeRate — Entidad de Dominio de Tipo de Cambio
+ * ExchangeRate — Entidad de Dominio de Tasa de Cambio
  * ═══════════════════════════════════════════════════════════════
  *
- * Representa una tasa de conversión entre dos monedas ISO 4217
- * vigente en un período de tiempo (validFrom — validUntil).
+ * Representa una tasa de cambio para una moneda en una fecha determinada.
+ * Ejemplo: 1 USD = 36.50 VES el 25/06/2026.
  *
- * Se usa para convertir montos entre la moneda funcional (USD)
- * y monedas locales (VED, COP, etc.) al procesar pagos.
+ * La tabla fin.exchange_rates almacena un registro por día y moneda.
+ * No maneja pares de monedas (from/to), sino la cantidad de moneda local
+ * por 1 USD. Esto simplifica el modelo porque todas las tarifas se definen
+ * en USD y luego se convierten a la moneda local al momento del cobro.
  *
- * Reglas de negocio:
- *   - Un tipo de cambio tiene vigencia temporal (validFrom/validUntil)
- *   - Si validUntil es null, el tipo de cambio está vigente indefinidamente
- *   - La conversión se hace multiplicando: amount * rate
- *   - El resultado se redondea a entero (centavos)
+ * Campos:
+ *   - currency:       código ISO 4217 de la moneda local (ej: 'VES', 'COP')
+ *   - rate:           valor de la tasa (ej: 36.50 significa 1 USD = 36.50 VES)
+ *   - effective_date: fecha a partir de la cual rige la tasa
+ *   - created_at, updated_at
  *
  * Capa: Dominio (fin)
- * Método de fábrica:
- *   ExchangeRate.create(from, to, rate, validFrom, validUntil?)
  *
  * @module ExchangeRate
  */
 
 export class ExchangeRate {
   constructor(
-    // Identificador único UUID
+    // Identificador único UUID de la tasa de cambio
     public readonly id: string,
-    // Moneda origen (código ISO 4217, ej: "USD")
-    public readonly fromCurrency: string,
-    // Moneda destino (código ISO 4217, ej: "VED")
-    public readonly toCurrency: string,
-    // Tasa de conversión: 1 fromCurrency = rate toCurrency
+    // Código ISO 4217 de la moneda local (ej: 'VES', 'COP')
+    // No se usa from/to porque todas las tasas son contra USD
+    public readonly currency: string,
+    // Valor de la tasa: cuántas unidades de currency equivalen a 1 USD
+    // Ej: 36.50 = 1 USD → 36.50 VES
     public readonly rate: number,
-    // Inicio de vigencia de la tasa
-    public readonly validFrom: Date,
-    // Fin de vigencia de la tasa. null = vigente indefinidamente
-    public readonly validUntil: Date | null,
-    // Control de concurrencia optimista
-    public readonly version: number,
-    // Fecha de creación del registro
+    // Fecha a partir de la cual entra en vigencia esta tasa
+    public readonly effectiveDate: Date,
+    // Fecha de creación del registro en la base de datos
     public readonly createdAt: Date,
-    // Fecha de última modificación
+    // Fecha de última modificación del registro
     public readonly updatedAt: Date,
   ) {}
-
-  // Método de fábrica: crea un nuevo tipo de cambio con versión 1.
-  static create(
-    fromCurrency: string,
-    toCurrency: string,
-    rate: number,
-    validFrom: Date,
-    validUntil?: Date,
-  ): ExchangeRate {
-    return new ExchangeRate(
-      crypto.randomUUID(),
-      fromCurrency,
-      toCurrency,
-      rate,
-      validFrom,
-      validUntil ?? null,
-      1,
-      new Date(),
-      new Date(),
-    );
-  }
-
-  // Verifica si el tipo de cambio está vigente en una fecha dada.
-  // Si validUntil es null, se considera vigente desde validFrom en adelante.
-  isEffective(at: Date = new Date()): boolean {
-    return at >= this.validFrom && (this.validUntil === null || at <= this.validUntil);
-  }
-
-  // Convierte un monto usando la tasa de cambio. Retorna entero redondeado (centavos).
-  convert(amount: number): number {
-    return Math.round(amount * this.rate);
-  }
 }

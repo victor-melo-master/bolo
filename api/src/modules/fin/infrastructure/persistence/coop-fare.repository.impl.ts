@@ -26,58 +26,49 @@ import { CoopFareOrmEntity } from '../orm/coop-fare.orm-entity';
 export class CoopFareRepositoryImpl implements CoopFareRepositoryPort {
   constructor(
     @InjectRepository(CoopFareOrmEntity)
-    private readonly repo: Repository<CoopFareOrmEntity>,
+    private readonly ormRepo: Repository<CoopFareOrmEntity>,
   ) {}
 
-  async findById(id: string): Promise<CoopFare | null> {
-    const entity = await this.repo.findOne({ where: { id } });
-    return entity ? this.toDomain(entity) : null;
-  }
-
-  // Retorna la tarifa activa de una cooperativa
-  async findByCooperativeId(cooperativeId: string): Promise<CoopFare | null> {
-    const entity = await this.repo.findOne({ where: { cooperativeId, active: true } });
-    return entity ? this.toDomain(entity) : null;
-  }
-
-  async save(fare: CoopFare): Promise<CoopFare> {
-    const entity = this.toOrm(fare);
-    const saved = await this.repo.save(entity);
+  async save(coopFare: CoopFare): Promise<CoopFare> {
+    const orm = this.toOrm(coopFare);
+    const saved = await this.ormRepo.save(orm);
     return this.toDomain(saved);
   }
 
-  async update(id: string, fare: Partial<CoopFare>): Promise<CoopFare> {
-    await this.repo.update(id, this.toOrm(fare as CoopFare));
-    return this.findById(id) as Promise<CoopFare>;
+  async findByAssociationId(associationId: string): Promise<CoopFare[]> {
+    const ormList = await this.ormRepo.find({ where: { associationId } });
+    return ormList.map((orm) => this.toDomain(orm));
   }
 
-  private toDomain(entity: CoopFareOrmEntity): CoopFare {
+  private toDomain(orm: CoopFareOrmEntity): CoopFare {
     return new CoopFare(
-      entity.id,
-      entity.cooperativeId,
-      entity.name,
-      Number(entity.baseFare),
-      Number(entity.perKmRate),
-      entity.currency,
-      entity.active,
-      entity.version,
-      entity.createdAt,
-      entity.updatedAt,
+      orm.id,
+      orm.associationId,
+      orm.name,
+      orm.baseAmountUsd,
+      orm.exchangeRateId,
+      orm.surchargeNormal,
+      orm.surchargeStudent,
+      orm.surchargeElderly,
+      orm.isActive,
+      orm.createdAt,
+      orm.updatedAt,
     );
   }
 
-  private toOrm(domain: CoopFare): CoopFareOrmEntity {
-    const entity = new CoopFareOrmEntity();
-    entity.id = domain.id;
-    entity.cooperativeId = domain.cooperativeId;
-    entity.name = domain.name;
-    entity.baseFare = domain.baseFare;
-    entity.perKmRate = domain.perKmRate;
-    entity.currency = domain.currency;
-    entity.active = domain.active;
-    entity.version = domain.version;
-    entity.createdAt = domain.createdAt;
-    entity.updatedAt = domain.updatedAt;
-    return entity;
+  private toOrm(fare: CoopFare): CoopFareOrmEntity {
+    const orm = new CoopFareOrmEntity();
+    orm.id = fare.id;
+    orm.associationId = fare.associationId;
+    orm.name = fare.name;
+    orm.baseAmountUsd = fare.baseAmountUsd;
+    orm.exchangeRateId = fare.exchangeRateId;
+    orm.surchargeNormal = fare.surchargeNormal;
+    orm.surchargeStudent = fare.surchargeStudent;
+    orm.surchargeElderly = fare.surchargeElderly;
+    orm.isActive = fare.isActive;
+    orm.createdAt = fare.createdAt;
+    orm.updatedAt = fare.updatedAt;
+    return orm;
   }
 }

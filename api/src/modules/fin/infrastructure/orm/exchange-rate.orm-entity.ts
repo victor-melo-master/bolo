@@ -4,13 +4,13 @@
  * ExchangeRateOrmEntity — Entidad TypeORM para tabla fin.exchange_rates
  * ═══════════════════════════════════════════════════════════════
  *
- * Mapeo ORM de la tabla `fin.exchange_rates`. Contraparte de infraestructura
- * de la entidad de dominio ExchangeRate.
+ * Mapeo ORM de la tabla `fin.exchange_rates`.
  *
- * Notas:
- *   - rate es DECIMAL(18,8) para precisión financiera en tasas
- *   - valid_from / valid_until definen la vigencia temporal
- *   - valid_until NULL = vigente indefinidamente
+ * Campos:
+ *   - currency (VARCHAR)       → código de moneda (ej: 'VES')
+ *   - rate (NUMERIC)           → valor de la tasa (ej: 36.50)
+ *   - effective_date (DATE)    → fecha de vigencia
+ *   - created_at, updated_at
  *
  * Esquema: fin
  * Tabla: exchange_rates
@@ -33,27 +33,29 @@ export class ExchangeRateOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 3, name: 'from_currency' })
-  fromCurrency: string;
+  // Código de moneda ISO 4217 (ej: 'VES', 'COP')
+  @Column({ type: 'varchar', length: 10 })
+  currency: string;
 
-  @Column({ type: 'varchar', length: 3, name: 'to_currency' })
-  toCurrency: string;
-
-  @Column({ type: 'decimal', precision: 18, scale: 8 })
+  // Tasa de cambio (ej: 36.50 significa 1 USD = 36.50 VES)
+  @Column({ type: 'numeric', precision: 19, scale: 6 })
   rate: number;
 
-  @Column({ type: 'timestamptz', name: 'valid_from' })
-  validFrom: Date;
+  // Fecha de vigencia de la tasa
+  @Column({ type: 'date', name: 'effective_date' })
+  effectiveDate: Date;
 
-  @Column({ type: 'timestamptz', name: 'valid_until', nullable: true })
-  validUntil: Date | null;
-
-  @Column({ type: 'int', default: 1 })
-  version: number;
-
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at', default: () => 'clock_timestamp()' })
+  @CreateDateColumn({
+    type: 'timestamptz',
+    name: 'created_at',
+    default: () => 'clock_timestamp()',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at', default: () => 'clock_timestamp()' })
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    name: 'updated_at',
+    default: () => 'clock_timestamp()',
+  })
   updatedAt: Date;
 }

@@ -1,23 +1,7 @@
-// src/modules/fin/infrastructure/persistence/exchange-rate.repository.impl.ts — Ruta relativa desde src/
-/**
- * ═══════════════════════════════════════════════════════════════
- * ExchangeRateRepositoryImpl — Implementación TypeORM del Puerto ExchangeRateRepositoryPort
- * ═══════════════════════════════════════════════════════════════
- *
- * Implementa el puerto de repositorio ExchangeRateRepositoryPort usando
- * TypeORM como mecanismo de persistencia.
- *
- * findCurrent() usa LessThanOrEqual/MoreThanOrEqual para encontrar
- * la tasa vigente entre dos monedas en la fecha actual.
- *
- * Capa: Infraestructura (fin/persistence)
- *
- * @see ExchangeRateRepositoryPort
- */
-
+// fin/infrastructure/persistence/exchange-rate.repository.impl.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ExchangeRateRepositoryPort } from '../../domain/interfaces/repositories/exchange-rate.repository.port';
 import { ExchangeRate } from '../../domain/entities/exchange-rate.entity';
 import { ExchangeRateOrmEntity } from '../orm/exchange-rate.orm-entity';
@@ -26,60 +10,39 @@ import { ExchangeRateOrmEntity } from '../orm/exchange-rate.orm-entity';
 export class ExchangeRateRepositoryImpl implements ExchangeRateRepositoryPort {
   constructor(
     @InjectRepository(ExchangeRateOrmEntity)
-    private readonly repo: Repository<ExchangeRateOrmEntity>,
+    private readonly ormRepo: Repository<ExchangeRateOrmEntity>,
   ) {}
 
-  // Busca la tasa vigente más reciente entre dos monedas
-  async findCurrent(from: string, to: string): Promise<ExchangeRate | null> {
-    const now = new Date();
-    const entity = await this.repo.findOne({
-      where: {
-        fromCurrency: from,
-        toCurrency: to,
-        validFrom: LessThanOrEqual(now),
-        validUntil: MoreThanOrEqual(now),
-      },
-      order: { validFrom: 'DESC' },
-    });
-    return entity ? this.toDomain(entity) : null;
-  }
-
   async findById(id: string): Promise<ExchangeRate | null> {
-    const entity = await this.repo.findOne({ where: { id } });
-    return entity ? this.toDomain(entity) : null;
+    const orm = await this.ormRepo.findOne({ where: { id } });
+    return orm ? this.toDomain(orm) : null;
   }
 
   async save(rate: ExchangeRate): Promise<ExchangeRate> {
-    const entity = this.toOrm(rate);
-    const saved = await this.repo.save(entity);
+    const orm = this.toOrm(rate);
+    const saved = await this.ormRepo.save(orm);
     return this.toDomain(saved);
   }
 
-  private toDomain(entity: ExchangeRateOrmEntity): ExchangeRate {
+  private toDomain(orm: ExchangeRateOrmEntity): ExchangeRate {
     return new ExchangeRate(
-      entity.id,
-      entity.fromCurrency,
-      entity.toCurrency,
-      Number(entity.rate),
-      entity.validFrom,
-      entity.validUntil,
-      entity.version,
-      entity.createdAt,
-      entity.updatedAt,
+      orm.id,
+      orm.currency,
+      orm.rate,
+      orm.effectiveDate,
+      orm.createdAt,
+      orm.updatedAt,
     );
   }
 
-  private toOrm(domain: ExchangeRate): ExchangeRateOrmEntity {
-    const entity = new ExchangeRateOrmEntity();
-    entity.id = domain.id;
-    entity.fromCurrency = domain.fromCurrency;
-    entity.toCurrency = domain.toCurrency;
-    entity.rate = domain.rate;
-    entity.validFrom = domain.validFrom;
-    entity.validUntil = domain.validUntil;
-    entity.version = domain.version;
-    entity.createdAt = domain.createdAt;
-    entity.updatedAt = domain.updatedAt;
-    return entity;
+  private toOrm(rate: ExchangeRate): ExchangeRateOrmEntity {
+    const orm = new ExchangeRateOrmEntity();
+    orm.id = rate.id;
+    orm.currency = rate.currency;
+    orm.rate = rate.rate;
+    orm.effectiveDate = rate.effectiveDate;
+    orm.createdAt = rate.createdAt;
+    orm.updatedAt = rate.updatedAt;
+    return orm;
   }
 }
