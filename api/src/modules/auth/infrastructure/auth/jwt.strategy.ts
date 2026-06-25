@@ -92,6 +92,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new Error('Usuario no encontrado o sin llave');
     }
 
+    //  log de depuracion
+    console.log('DEBUG JwtStrategy — user:', {
+      userId,
+      found: !!user,
+      jwtKey: user?.jwtKey,
+    });
+
     // Retorna la clave JWT del usuario. Passport la usará para verificar
     // la firma del token. Si no coincide (ej. sesión anterior), Passport
     // rechaza la autenticación automáticamente con error 401.

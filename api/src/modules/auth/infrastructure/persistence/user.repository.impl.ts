@@ -135,4 +135,19 @@ export class UserRepositoryImpl implements UserRepositoryPort {
   async updateJwtKey(userId: string, jwtKey: string): Promise<void> {
     await this.userRepository.update(userId, { jwtKey });
   }
+
+  // updateAssociationId: actualiza solo la columna association_id del usuario sin
+  // cargar la entidad completa. Se usa Repository.update() de TypeORM
+  // en lugar de save() porque:
+  // 1. Es más eficiente: genera un UPDATE directo en SQL sin SELECT previo.
+  // 2. Evita condiciones de carrera al no requerir carga de la entidad.
+  // 3. Solo modifica el campo associationId sin riesgo de sobrescribir otros
+  //    campos con valores desactualizados en memoria.
+  // Se usa en CreateAssociationUseCase para asociar un usuario a una asociación.
+  async updateAssociationId(
+    userId: string,
+    associationId: string,
+  ): Promise<void> {
+    await this.userRepository.update(userId, { associationId });
+  }
 }

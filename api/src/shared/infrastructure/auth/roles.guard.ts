@@ -12,10 +12,19 @@ export class RolesGuard implements CanActivate {
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
-    if (!requiredRoles) {
-      return true; // si no hay roles definidos, acceso permitido
-    }
     const { user } = context.switchToHttp().getRequest();
+
+    // 🔥 LOG TEMPORAL PARA DEPURAR
+    console.log(
+      'DEBUG RolesGuard — requiredRoles:',
+      requiredRoles,
+      'user:',
+      user,
+    );
+
+    if (!requiredRoles) {
+      return true;
+    }
     return requiredRoles.some((role) => user?.role === role);
   }
 }

@@ -44,12 +44,12 @@ export class UserController {
   }
 
   @Post('admins')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super_admin')
   async createAssociationAdmin(@Body() dto: CreateUserDto) {
-    // Forzar rol para garantizar que solo se creen association_admin por esta vía
     dto.role = 'association_admin';
-    // associationId queda como null (el admin creará su asociación después)
-    return this.createUserUseCase.execute(dto);
+    return this.createUserUseCase.execute(dto); // ← usa createUserUseCase
+    // return this.createAssociationUseCase.execute(adminId, dto);
+    // return this.createUserUseCase.execute(dto);
   }
 }

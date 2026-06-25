@@ -1,7 +1,7 @@
 -- ============================================================
 -- BOLO - BASE DE DATOS COMPLETA (MVP + FASE 2)
--- PostgreSQL 16 + PostGIS + pg_uuidv7
--- Fecha: 22/06/2026
+-- PostgreSQL 18 + PostGIS (uuid_v7 nativo)
+-- Fecha: 25/06/2026
 -- ============================================================
 -- ORDEN DE EJECUCIÓN (importante para dependencias):
 --   1. Extensiones
@@ -118,7 +118,7 @@ CREATE TYPE fin.saga_status AS ENUM (
 -- NOTA: Las funciones van ANTES que los triggers que las referencian.
 
 -- NOTA UUID => esta funcion solo en caso de desplegar en postgres 17 hacia abajo,
--- dado que los mismo no contienen la funcion uuidv7().
+-- dado que los mismos no contienen la funcion uuidv7().
 -- En postgres 18 la funcion es nativa de 'C' lo que resulta en mejor rendimiento.
 
 -- !!! SOLO SI POSTGRES < V18 !!! --
@@ -191,22 +191,25 @@ $$ LANGUAGE plpgsql;
 -- Usuarios del sistema: pasajeros, conductores y admins.
 -- La separación de roles permite que un mismo teléfono
 -- no pueda registrarse dos veces.
+-- NOTA: Las FK a auth.associations se agregan al final de la sección
+-- para evitar dependencias circulares (users ↔ associations).
 CREATE TABLE IF NOT EXISTS auth.users (
     id              UUID         PRIMARY KEY DEFAULT uuidv7(),
-    phone           VARCHAR(20)  UNIQUE NOT NULL,                    -- Login principal (con código país)
-    email           VARCHAR(100) UNIQUE,                             -- Opcional, para admins
-    password_hash   TEXT         NOT NULL,                           -- bcrypt vía pgcrypto
+    phone           VARCHAR(20)  UNIQUE NOT NULL,
+    email           VARCHAR(100) UNIQUE,
+    password_hash   TEXT         NOT NULL,
     full_name       VARCHAR(255) NOT NULL,
-    cedula          VARCHAR(20)  UNIQUE,                             -- Cédula venezolana (V-/E-)
-    role            auth.user_role    NOT NULL DEFAULT 'passenger',
-    jwt_key         TEXT,                                            -- Secreto rotativo para invalidar tokens
-    qr_code         VARCHAR(50)  UNIQUE,                             -- Código QR único del pasajero
-    qr_key          TEXT,                                            -- Secreto de firma del QR (rotativo)
-    qr_version      INT          DEFAULT 1,                          -- Versión del QR (incrementar para invalidar)
+    cedula          VARCHAR(20)  UNIQUE,
+    role            auth.user_role NOT NULL DEFAULT 'passenger',
+    jwt_key         TEXT,
+    association_id  UUID,          -- FK agregada más abajo
+    qr_code         VARCHAR(50)  UNIQUE,
+    qr_key          TEXT,
+    qr_version      INT          DEFAULT 1,
     category        auth.user_category DEFAULT 'normal',
-    student_doc_approved BOOLEAN DEFAULT FALSE,                      -- TRUE solo si category='student' y doc revisado
+    student_doc_approved BOOLEAN DEFAULT FALSE,
     is_active       BOOLEAN      DEFAULT TRUE,
-    deleted_at      TIMESTAMPTZ,                                     -- Soft delete: NULL = activo
+    deleted_at      TIMESTAMPTZ,  -- Soft delete
     last_login_at   TIMESTAMPTZ,
     created_at      TIMESTAMPTZ  DEFAULT clock_timestamp(),
     updated_at      TIMESTAMPTZ  DEFAULT clock_timestamp()
@@ -214,13 +217,15 @@ CREATE TABLE IF NOT EXISTS auth.users (
 
 -- Cooperativas y asociaciones de transporte.
 -- Cada asociación tiene un admin asignado (association_admin).
+-- NOTA: La FK a auth.users se agrega al final de la sección
+-- para evitar dependencias circulares (users ↔ associations).
 CREATE TABLE IF NOT EXISTS auth.associations (
     id         UUID         PRIMARY KEY DEFAULT uuidv7(),
     name       VARCHAR(255) UNIQUE NOT NULL,
     rif        VARCHAR(20)  UNIQUE NOT NULL,    -- RIF venezolano (J-/G-)
     address    TEXT,
     phone      VARCHAR(20),
-    admin_id   UUID         REFERENCES auth.users(id) ON DELETE RESTRICT,  -- No borrar user si tiene asociación
+    admin_id   UUID,          -- FK agregada más abajo
     is_active  BOOLEAN      DEFAULT TRUE,
     created_at TIMESTAMPTZ  DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ  DEFAULT clock_timestamp()
@@ -238,6 +243,16 @@ CREATE TABLE IF NOT EXISTS auth.driver_requests (
     created_at       TIMESTAMPTZ DEFAULT clock_timestamp(),
     updated_at       TIMESTAMPTZ DEFAULT clock_timestamp()
 );
+
+-- 🔗 Foreign Keys para resolver dependencia circular
+-- Se añaden después de que ambas tablas existen
+ALTER TABLE auth.users 
+    ADD CONSTRAINT fk_users_association 
+    FOREIGN KEY (association_id) REFERENCES auth.associations(id) ON DELETE SET NULL;
+
+ALTER TABLE auth.associations 
+    ADD CONSTRAINT fk_associations_admin 
+    FOREIGN KEY (admin_id) REFERENCES auth.users(id) ON DELETE RESTRICT;
 
 
 -- ----------------------------------------------------------

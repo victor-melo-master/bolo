@@ -36,4 +36,6 @@ export interface UserRepositoryPort {
   save(user: User): Promise<User>;
   // Actualiza únicamente el campo jwtKey del usuario, usado para invalidar tokens JWT al cambiar contraseña.
   updateJwtKey(userId: string, jwtKey: string): Promise<void>;
+  // Actualiza el campo associationId del usuario, usado para asociar un usuario a una asociación.
+  updateAssociationId(userId: string, associationId: string): Promise<void>;
 }

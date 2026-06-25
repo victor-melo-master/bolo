@@ -76,11 +76,7 @@ import { LoginUseCase } from '../application/use-cases/login.use-case';
 
 // ─── Controladores REST ────────────────────────────────────────────────────
 // Exponen los endpoints HTTP que reciben las peticiones del cliente
-import {
-  UserController,
-  AuthController,
-  AssociationController,
-} from '../interfaces/rest';
+import { UserController, AuthController } from '../interfaces/rest';
 
 // ─── Puertos (interfaces abstractas del dominio) ───────────────────────────
 // Se usan como tokens de inyección de dependencia (custom providers) para
@@ -104,6 +100,7 @@ import { CryptoService } from '../../../shared/application/services/crypto.servi
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { FinModule } from 'src/modules/fin/infrastructure/fin.module';
+import { RolesGuard } from 'src/shared/infrastructure/auth/roles.guard';
 
 @Module({
   imports: [
@@ -129,7 +126,7 @@ import { FinModule } from 'src/modules/fin/infrastructure/fin.module';
     }),
     FinModule,
   ],
-  controllers: [AuthController, UserController, AssociationController],
+  controllers: [AuthController, UserController],
   providers: [
     // Casos de uso: NestJS los instancia e inyecta automáticamente
     // los puertos que reciben en sus constructores
@@ -164,6 +161,7 @@ import { FinModule } from 'src/modules/fin/infrastructure/fin.module';
     // encontrar la estrategia 'jwt' cuando JwtAuthGuard la invoca
     JwtStrategy,
     JwtAuthGuard,
+    RolesGuard,
   ],
   exports: [
     // Se exportan los puertos para que otros módulos (ej. FinModule, ReportModule)

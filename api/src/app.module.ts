@@ -31,6 +31,7 @@ import { ConfigModule } from '@nestjs/config'; // Módulo para variables de ento
 import { AppController } from './app.controller'; // Controlador raíz (GET /)
 import { AppService } from './app.service'; // Servicio raíz
 import { FinModule } from './modules/fin/infrastructure/fin.module';
+import { OpsModule } from './modules/ops/infrastructure/ops.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { FinModule } from './modules/fin/infrastructure/fin.module';
     // AuthModule es el único módulo funcional implementado; los demás están comentados
     AuthModule,
     FinModule, // Módulo financiero (billetera, tarifas, transacciones)
+    OpsModule,
     // TODO: Activar cuando estén implementados
     // TripModule,    // Módulo de viajes (tracking GPS, pagos)
     // AuditModule,   // Módulo de auditoría (logs inmutables)

@@ -11,4 +11,4 @@
 // En lugar de importar desde archivos individuales.
 export { AuthController } from './auth.controller';
 export { UserController } from './user.controller';
-export { AssociationController } from './association.controller';
+// export { AssociationController } from './association.controller';
