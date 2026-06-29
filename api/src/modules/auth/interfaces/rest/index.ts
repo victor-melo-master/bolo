@@ -9,6 +9,4 @@
 // Esto permite importar cualquier controlador con:
 //   import { AuthController, UserController } from './interfaces/rest';
 // En lugar de importar desde archivos individuales.
-export { AuthController } from './auth.controller';
-export { UserController } from './user.controller';
 // export { AssociationController } from './association.controller';

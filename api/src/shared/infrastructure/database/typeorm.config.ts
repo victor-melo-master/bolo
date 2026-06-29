@@ -31,12 +31,15 @@ import { DataSourceOptions } from 'typeorm'; // Tipo para la configuración del 
 // ─── Sistema de archivos (lectura de secretos Docker/K8s) ───
 import { readFileSync } from 'fs'; // readFileSync: lee archivos de secretos montados en /run/secrets/ por Docker Swarm o K8s
 // ─── Entidades ORM registradas en la conexión ───
-import { UserOrmEntity } from '../../../modules/auth/infrastructure/orm/user.orm-entity'; // Usuarios del sistema (auth.users)
+// import { UserOrmEntity } from '../../../modules/auth/infrastructure/orm/user.orm-entity'; // Usuarios del sistema (auth.users)
 import { AssociationOrmEntity } from '../../../modules/auth/infrastructure/orm/association.orm-entity'; // Cooperativas/asociaciones (auth.associations)
 import { DriverRequestOrmEntity } from '../../../modules/auth/infrastructure/orm/driver-request.orm-entity'; // Solicitudes de conductor (auth.driver_requests)
 import { WalletOrmEntity, CoopFareOrmEntity } from 'src/modules/fin'; // Billetera digital y tarifas por cooperativa (fin.*)
 import { RouteOrmEntity } from 'src/modules/ops/infrastructure/orm/route.orm-entity'; // Rutas predefinidas (ops.routes)
 import { ExchangeRateOrmEntity } from '../../../modules/fin/infrastructure/orm/exchange-rate.orm-entity'; // Tasas de cambio (fin.exchange_rates)
+import { PassengerOrmEntity } from 'src/modules/auth/infrastructure/orm/passenger.orm-entity';
+import { AdminOrmEntity } from 'src/modules/auth/infrastructure/orm/admin.orm-entity';
+import { SessionOrmEntity } from 'src/modules/auth/infrastructure/orm/session.orm-entity';
 
 // ─── Función auxiliar: leer secretos desde archivos Docker/K8s ───
 // Busca primero en un archivo de secreto montado por Docker Swarm o Kubernetes (ruta en variable fileEnvKey).
@@ -69,8 +72,11 @@ export const typeOrmConfig: DataSourceOptions = {
   database: process.env.DB_NAME ?? 'bolo', // Nombre de la base de datos (por defecto 'bolo')
   entities: [
     // Lista explícita de entidades ORM registradas en esta conexión
-    UserOrmEntity,
+    // UserOrmEntity, // eliminado por division de tablas en Passger y Admin
+    PassengerOrmEntity,
+    AdminOrmEntity,
     AssociationOrmEntity,
+    SessionOrmEntity,
     DriverRequestOrmEntity,
     WalletOrmEntity,
     CoopFareOrmEntity,

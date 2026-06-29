@@ -30,8 +30,8 @@ import { ConfigModule } from '@nestjs/config'; // ConfigModule.forRoot(): carga 
 
 // ─── Módulos funcionales del monolito ───
 import { AuthModule } from './modules/auth/infrastructure/auth.module'; // Autenticación (JWT, usuarios, roles, asociaciones)
-import { FinModule } from './modules/fin/infrastructure/fin.module'; // Módulo financiero (billetera digital, tarifas, transacciones)
-import { OpsModule } from './modules/ops/infrastructure/ops.module'; // Módulo operativo (rutas, geolocalización, gestión de flota)
+// import { FinModule } from './modules/fin/infrastructure/fin.module'; // Módulo financiero (billetera digital, tarifas, transacciones)
+// import { OpsModule } from './modules/ops/infrastructure/ops.module'; // Módulo operativo (rutas, geolocalización, gestión de flota)
 
 // ─── Configuración compartida ───
 import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config'; // Configuración de TypeORM: host, puerto, credenciales, entidades
@@ -48,8 +48,8 @@ import { AppService } from './app.service'; // Servicio raíz: lógica del endpo
     TypeOrmModule.forRoot(typeOrmConfig),
     // AuthModule es el único módulo funcional implementado; los demás están comentados
     AuthModule,
-    FinModule, // Módulo financiero (billetera, tarifas, transacciones)
-    OpsModule,
+    // FinModule, // Módulo financiero (billetera, tarifas, transacciones)
+    // OpsModule,
     // TODO: Activar cuando estén implementados
     // TripModule,    // Módulo de viajes (tracking GPS, pagos)
     // AuditModule,   // Módulo de auditoría (logs inmutables)

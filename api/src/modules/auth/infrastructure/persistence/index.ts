@@ -9,6 +9,8 @@
 // que auth.module.ts pueda importarlas desde './persistence'.
 // Cada clase implementa su puerto correspondiente del dominio y es
 // inyectable mediante el token definido en domain/interfaces.
-export { UserRepositoryImpl } from './user.repository.impl';
+export { PassengerRepositoryImpl } from './passenger.repository.impl';
+export { AdminRepositoryImpl } from './admin.repository.impl';
+export { SessionRepositoryImpl } from './session.repository.impl';
 export { AssociationRepositoryImpl } from './association.repository.impl';
 export { DriverRequestRepositoryImpl } from './driver-request.repository.impl';

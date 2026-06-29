@@ -25,3 +25,6 @@
 
 // Exportación del DTO de creación de usuario (caso de uso CreateUserUseCase)
 export { CreateUserDto } from './create-user.dto';
+export { CreateAdminDto } from './create-admin.dto';
+export { CreatePassengerDto } from './create-passenger.dto';
+export { LoginDto } from './login-request';

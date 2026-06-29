@@ -29,8 +29,8 @@ import {
 } from '@nestjs/common';
 import { ASSOCIATION_REPOSITORY_PORT } from '../../../auth/domain/interfaces';
 import type { AssociationRepositoryPort } from '../../../auth/domain/interfaces';
-import { USER_REPOSITORY_PORT } from '../../../auth/domain/interfaces';
-import type { UserRepositoryPort } from '../../../auth/domain/interfaces';
+import { ADMIN_REPOSITORY_PORT } from '../../../auth/domain/interfaces';
+import type { AdminRepositoryPort } from '../../../auth/domain/interfaces';
 import { Association } from '../../../auth/domain/entities';
 import { CreateAssociationDto } from '../dto/create-association.dto';
 
@@ -41,8 +41,8 @@ export class CreateAssociationUseCase {
   constructor(
     @Inject(ASSOCIATION_REPOSITORY_PORT) // Puerto del repositorio de asociaciones (módulo auth)
     private readonly associationRepo: AssociationRepositoryPort,
-    @Inject(USER_REPOSITORY_PORT) // Puerto del repositorio de usuarios (módulo auth)
-    private readonly userRepo: UserRepositoryPort,
+    @Inject(ADMIN_REPOSITORY_PORT)
+    private readonly adminRepo: AdminRepositoryPort,
   ) {}
 
   /**
@@ -65,7 +65,7 @@ export class CreateAssociationUseCase {
     dto: CreateAssociationDto,
   ): Promise<Association> {
     // 1. Verificar que el admin existe y tiene permisos
-    const admin = await this.userRepo.findById(adminId);
+    const admin = await this.adminRepo.findById(adminId);
     if (!admin) throw new ForbiddenException('Admin no encontrado');
     if (admin.role !== 'association_admin')
       throw new ForbiddenException(
@@ -93,7 +93,7 @@ export class CreateAssociationUseCase {
 
     // 5. Actualizar el admin con el nuevo associationId — mantiene la consistencia
     //    entre la tabla de usuarios y la de asociaciones
-    await this.userRepo.updateAssociationId(adminId, saved.id);
+    await this.adminRepo.updateAssociationId(adminId, saved.id);
 
     return saved;
   }
