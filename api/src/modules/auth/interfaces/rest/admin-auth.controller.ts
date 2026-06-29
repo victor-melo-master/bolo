@@ -9,21 +9,23 @@ import {
 } from '@nestjs/common';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
 import { CreateAdminDto } from '../../application/dto/create-admin.dto';
+import { LoginAdminUseCase } from '../../application/use-cases/login-admin.use-case';
+import { LoginDto } from '../dto/login.dto';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../../../shared/infrastructure/auth/roles.guard';
 import { Roles } from '../../../../shared/interfaces/decorators/roles.decorator';
 
 @Controller('auth/admin')
 export class AdminAuthController {
-  constructor(private readonly createAdminUseCase: CreateAdminUseCase) {}
+  constructor(
+    private readonly createAdminUseCase: CreateAdminUseCase,
+    private readonly loginAdminUseCase: LoginAdminUseCase,
+  ) {}
 
-  // Registro público para el primer admin (luego se protegerá)
+  // Registro público (temporal, luego se restringirá)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: CreateAdminDto) {
-    // Por ahora permitimos cualquier registro. Más adelante
-    // añadiremos @UseGuards(JwtAuthGuard, RolesGuard) y @Roles('super_admin')
-    // para restringir quién puede crear ciertos roles.
     const admin = await this.createAdminUseCase.execute(dto);
     return {
       id: admin.id,
@@ -33,6 +35,13 @@ export class AdminAuthController {
       isActive: admin.isActive,
       createdAt: admin.createdAt,
     };
+  }
+
+  // Login público
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() dto: LoginDto) {
+    return this.loginAdminUseCase.execute(dto.phone, dto.password);
   }
 
   // Endpoint protegido para que super_admin cree otros admins

@@ -28,7 +28,7 @@ export class SessionOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
 
   @Column({ type: 'varchar', length: 20, name: 'user_type' })

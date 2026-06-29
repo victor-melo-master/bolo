@@ -1,13 +1,13 @@
 -- ============================================================
 -- BOLO - BASE DE DATOS COMPLETA (MVP + FASE 2)
 -- PostgreSQL 18 + PostGIS (uuid_v7 nativo)
--- Fecha: 25/06/2026
+-- Fecha: 29/06/2026
 -- ============================================================
 -- ORDEN DE EJECUCIÓN (importante para dependencias):
 --   1. Extensiones
 --   2. Esquemas
 --   3. Tipos ENUM (dependen de los esquemas)
---   4. Funciones auxiliares (dependen de nada)
+--   4. Funciones auxiliares (triggers)
 --   5. Tablas (dependen de ENUMs y esquemas)
 --   6. Índices
 --   7. Triggers
@@ -38,16 +38,16 @@ CREATE SCHEMA IF NOT EXISTS audit;  -- Auditoría global (logs inmutables)
 -- 3. TIPOS ENUMERADOS
 -- ============================================================
 
--- Roles del sistema (un usuario tiene exactamente uno)
-CREATE TYPE auth.user_role AS ENUM (
-    'passenger',          -- Pasajero regular
-    'driver',             -- Conductor asociado
-    'association_admin',  -- Admin de una cooperativa
-    'super_admin'         -- Admin global BOLO
+-- Roles específicos para administradores y conductores.
+-- Se elimina el antiguo ENUM auth.user_role que mezclaba pasajeros.
+CREATE TYPE auth.admin_role AS ENUM (
+    'driver',             -- Conductor asociado a una cooperativa
+    'association_admin',  -- Administrador de una cooperativa
+    'super_admin'         -- Administrador global del sistema BOLO
 );
 
--- Categorías tarifarias del pasajero (afectan descuentos)
-CREATE TYPE auth.user_category AS ENUM (
+-- Categorías tarifarias exclusivas de pasajeros.
+CREATE TYPE auth.passenger_category AS ENUM (
     'normal',   -- Tarifa estándar
     'student',  -- Requiere documento aprobado (student_doc_approved = TRUE)
     'elderly'   -- Tercera edad
@@ -117,45 +117,6 @@ CREATE TYPE fin.saga_status AS ENUM (
 -- ============================================================
 -- NOTA: Las funciones van ANTES que los triggers que las referencian.
 
--- NOTA UUID => esta funcion solo en caso de desplegar en postgres 17 hacia abajo,
--- dado que los mismos no contienen la funcion uuidv7().
--- En postgres 18 la funcion es nativa de 'C' lo que resulta en mejor rendimiento.
-
--- !!! SOLO SI POSTGRES < V18 !!! --
--- 4.0 UUID v7 — Generación de UUIDs ordenables temporalmente
--- Reemplaza gen_random_uuid() (v4) para mejor rendimiento de índices.
--- Los UUID v7 comienzan con timestamp, garantizando inserciones secuenciales.
--- CREATE OR REPLACE FUNCTION uuidv7()
--- RETURNS UUID AS $$
--- DECLARE
---     timestamp_ms BIGINT;
---     random_bytes BYTEA;
--- BEGIN
---     timestamp_ms := (EXTRACT(EPOCH FROM clock_timestamp()) * 1000)::BIGINT;
---     random_bytes := gen_random_bytes(10);
---     RETURN encode(
---         set_byte(
---             set_byte(
---                 substring(int8send(timestamp_ms) from 3 for 6) || random_bytes,
---                 6, (get_byte(random_bytes, 0) & 15) | 112  -- Versión 7
---             ),
---             8, (get_byte(random_bytes, 2) & 63) | 128      -- Variante 10xx
---         ), 'hex'
---     )::UUID;
--- END;
--- $$ LANGUAGE plpgsql VOLATILE;
-
--- -- 4.0b Extraer timestamp de un UUID v7 (útil para debugging y reportes)
--- CREATE OR REPLACE FUNCTION uuid_v7_timestamp(uuid UUID)
--- RETURNS TIMESTAMPTZ AS $$
--- BEGIN
---     RETURN to_timestamp(
---         ('x' || substring(uuid::text from 1 for 12))::BIT(48)::BIGINT / 1000.0
---     );
--- END;
--- $$ LANGUAGE plpgsql IMMUTABLE;
-
-
 -- 4.1 Actualización automática de updated_at
 -- Llamada por el trigger set_updated_at en cada UPDATE.
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -188,54 +149,67 @@ $$ LANGUAGE plpgsql;
 -- 5.1 ESQUEMA auth — Usuarios y acceso
 -- ----------------------------------------------------------
 
--- Usuarios del sistema: pasajeros, conductores y admins.
--- La separación de roles permite que un mismo teléfono
--- no pueda registrarse dos veces.
--- NOTA: Las FK a auth.associations se agregan al final de la sección
--- para evitar dependencias circulares (users ↔ associations).
-CREATE TABLE IF NOT EXISTS auth.users (
-    id              UUID         PRIMARY KEY DEFAULT uuidv7(),
-    phone           VARCHAR(20)  UNIQUE NOT NULL,
-    email           VARCHAR(100) UNIQUE,
-    password_hash   TEXT         NOT NULL,
-    full_name       VARCHAR(255) NOT NULL,
-    cedula          VARCHAR(20)  UNIQUE,
-    role            auth.user_role NOT NULL DEFAULT 'passenger',
-    jwt_key         TEXT,
-    association_id  UUID,          -- FK agregada más abajo
-    qr_code         VARCHAR(50)  UNIQUE,
-    qr_key          TEXT,
-    qr_version      INT          DEFAULT 1,
-    category        auth.user_category DEFAULT 'normal',
-    student_doc_approved BOOLEAN DEFAULT FALSE,
-    is_active       BOOLEAN      DEFAULT TRUE,
-    deleted_at      TIMESTAMPTZ,  -- Soft delete
+-- 5.1.1 Pasajeros — Usuarios finales que solicitan viajes.
+-- Cada pasajero tiene un jwt_key para la rotación de sesiones JWT.
+-- Los campos de QR se han eliminado porque el QR lo porta el conductor.
+CREATE TABLE IF NOT EXISTS auth.passengers (
+    id              UUID            PRIMARY KEY DEFAULT uuidv7(),
+    phone           VARCHAR(20)     UNIQUE NOT NULL,                    -- Login principal (con código país)
+    email           VARCHAR(100)    UNIQUE,                             -- Opcional, para admins
+    password_hash   TEXT            NOT NULL,                           -- bcrypt vía pgcrypto
+    full_name       VARCHAR(255)    NOT NULL,
+    cedula          VARCHAR(20)     UNIQUE,                             -- Cédula venezolana (V-/E-)
+    jwt_key         TEXT,                                               -- Secreto rotativo para invalidar tokens del pasajero
+    category        auth.passenger_category DEFAULT 'normal',          -- Categoría tarifaria
+    student_doc_approved BOOLEAN    DEFAULT FALSE,                      -- TRUE solo si category='student' y doc revisado
+    is_active       BOOLEAN         DEFAULT TRUE,
+    deleted_at      TIMESTAMPTZ,                                        -- Soft delete: NULL = activo
     last_login_at   TIMESTAMPTZ,
-    created_at      TIMESTAMPTZ  DEFAULT clock_timestamp(),
-    updated_at      TIMESTAMPTZ  DEFAULT clock_timestamp()
+    created_at      TIMESTAMPTZ     DEFAULT clock_timestamp(),
+    updated_at      TIMESTAMPTZ     DEFAULT clock_timestamp()
 );
 
--- Cooperativas y asociaciones de transporte.
--- Cada asociación tiene un admin asignado (association_admin).
--- NOTA: La FK a auth.users se agrega al final de la sección
--- para evitar dependencias circulares (users ↔ associations).
+-- 5.1.2 Administradores y Conductores — Usuarios con roles administrativos o de conducción.
+-- Ahora los campos de QR están aquí porque son los conductores quienes muestran el QR.
+-- Los jwt_key individuales se han movido a la tabla auth.sessions.
+CREATE TABLE IF NOT EXISTS auth.admins (
+    id              UUID            PRIMARY KEY DEFAULT uuidv7(),
+    phone           VARCHAR(20)     UNIQUE NOT NULL,
+    email           VARCHAR(100)    UNIQUE,
+    password_hash   TEXT            NOT NULL,
+    full_name       VARCHAR(255)    NOT NULL,
+    cedula          VARCHAR(20)     UNIQUE,
+    role            auth.admin_role NOT NULL,                           -- driver, association_admin, super_admin
+    qr_code         VARCHAR(50)     UNIQUE,                             -- Código QR único del conductor
+    qr_key          TEXT,                                               -- Secreto de firma del QR (rotativo)
+    qr_version      INT             DEFAULT 1,                          -- Versión del QR (incrementar para invalidar)
+    association_id  UUID,            -- FK agregada más abajo con ALTER TABLE
+    is_active       BOOLEAN         DEFAULT TRUE,
+    deleted_at      TIMESTAMPTZ,
+    last_login_at   TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ     DEFAULT clock_timestamp(),
+    updated_at      TIMESTAMPTZ     DEFAULT clock_timestamp()
+);
+
+-- 5.1.3 Cooperativas y asociaciones de transporte.
+-- El admin_id ahora apunta a auth.admins.
 CREATE TABLE IF NOT EXISTS auth.associations (
     id         UUID         PRIMARY KEY DEFAULT uuidv7(),
     name       VARCHAR(255) UNIQUE NOT NULL,
     rif        VARCHAR(20)  UNIQUE NOT NULL,    -- RIF venezolano (J-/G-)
     address    TEXT,
     phone      VARCHAR(20),
-    admin_id   UUID,          -- FK agregada más abajo
+    admin_id   UUID,         -- FK agregada más abajo con ALTER TABLE
     is_active  BOOLEAN      DEFAULT TRUE,
     created_at TIMESTAMPTZ  DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ  DEFAULT clock_timestamp()
 );
 
--- Solicitudes de registro de conductores (proceso KYC).
--- Un conductor debe ser aprobado por su asociación antes de operar.
+-- 5.1.4 Solicitudes de registro de conductores (proceso KYC).
+-- La FK driver_id ahora apunta a auth.admins.
 CREATE TABLE IF NOT EXISTS auth.driver_requests (
     id               UUID        PRIMARY KEY DEFAULT uuidv7(),
-    driver_id        UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    driver_id        UUID        NOT NULL REFERENCES auth.admins(id) ON DELETE CASCADE,
     association_id   UUID        NOT NULL REFERENCES auth.associations(id) ON DELETE CASCADE,
     status           auth.driver_request_status DEFAULT 'pending',
     documents_urls   JSONB,          -- URLs de docs subidos (licencia, cédula, etc.)
@@ -244,15 +218,31 @@ CREATE TABLE IF NOT EXISTS auth.driver_requests (
     updated_at       TIMESTAMPTZ DEFAULT clock_timestamp()
 );
 
+-- 5.1.5 Sesiones activas (JWT Key Rotation por dispositivo y tipo de usuario).
+-- Reemplaza las antiguas columnas jwt_key_phone y jwt_key_web.
+-- Permite manejar múltiples dispositivos (phone, web, tablet) y tipos de usuario (admin, passenger)
+-- en una única tabla, facilitando la revocación selectiva de sesiones.
+CREATE TABLE IF NOT EXISTS auth.sessions (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    user_id     UUID         NOT NULL,                                  -- Referencia polimórfica (auth.admins o auth.passengers)
+    user_type   VARCHAR(20)  NOT NULL CHECK (user_type IN ('admin', 'passenger')),
+    client_type VARCHAR(20)  NOT NULL CHECK (client_type IN ('phone', 'web', 'tablet')),
+    jwt_key     TEXT         NOT NULL,                                  -- Secreto de firma para esta sesión
+    expires_at  TIMESTAMPTZ  NOT NULL,                                  -- Fecha de expiración de la sesión
+    is_active   BOOLEAN      DEFAULT TRUE,
+    created_at  TIMESTAMPTZ  DEFAULT clock_timestamp(),
+    updated_at  TIMESTAMPTZ  DEFAULT clock_timestamp()
+);
+
 -- 🔗 Foreign Keys para resolver dependencia circular
--- Se añaden después de que ambas tablas existen
-ALTER TABLE auth.users 
-    ADD CONSTRAINT fk_users_association 
+-- Se añaden después de que todas las tablas existen
+ALTER TABLE auth.admins 
+    ADD CONSTRAINT fk_admins_association 
     FOREIGN KEY (association_id) REFERENCES auth.associations(id) ON DELETE SET NULL;
 
 ALTER TABLE auth.associations 
     ADD CONSTRAINT fk_associations_admin 
-    FOREIGN KEY (admin_id) REFERENCES auth.users(id) ON DELETE RESTRICT;
+    FOREIGN KEY (admin_id) REFERENCES auth.admins(id) ON DELETE RESTRICT;
 
 
 -- ----------------------------------------------------------
@@ -330,12 +320,10 @@ CREATE TABLE IF NOT EXISTS ops.vehicles (
 );
 
 -- Asignación diaria de conductor → ruta + vehículo.
--- Un conductor puede tener múltiples asignaciones históricas;
--- solo la activa (is_active = TRUE) se usa en producción.
--- CONSTRAINT: evita duplicar la asignación activa del mismo conductor.
+-- La FK driver_id ahora apunta a auth.admins en lugar de auth.users.
 CREATE TABLE IF NOT EXISTS ops.assigned_routes (
     id            UUID  PRIMARY KEY DEFAULT uuidv7(),
-    driver_id     UUID  NOT NULL REFERENCES auth.users(id)    ON DELETE RESTRICT,
+    driver_id     UUID  NOT NULL REFERENCES auth.admins(id)    ON DELETE RESTRICT,
     route_id      UUID  NOT NULL REFERENCES ops.routes(id)    ON DELETE RESTRICT,
     vehicle_id    UUID  NOT NULL REFERENCES ops.vehicles(id)  ON DELETE RESTRICT,
     assigned_date DATE  DEFAULT CURRENT_DATE,
@@ -353,12 +341,12 @@ CREATE TABLE IF NOT EXISTS ops.assigned_routes (
 -- 5.4 ESQUEMA fin — Billeteras y transacciones
 -- ----------------------------------------------------------
 
--- Billetera de cada usuario (también existe la billetera BOLO,
--- mapeada a un usuario especial con role='super_admin').
--- Todos los montos en centavos (BIGINT) para aritmética exacta.
+-- Billetera de cada usuario (pasajeros, conductores y BOLO).
+-- La FK no se declara aquí para permitir referencias tanto a auth.passengers como a auth.admins.
+-- La integridad se controla desde la aplicación.
 CREATE TABLE IF NOT EXISTS fin.wallets (
     id                  UUID    PRIMARY KEY DEFAULT uuidv7(),
-    user_id             UUID    UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+    user_id             UUID    UNIQUE NOT NULL,                                -- Referencia polimórfica (passenger o admin)
     balance             BIGINT  NOT NULL DEFAULT 0 CHECK (balance >= 0),        -- Saldo disponible en centavos
     debt_balance        BIGINT  NOT NULL DEFAULT 0 CHECK (debt_balance >= 0),   -- Deuda por crédito de emergencia
     credit_used         BOOLEAN DEFAULT FALSE,                                   -- TRUE si usó crédito en el último viaje
@@ -397,7 +385,7 @@ CREATE TABLE IF NOT EXISTS fin.rates_config (
         CHECK (base_fare_usd >= 0),                                             -- En centavos: 150 = $1.50
     indexed_to_dollar     BOOLEAN DEFAULT FALSE,  -- TRUE: ajuste automático según tasa BCV
     effective_from        TIMESTAMPTZ DEFAULT clock_timestamp(),                -- Vigencia desde
-    updated_by            UUID REFERENCES auth.users(id) ON DELETE SET NULL,   -- Auditoría: quién cambió
+    updated_by            UUID REFERENCES auth.admins(id) ON DELETE SET NULL,   -- Auditoría: quién cambió (ahora apunta a admins)
     created_at            TIMESTAMPTZ DEFAULT clock_timestamp(),
     updated_at            TIMESTAMPTZ DEFAULT clock_timestamp()
 );
@@ -427,10 +415,11 @@ CREATE TABLE IF NOT EXISTS fin.saga_states (
 -- Las coordenadas usan GEOGRAPHY (WGS84) para cálculos de distancia reales.
 -- AHORA INCLUYE auditoría financiera: tarifario utilizado, tasa de cambio aplicada
 -- y descuento/recargo total, para inmutabilidad del cálculo del precio.
+-- passenger_id ahora referencia auth.passengers y conductor_id a auth.admins.
 CREATE TABLE IF NOT EXISTS trip.trips (
     id                  UUID   PRIMARY KEY DEFAULT uuidv7(),
-    passenger_id        UUID   NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
-    driver_id           UUID   NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+    passenger_id        UUID   NOT NULL REFERENCES auth.passengers(id) ON DELETE RESTRICT,
+    driver_id           UUID   NOT NULL REFERENCES auth.admins(id) ON DELETE RESTRICT,
     route_id            UUID   REFERENCES ops.routes(id) ON DELETE SET NULL,   -- NULL si la ruta fue eliminada
     origin_geom         GEOGRAPHY(Point, 4326) NOT NULL,   -- Punto de abordaje
     dest_geom           GEOGRAPHY(Point, 4326) NOT NULL,   -- Punto de destino
@@ -492,9 +481,10 @@ CREATE TABLE IF NOT EXISTS trip.gps_history (
 
 -- Log de auditoría de todas las acciones sensibles del sistema.
 -- NUNCA se modifica ni elimina (ver trigger trg_immutable_audit).
+-- La FK user_id se omite para permitir referencias tanto a auth.passengers como a auth.admins.
 CREATE TABLE IF NOT EXISTS audit.audit_log (
     id         UUID    PRIMARY KEY DEFAULT uuidv7(),
-    user_id    UUID    REFERENCES auth.users(id) ON DELETE SET NULL,  -- NULL si el user fue borrado
+    user_id    UUID,             -- Puede ser id de auth.passengers o auth.admins (polimórfico)
     action     VARCHAR(255) NOT NULL,   -- Ej: 'user.login', 'trip.start', 'wallet.deposit'
     details    JSONB,                   -- Payload completo del evento
     ip_address INET,
@@ -508,41 +498,39 @@ CREATE TABLE IF NOT EXISTS audit.audit_log (
 -- 6. ÍNDICES DE RENDIMIENTO
 -- ============================================================
 
--- auth.users
--- Índice en phone: lookup principal de login (O(1) efectivo)
-CREATE INDEX idx_users_phone ON auth.users(phone);
--- Índice parcial en email: solo los que tienen email (ahorra espacio)
-CREATE INDEX idx_users_email ON auth.users(email) WHERE email IS NOT NULL;
-CREATE INDEX idx_users_cedula ON auth.users(cedula);
--- Índice parcial en conductores activos: ~100K registros vs 1M total
--- ✅ Más eficiente que indexar role completo
-CREATE INDEX idx_active_drivers ON auth.users(id) WHERE role = 'driver' AND is_active = TRUE;
--- Índice parcial en QR: solo pasajeros con QR asignado
-CREATE INDEX idx_users_qr ON auth.users(qr_code) WHERE qr_code IS NOT NULL;
-CREATE INDEX idx_users_is_active ON auth.users(is_active);
+-- auth.passengers
+CREATE INDEX idx_passengers_phone ON auth.passengers(phone);
+CREATE INDEX idx_passengers_email ON auth.passengers(email) WHERE email IS NOT NULL;
+CREATE INDEX idx_passengers_cedula ON auth.passengers(cedula);
+CREATE INDEX idx_passengers_is_active ON auth.passengers(is_active);
+
+-- auth.admins
+CREATE INDEX idx_admins_phone ON auth.admins(phone);
+CREATE INDEX idx_admins_email ON auth.admins(email) WHERE email IS NOT NULL;
+CREATE INDEX idx_admins_cedula ON auth.admins(cedula);
+CREATE INDEX idx_admins_role ON auth.admins(role);
+CREATE INDEX idx_admins_association ON auth.admins(association_id);
+CREATE INDEX idx_admins_qr ON auth.admins(qr_code) WHERE qr_code IS NOT NULL;
+CREATE INDEX idx_admins_is_active ON auth.admins(is_active);
+
+-- auth.sessions
+CREATE INDEX idx_sessions_user ON auth.sessions(user_id, user_type);
+CREATE INDEX idx_sessions_active ON auth.sessions(is_active) WHERE is_active = TRUE;
 
 -- auth.driver_requests
--- Índice compuesto: cubre la consulta "solicitudes de conductor X en asociación Y con estado Z"
--- ✅ Reemplaza tres índices separados (driver_id, association_id, status)
 CREATE INDEX idx_driver_requests_composite ON auth.driver_requests(driver_id, association_id, status);
 
 -- fin.exchange_rates
--- Índice por fecha descendente: obtener la tasa más reciente rápidamente
 CREATE INDEX idx_exchange_rates_date ON fin.exchange_rates(effective_date DESC);
--- Restricción única compuesta: no puede haber dos tasas para la misma moneda y fecha
 CREATE UNIQUE INDEX idx_exchange_rates_unique ON fin.exchange_rates(currency, effective_date);
 
 -- fin.coop_fares
--- Índice para buscar tarifarios por asociación
 CREATE INDEX idx_coop_fares_association ON fin.coop_fares(association_id);
--- Índice parcial sobre tarifarios activos (la mayoría de las consultas solo necesitan el activo)
 CREATE INDEX idx_coop_fares_active ON fin.coop_fares(id) WHERE is_active = TRUE;
 
 -- ops.routes
--- Índice parcial: solo rutas activas (las inactivas rara vez se consultan)
 CREATE INDEX idx_routes_active ON ops.routes(id) WHERE is_active = TRUE;
 CREATE INDEX idx_routes_association_id ON ops.routes(association_id);
--- NUEVO: buscar rutas por tarifario (útil para reportes de cuántas rutas usan cada tarifa)
 CREATE INDEX idx_routes_coop_fare ON ops.routes(coop_fare_id);
 
 -- ops.vehicles
@@ -550,37 +538,28 @@ CREATE INDEX idx_vehicles_association_id ON ops.vehicles(association_id);
 CREATE INDEX idx_vehicles_plate ON ops.vehicles(plate);
 
 -- ops.assigned_routes
--- Índice parcial: asignaciones activas de un conductor (la consulta más frecuente)
 CREATE INDEX idx_assigned_active ON ops.assigned_routes(driver_id) WHERE is_active = TRUE;
 CREATE INDEX idx_assigned_routes_route_id ON ops.assigned_routes(route_id);
 
 -- fin.wallets
--- Índice cubriente: incluye balance y version → el SELECT no lee la tabla (index-only scan)
--- ✅ Crítico para OCC: "SELECT balance, version FROM wallets WHERE user_id = ?"
 CREATE INDEX idx_wallets_user_balance ON fin.wallets(user_id) INCLUDE (balance, version);
 CREATE INDEX idx_wallets_credit_used ON fin.wallets(credit_used);
 
 -- fin.transactions
 CREATE INDEX idx_transactions_wallet_id ON fin.transactions(wallet_id);
 CREATE INDEX idx_transactions_status ON fin.transactions(status);
--- Orden DESC: las consultas de historial siempre traen las más recientes primero
 CREATE INDEX idx_transactions_created_at ON fin.transactions(created_at DESC);
 
 -- fin.saga_states
 CREATE INDEX idx_saga_states_transaction_id ON fin.saga_states(transaction_id);
--- Índice en status: el worker de reintentos busca sagas 'pending' o 'failed'
 CREATE INDEX idx_saga_states_status ON fin.saga_states(status);
 
 -- trip.trips
--- Índice compuesto: resuelve "viajes activos del pasajero X" en un solo paso
--- ✅ Más eficiente que índices separados en passenger_id y status
 CREATE INDEX idx_trips_passenger_status ON trip.trips(passenger_id, status);
 CREATE INDEX idx_trips_driver_id ON trip.trips(driver_id);
 CREATE INDEX idx_trips_status ON trip.trips(status);
--- Para validación de QR: "¿este QR pertenece a un viaje activo?"
 CREATE INDEX idx_trips_qr_code_scanned ON trip.trips(qr_code_scanned);
 CREATE INDEX idx_trips_created_at ON trip.trips(created_at DESC);
--- NUEVO: auditoría de tarifas usadas en viajes
 CREATE INDEX idx_trips_coop_fare ON trip.trips(coop_fare_id);
 
 -- trip.payments
@@ -588,11 +567,9 @@ CREATE INDEX idx_payments_trip_id ON trip.payments(trip_id);
 CREATE INDEX idx_payments_status ON trip.payments(status);
 
 -- trip.gps_history
--- Índice espacial: "última ubicación conocida del conductor" via ST_Distance
 CREATE INDEX idx_gps_location ON trip.gps_history USING GIST (location);
 CREATE INDEX idx_gps_history_trip_id ON trip.gps_history(trip_id);
 CREATE INDEX idx_gps_history_recorded_at ON trip.gps_history(recorded_at DESC);
--- Índice compuesto: reconstruir el track completo de un viaje ordenado por tiempo
 CREATE INDEX idx_gps_trip_time ON trip.gps_history(trip_id, recorded_at DESC);
 
 -- audit.audit_log
@@ -618,9 +595,7 @@ CREATE TRIGGER trg_immutable_audit
     BEFORE UPDATE OR DELETE ON audit.audit_log
     FOR EACH ROW EXECUTE FUNCTION prevent_modifications();
 
--- 7.3 Actualización automática de updated_at en todas las tablas
--- Este bloque aplica el trigger dinámicamente a todas las tablas
--- que tienen la columna updated_at, sin necesidad de listarlas manualmente.
+-- 7.3 Actualización automática de updated_at en todas las tablas que tengan esa columna
 -- NOTA: Si se re-ejecuta el script, el DROP TRIGGER IF EXISTS evita errores.
 DO $$
 DECLARE
@@ -650,29 +625,11 @@ $$ LANGUAGE plpgsql;
 
 
 -- ============================================================
--- 8. TIMESCALEDB (Opcional — alta performance para GPS)
--- ============================================================
--- Si TimescaleDB está instalado, convierte gps_history en hypertable
--- particionado por tiempo. Mejora dramáticamente queries de rango temporal
--- y permite compresión automática de datos históricos.
---
--- Requisito: CREATE EXTENSION IF NOT EXISTS timescaledb;
---
--- SELECT create_hypertable(
---     'trip.gps_history',
---     'recorded_at',
---     chunk_time_interval => INTERVAL '1 day',
---     if_not_exists => TRUE
--- );
-
-
--- ============================================================
--- 9. DATOS INICIALES (SEEDERS)
+-- 8. DATOS INICIALES (SEEDERS)
 -- ============================================================
 
--- 9.1 Super Admin por defecto
--- Contraseña inicial: 'admin123' (cambiar inmediatamente en producción)
-INSERT INTO auth.users (phone, email, password_hash, full_name, role, is_active)
+-- 8.1 Super Admin por defecto (ahora en auth.admins)
+INSERT INTO auth.admins (phone, email, password_hash, full_name, role, is_active)
 VALUES (
     '+584121234567',
     'admin@bolo.com',
@@ -680,55 +637,48 @@ VALUES (
     'Super Admin BOLO',
     'super_admin',
     TRUE
-)
-ON CONFLICT (phone) DO NOTHING;
+) ON CONFLICT (phone) DO NOTHING;
 
--- 9.2 Billetera del Super Admin (necesaria para flujos financieros internos)
+-- 8.2 Billetera del Super Admin
 INSERT INTO fin.wallets (user_id, balance, currency)
 SELECT id, 0, 'USD'
-FROM auth.users
+FROM auth.admins
 WHERE role = 'super_admin'
     AND NOT EXISTS (
         SELECT 1 FROM fin.wallets w
-        WHERE w.user_id = auth.users.id
+        WHERE w.user_id = auth.admins.id
     )
 LIMIT 1;
 
--- 9.3 Configuración inicial de comisiones y tarifas globales
--- commission_percentage: 1000 en base 10000 = 10%
--- base_fare_usd: 150 centavos = $1.50 USD
+-- 8.3 Configuración inicial de comisiones y tarifas globales
 INSERT INTO fin.rates_config (commission_percentage, base_fare_usd, indexed_to_dollar, updated_by)
 SELECT 1000, 150, FALSE, id
-FROM auth.users
+FROM auth.admins
 WHERE role = 'super_admin'
     AND NOT EXISTS (SELECT 1 FROM fin.rates_config)
 LIMIT 1;
 
--- 9.4 Tasa de cambio inicial (ejemplo VES)
+-- 8.4 Tasa de cambio inicial (ejemplo VES)
 INSERT INTO fin.exchange_rates (currency, rate, effective_date)
 VALUES ('VES', 36.50, CURRENT_DATE)
 ON CONFLICT (currency, effective_date) DO NOTHING;
 
--- 9.5 Asociación de ejemplo (para desarrollo y pruebas)
+-- 8.5 Asociación de ejemplo (para desarrollo y pruebas)
 INSERT INTO auth.associations (id, name, rif, admin_id)
 SELECT uuidv7(), 'Cooperativa Bolivariana', 'J-12345678-9', id
-FROM auth.users WHERE role = 'super_admin' LIMIT 1
+FROM auth.admins WHERE role = 'super_admin' LIMIT 1
 ON CONFLICT (rif) DO NOTHING;
 
--- 9.6 Tarifario de ejemplo para la asociación creada
--- base_amount_usd: 150 centavos ($1.50)
--- surcharge_normal: 0 (sin recargo)
--- surcharge_student: -50 (descuento de 50 centavos)
--- surcharge_elderly: -30 (descuento de 30 centavos)
+-- 8.6 Tarifario de ejemplo para la asociación creada
 INSERT INTO fin.coop_fares (association_id, name, base_amount_usd, exchange_rate_id, surcharge_normal, surcharge_student, surcharge_elderly)
 SELECT 
     a.id, 
     'Tarifa estándar 2026', 
-    150, -- $1.50 USD en centavos
+    150,
     er.id, 
-    0,   -- normal sin recargo
-    -50, -- estudiante: descuento de 50 centavos
-    -30  -- tercera edad: descuento de 30 centavos
+    0,
+    -50,
+    -30
 FROM auth.associations a
 CROSS JOIN fin.exchange_rates er
 WHERE a.rif = 'J-12345678-9' AND er.currency = 'VES' AND er.effective_date = CURRENT_DATE

@@ -83,6 +83,8 @@ import { FinModule } from 'src/modules/fin/infrastructure/fin.module';
 import { RolesGuard } from 'src/shared/infrastructure/auth/roles.guard';
 import { CreatePassengerUseCase } from '../application/use-cases/create-passanger.use-case';
 import { AdminAuthController } from '../interfaces/rest/admin-auth.controller';
+import { LoginPassengerUseCase } from '../application/use-cases/login-passenger.use-case';
+import { LoginAdminUseCase } from '../application/use-cases/login-admin.use-case';
 
 @Module({
   imports: [
@@ -109,6 +111,8 @@ import { AdminAuthController } from '../interfaces/rest/admin-auth.controller';
     // Casos de uso
     CreatePassengerUseCase,
     CreateAdminUseCase,
+    LoginPassengerUseCase,
+    LoginAdminUseCase,
 
     // Servicios compartidos
     CryptoService,
