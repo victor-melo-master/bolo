@@ -8,6 +8,7 @@ secrets/*.key
 secrets/*.pem
 .env.local
 .env.*.local
+.env
 
 # ── Dependencias ────────────────────────────────────────────
 node_modules/
@@ -35,3 +36,4 @@ logs/
 # ── OS ──────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+.env
