@@ -27,11 +27,32 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 // AppModule es el módulo raíz que importa TypeOrmModule, AuthModule, FinModule, OpsModule y ConfigModule
 import { AppModule } from './app.module';
+//
+import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 
 // Función de arranque asíncrona: NestJS requiere async porque la creación del contenedor es asíncrona
 async function bootstrap() {
   // NestFactory.create(AppModule) compila el módulo, resuelve dependencias e inicia el servidor HTTP interno
   const app = await NestFactory.create(AppModule);
+
+  //
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // elimina campos no declarados
+      forbidNonWhitelisted: true, // rechaza peticiones con campos extras
+      transform: true, // transforma strings a números, etc.
+    }),
+  );
+
+  app.enableCors({
+    origin: 'http://localhost:5173', // URL de tu frontend React/Vite
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // si usas cookies o autenticación con sesiones
+  });
+
+  app.use(helmet());
+
   // app.listen() inicia el servidor Express/Koa subyacente en el puerto especificado
   // process.env.PORT se define en docker-compose o .env; si no existe, usa 3000 como fallback de desarrollo
   await app.listen(process.env.PORT ?? 3000);
