@@ -3,9 +3,13 @@ import {
   Controller,
   Post,
   Body,
+  Get,
   HttpCode,
   HttpStatus,
   UseGuards,
+  Req,
+  Put,
+  Delete,
 } from '@nestjs/common';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
 import { CreateAdminDto } from '../../application/dto/create-admin.dto';
@@ -14,12 +18,19 @@ import { LoginDto } from '../dto/login.dto';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../../../shared/infrastructure/auth/roles.guard';
 import { Roles } from '../../../../shared/interfaces/decorators/roles.decorator';
+import { GetAdminProfileUseCase } from '../../application/use-cases/get-admin-profile.use-case';
+import { UpdatePassengerDto } from '../../application/dto/update-passenger.dto';
+import { UpdateAdminUseCase } from '../../application/use-cases/update-admin.use-case';
+import { DeleteAdminUseCase } from '../../application/use-cases/delete-admin.use-case';
 
 @Controller('auth/admin')
 export class AdminAuthController {
   constructor(
     private readonly createAdminUseCase: CreateAdminUseCase,
     private readonly loginAdminUseCase: LoginAdminUseCase,
+    private readonly getProfileUseCase: GetAdminProfileUseCase,
+    private readonly updateAdminUseCase: UpdateAdminUseCase,
+    private readonly deleteAdminUseCase: DeleteAdminUseCase,
   ) {}
 
   // Registro público (temporal, luego se restringirá)
@@ -60,4 +71,23 @@ export class AdminAuthController {
       createdAt: admin.createdAt,
     };
   }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req: any) {
+    return this.getProfileUseCase.execute(req.user.userId as string);
+  }
+
+    @Put('profile')
+    @UseGuards(JwtAuthGuard)
+    async updateProfile(@Req() req: any, @Body() dto: UpdatePassengerDto) {
+      return this.updateAdminUseCase.execute(req.user.userId, dto);
+    }
+
+  @Delete('profile')
+@UseGuards(JwtAuthGuard)
+@HttpCode(HttpStatus.NO_CONTENT)
+async deleteProfile(@Req() req: any) {
+  await this.deleteAdminUseCase.execute(req.user.userId);
+}
 }

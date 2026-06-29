@@ -76,4 +76,11 @@ export class AdminRepositoryImpl implements AdminRepositoryPort {
     orm.updatedAt = admin.updatedAt;
     return orm;
   }
+
+  async softDelete(passengerId: string): Promise<void> {
+    await this.ormRepo.update(passengerId, {
+      isActive: false,
+      deletedAt: new Date(),
+    });
+  }
 }

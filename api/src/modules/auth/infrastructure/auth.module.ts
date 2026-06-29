@@ -1,3 +1,4 @@
+import { GetPassengerProfileUseCase } from './../application/use-cases/get-passenger-profile.use-case';
 // src/modules/auth/infrastructure/auth.module.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -85,6 +86,11 @@ import { CreatePassengerUseCase } from '../application/use-cases/create-passange
 import { AdminAuthController } from '../interfaces/rest/admin-auth.controller';
 import { LoginPassengerUseCase } from '../application/use-cases/login-passenger.use-case';
 import { LoginAdminUseCase } from '../application/use-cases/login-admin.use-case';
+import { GetAdminProfileUseCase } from '../application/use-cases/get-admin-profile.use-case';
+import { UpdatePassengerUseCase } from '../application/use-cases/update-passenger.use-case';
+import { UpdateAdminUseCase } from '../application/use-cases/update-admin.use-case';
+import { DeletePassengerUseCase } from '../application/use-cases/delete-passenger.use-case';
+import { DeleteAdminUseCase } from '../application/use-cases/delete-admin.use-case';
 
 @Module({
   imports: [
@@ -113,6 +119,12 @@ import { LoginAdminUseCase } from '../application/use-cases/login-admin.use-case
     CreateAdminUseCase,
     LoginPassengerUseCase,
     LoginAdminUseCase,
+    GetAdminProfileUseCase,
+    GetPassengerProfileUseCase,
+    UpdatePassengerUseCase,
+    UpdateAdminUseCase,
+    DeletePassengerUseCase,
+    DeleteAdminUseCase,
 
     // Servicios compartidos
     CryptoService,

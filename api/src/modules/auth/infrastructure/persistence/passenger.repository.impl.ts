@@ -64,4 +64,16 @@ export class PassengerRepositoryImpl implements PassengerRepositoryPort {
     orm.updatedAt = passenger.updatedAt;
     return orm;
   }
+
+  async findById(id: string): Promise<Passenger | null> {
+    const orm = await this.ormRepo.findOne({ where: { id } });
+    return orm ? this.toDomain(orm) : null;
+  }
+
+  async softDelete(passengerId: string): Promise<void> {
+    await this.ormRepo.update(passengerId, {
+      isActive: false,
+      deletedAt: new Date(),
+    });
+  }
 }

@@ -9,4 +9,5 @@ export interface AdminRepositoryPort {
   findById(id: string): Promise<Admin | null>;
   save(admin: Admin): Promise<Admin>;
   updateAssociationId(adminId: string, associationId: string): Promise<void>;
+  softDelete(passengerId: string): Promise<void>;
 }
