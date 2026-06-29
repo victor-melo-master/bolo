@@ -91,6 +91,8 @@ import { UpdatePassengerUseCase } from '../application/use-cases/update-passenge
 import { UpdateAdminUseCase } from '../application/use-cases/update-admin.use-case';
 import { DeletePassengerUseCase } from '../application/use-cases/delete-passenger.use-case';
 import { DeleteAdminUseCase } from '../application/use-cases/delete-admin.use-case';
+import { ChangePassengerPasswordUseCase } from '../application/use-cases/change-passenger-password.use-case';
+import { ChangeAdminPasswordUseCase } from '../application/use-cases/change-admin-password.use-case';
 
 @Module({
   imports: [
@@ -125,6 +127,8 @@ import { DeleteAdminUseCase } from '../application/use-cases/delete-admin.use-ca
     UpdateAdminUseCase,
     DeletePassengerUseCase,
     DeleteAdminUseCase,
+    ChangePassengerPasswordUseCase,
+    ChangeAdminPasswordUseCase,
 
     // Servicios compartidos
     CryptoService,

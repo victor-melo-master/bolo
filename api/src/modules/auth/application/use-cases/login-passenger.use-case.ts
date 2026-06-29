@@ -67,6 +67,8 @@ export class LoginPassengerUseCase {
       expiresIn: '24h',
     });
 
+    await this.passengerRepo.updateLastLogin(passenger.id);
+
     // 6. Retornar token y datos básicos
     return {
       accessToken,

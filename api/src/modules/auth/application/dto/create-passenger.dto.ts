@@ -4,19 +4,23 @@ import {
   IsNotEmpty,
   MinLength,
   IsOptional,
-  IsPhoneNumber,
   IsIn,
+  Matches,
 } from 'class-validator';
+import { IsVenezuelanPhone } from '../../../../shared/interfaces/decorators/is-venezuelan-phone.decorator';
+import { IsCedulaOrPassport } from 'src/shared/interfaces/decorators/is-cedula-or-passport.decorator';
 
 export class CreatePassengerDto {
-  @IsString()
-  @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsVenezuelanPhone()
   phone: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(8)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message:
+      'La contraseña debe contener al menos una mayúscula, una minúscula y un número',
+  })
   password: string;
 
   @IsString()
@@ -28,7 +32,7 @@ export class CreatePassengerDto {
   email?: string;
 
   @IsOptional()
-  @IsString()
+  @IsCedulaOrPassport()
   cedula?: string;
 
   @IsOptional()

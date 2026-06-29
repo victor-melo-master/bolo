@@ -33,6 +33,7 @@ import {
   IsOptional,
   IsEmail,
 } from 'class-validator';
+import { IsVenezuelanPhone } from '../../../../shared/interfaces/decorators/is-venezuelan-phone.decorator';
 
 export class LoginDto {
   // ─── email (opcional, reservado para uso futuro) ───
@@ -44,15 +45,12 @@ export class LoginDto {
   email?: string;
 
   // ─── phone ───
-  // @IsString(): asegura que el valor sea string
-  // @IsNotEmpty(): rechaza strings vacíos (pero no valida formato E.164;
-  //   eso se hace en el caso de uso o en una validación personalizada)
+  // @IsVenezuelanPhone(): valida que sea un número móvil venezolano válido
   @ApiProperty({
     description: 'Número de teléfono con código de país',
     example: '+584141234567',
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsVenezuelanPhone()
   phone: string;
 
   // ─── password ───

@@ -21,48 +21,43 @@
  * Dependencias:
  *   - Reflector: lee metadatos de NestJS
  *   - ROLES_KEY: clave de metadatos definida en roles.decorator
- *   - UserRole: enum de roles del módulo auth
+ *   - AdminRole: enum de roles del módulo auth
  *
  * @module RolesGuard
  */
 
 // ─── Importaciones de NestJS y del proyecto ───
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'; // Injectable, CanActivate (interfaz), ExecutionContext (contexto de ejecución)
-import { Reflector } from '@nestjs/core'; // Reflector: accede a metadatos almacenados por decoradores @SetMetadata
-import { ROLES_KEY } from '../../../shared/interfaces/decorators/roles.decorator'; // Clave para leer roles desde metadatos del manejador
-import { AdminRole } from '../../../modules/auth/domain/entities/admin.entity';; // Enum de roles de usuario (admin, super_admin, conductor, socio)
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  Logger,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { ROLES_KEY } from '../../../shared/interfaces/decorators/roles.decorator';
+import { AdminRole } from '../../../modules/auth/domain/entities/admin.entity';
 
-// Decorador @Injectable() permite que NestJS inyecte este guard en el contenedor IoC
 @Injectable()
 export class RolesGuard implements CanActivate {
-  // Reflector se inyecta para leer metadatos de roles de los manejadores de ruta
+  private readonly logger = new Logger(RolesGuard.name);
+
   constructor(private reflector: Reflector) {}
 
-  // Método obligatorio de CanActivate: retorna true si permite acceso, false si deniega
   canActivate(context: ExecutionContext): boolean {
-    // Lee los roles requeridos desde los metadatos del manejador (método) o la clase (controlador)
-    // getAllAndOverride busca primero en el método, y si no encuentra, en la clase
     const requiredRoles = this.reflector.getAllAndOverride<AdminRole[]>(
-      ROLES_KEY, // Clave definida en roles.decorator.ts ('roles')
-      [context.getHandler(), context.getClass()], // Busca en método y clase
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
     );
-    // Extrae el objeto user del request HTTP (inyectado por Passport tras validar el JWT)
     const { user } = context.switchToHttp().getRequest();
 
-    // 🔥 LOG TEMPORAL PARA DEPURAR — se eliminará en producción
-    console.log(
-      'DEBUG RolesGuard — requiredRoles:',
-      requiredRoles,
-      'user:',
-      user,
+    // Log de depuración (usar JSON.stringify para arrays)
+    this.logger.debug(
+      `requiredRoles: ${JSON.stringify(requiredRoles)}, user: ${JSON.stringify(user)}`,
     );
 
-    // Si no hay roles definidos en la ruta, se permite el acceso (ruta pública dentro del módulo)
     if (!requiredRoles) {
       return true;
     }
-    // Verifica que el usuario tenga al menos uno de los roles requeridos (comparación de enum)
-    // Si user es undefined (no autenticado), user?.role es undefined y no coincidirá con ningún rol
     return requiredRoles.some((role) => user?.role === role);
   }
 }

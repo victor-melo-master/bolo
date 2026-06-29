@@ -23,14 +23,21 @@ import { Injectable, Inject, Optional } from '@nestjs/common';
 import { WALLET_SERVICE_PORT } from '../../../fin/domain/interfaces/services/wallet.service.port';
 import type { WalletServicePort } from '../../../fin/domain/interfaces/services/wallet.service.port';
 import { CryptoService } from '../../../../shared/application/services/crypto.service';
-import { Passenger } from '../../domain/entities/passenger.entity';
+import {
+  Passenger,
+  PassengerCategory,
+} from '../../domain/entities/passenger.entity';
 import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 import { PASSENGER_REPOSITORY_PORT } from '../../domain/interfaces';
 import type { PassengerRepositoryPort } from '../../domain/interfaces';
 import { CreatePassengerDto } from '../dto';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class CreatePassengerUseCase {
+  // Propiedad de clase (no inyectada)
+  private readonly logger = new Logger(CreatePassengerUseCase.name);
+
   constructor(
     @Inject(PASSENGER_REPOSITORY_PORT)
     private readonly passengerRepo: PassengerRepositoryPort,
@@ -47,17 +54,30 @@ export class CreatePassengerUseCase {
       throw new UserAlreadyExistsException('El teléfono ya está registrado');
     }
 
+    if (dto.email) {
+      const existingEmail = await this.passengerRepo.findByEmail(dto.email);
+      if (existingEmail) {
+        throw new UserAlreadyExistsException('El email ya está registrado');
+      }
+    }
+    if (dto.cedula) {
+      const existingCedula = await this.passengerRepo.findByCedula(dto.cedula);
+      if (existingCedula) {
+        throw new UserAlreadyExistsException('La cédula ya está registrada');
+      }
+    }
+
     // 2. Hashear la contraseña
     const hashedPassword = await this.cryptoService.hash(dto.password);
 
     // 3. Crear entidad de dominio
     const passenger = Passenger.create({
       phone: dto.phone,
-      email: dto.email,
+      email: dto.email?.toLocaleLowerCase(),
       passwordHash: hashedPassword,
       fullName: dto.fullName,
       cedula: dto.cedula,
-      category: dto.category as any,
+      category: dto.category as PassengerCategory,
     });
 
     // 4. Persistir
@@ -68,8 +88,8 @@ export class CreatePassengerUseCase {
       try {
         await this.walletService.createWallet(saved.id);
       } catch (error) {
-        console.error(
-          'Wallet creation failed, continuing passenger registration:',
+        this.logger.error(
+          'Wallet creation failed, continuing passenger registration',
           error,
         );
       }

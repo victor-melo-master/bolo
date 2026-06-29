@@ -11,4 +11,7 @@ export interface PassengerRepositoryPort {
   save(passenger: Passenger): Promise<Passenger>;
   updateJwtKey(passengerId: string, jwtKey: string): Promise<void>;
   softDelete(passengerId: string): Promise<void>;
+  findByEmail(email: string): Promise<Passenger | null>;
+  findByCedula(cedula: string): Promise<Passenger | null>;
+  updateLastLogin(userId: string): Promise<void>;
 }

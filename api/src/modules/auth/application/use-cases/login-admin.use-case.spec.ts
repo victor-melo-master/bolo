@@ -17,7 +17,7 @@ describe('LoginAdminUseCase', () => {
 
   const mockAdmin = new Admin(
     'admin-id',
-    '+584141234501',
+    '04141234501',
     null, // email
     'hashed_pass',
     'Admin Uno',
@@ -66,9 +66,9 @@ describe('LoginAdminUseCase', () => {
     cryptoService.compare.mockResolvedValue(true);
     jwtService.sign.mockReturnValue('mocked-token');
 
-    const result = await useCase.execute('+584141234501', 'Test1234');
+    const result = await useCase.execute('04141234501', 'Test1234');
 
-    expect(adminRepo.findByPhone).toHaveBeenCalledWith('+584141234501');
+    expect(adminRepo.findByPhone).toHaveBeenCalledWith('04141234501');
     expect(cryptoService.compare).toHaveBeenCalledWith(
       'Test1234',
       'hashed_pass',
@@ -89,7 +89,7 @@ describe('LoginAdminUseCase', () => {
   it('should throw if password is wrong', async () => {
     adminRepo.findByPhone.mockResolvedValue(mockAdmin);
     cryptoService.compare.mockResolvedValue(false);
-    await expect(useCase.execute('+584141234501', 'wrongpass')).rejects.toThrow(
+    await expect(useCase.execute('04141234501', 'wrongpass')).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
@@ -97,7 +97,7 @@ describe('LoginAdminUseCase', () => {
   it('should throw if admin is inactive', async () => {
     const inactiveAdmin = { ...mockAdmin, isActive: false };
     adminRepo.findByPhone.mockResolvedValue(inactiveAdmin);
-    await expect(useCase.execute('+584141234501', 'pass')).rejects.toThrow(
+    await expect(useCase.execute('04141234501', 'pass')).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
@@ -107,7 +107,7 @@ describe('LoginAdminUseCase', () => {
     cryptoService.compare.mockResolvedValue(true);
     jwtService.sign.mockReturnValue('token');
 
-    await useCase.execute('+584141234501', 'Test1234');
+    await useCase.execute('04141234501', 'Test1234');
 
     const sessionArg = sessionRepo.save.mock.calls[0][0];
     expect(sessionArg.userId).toBe('admin-id');

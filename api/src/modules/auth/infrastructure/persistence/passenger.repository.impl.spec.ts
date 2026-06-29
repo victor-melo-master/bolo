@@ -10,7 +10,7 @@ describe('PassengerRepositoryImpl', () => {
 
   const mockOrmPassenger: PassengerOrmEntity = {
     id: 'passenger-id',
-    phone: '+584141234500',
+    phone: '04141234500',
     email: null,
     passwordHash: 'hashed_pass',
     fullName: 'Pasajero Uno',
@@ -27,7 +27,7 @@ describe('PassengerRepositoryImpl', () => {
 
   const mockDomainPassenger = new Passenger(
     'passenger-id',
-    '+584141234500',
+    '04141234500',
     null,
     'hashed_pass',
     'Pasajero Uno',
@@ -56,11 +56,11 @@ describe('PassengerRepositoryImpl', () => {
   describe('findByPhone', () => {
     it('should return domain passenger when found', async () => {
       mockOrmRepo.findOne.mockResolvedValue(mockOrmPassenger);
-      const result = await repo.findByPhone('+584141234500');
+      const result = await repo.findByPhone('04141234500');
       expect(result).toBeInstanceOf(Passenger);
-      expect(result?.phone).toBe('+584141234500');
+      expect(result?.phone).toBe('04141234500');
       expect(mockOrmRepo.findOne).toHaveBeenCalledWith({
-        where: { phone: '+584141234500' },
+        where: { phone: '04141234500' },
       });
     });
 

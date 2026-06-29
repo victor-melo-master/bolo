@@ -16,6 +16,8 @@ describe('CreatePassengerUseCase', () => {
   beforeEach(async () => {
     passengerRepo = {
       findByPhone: jest.fn(),
+      findByEmail: jest.fn(),
+      findByCedula: jest.fn(),
       save: jest.fn(),
     };
     walletService = {
@@ -40,7 +42,7 @@ describe('CreatePassengerUseCase', () => {
 
   it('should create a passenger successfully', async () => {
     const dto = {
-      phone: '+584141234567',
+      phone: '04141234567',
       email: 'test@test.com',
       password: 'password123',
       fullName: 'Test Passenger',
@@ -49,6 +51,8 @@ describe('CreatePassengerUseCase', () => {
     };
 
     passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
     cryptoService.hash.mockResolvedValue('hashed_password');
     passengerRepo.save.mockResolvedValue(
       new Passenger(
@@ -58,7 +62,7 @@ describe('CreatePassengerUseCase', () => {
         'hashed_password',
         dto.fullName,
         dto.cedula,
-        null, // jwtKey
+        null,
         'normal',
         false,
         true,
@@ -72,6 +76,8 @@ describe('CreatePassengerUseCase', () => {
     const result = await useCase.execute(dto);
 
     expect(passengerRepo.findByPhone).toHaveBeenCalledWith(dto.phone);
+    expect(passengerRepo.findByEmail).toHaveBeenCalledWith(dto.email);
+    expect(passengerRepo.findByCedula).toHaveBeenCalledWith(dto.cedula);
     expect(cryptoService.hash).toHaveBeenCalledWith(dto.password);
     expect(passengerRepo.save).toHaveBeenCalled();
     expect(walletService.createWallet).toHaveBeenCalledWith('uuid');
@@ -83,7 +89,7 @@ describe('CreatePassengerUseCase', () => {
     passengerRepo.findByPhone.mockResolvedValue(
       new Passenger(
         'existing-id',
-        '+584141234567',
+        '04141234567',
         null,
         'hash',
         'Test',
@@ -101,7 +107,7 @@ describe('CreatePassengerUseCase', () => {
 
     await expect(
       useCase.execute({
-        phone: '+584141234567',
+        phone: '04141234567',
         password: 'password123',
         fullName: 'Test',
         category: 'normal' as any,
@@ -111,15 +117,86 @@ describe('CreatePassengerUseCase', () => {
     expect(passengerRepo.save).not.toHaveBeenCalled();
   });
 
+  it('should throw UserAlreadyExistsException if email exists', async () => {
+    const dto = {
+      phone: '04141234567',
+      email: 'duplicate@email.com',
+      password: 'Pass1234',
+      fullName: 'Email Duplicado',
+      category: 'normal' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(
+      new Passenger(
+        'existing-id',
+        dto.phone,
+        dto.email,
+        'hash',
+        'Test',
+        null,
+        null,
+        'normal',
+        false,
+        true,
+        null,
+        null,
+        new Date(),
+        new Date(),
+      ),
+    );
+
+    await expect(useCase.execute(dto)).rejects.toThrow(
+      UserAlreadyExistsException,
+    );
+  });
+
+  it('should throw UserAlreadyExistsException if cedula exists', async () => {
+    const dto = {
+      phone: '04141234567',
+      cedula: 'V12345678',
+      password: 'Pass1234',
+      fullName: 'Cédula Duplicada',
+      category: 'normal' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(
+      new Passenger(
+        'existing-id',
+        dto.phone,
+        null,
+        'hash',
+        'Test',
+        dto.cedula,
+        null,
+        'normal',
+        false,
+        true,
+        null,
+        null,
+        new Date(),
+        new Date(),
+      ),
+    );
+
+    await expect(useCase.execute(dto)).rejects.toThrow(
+      UserAlreadyExistsException,
+    );
+  });
+
   it('should still create passenger even if wallet service fails', async () => {
     const dto = {
-      phone: '+584141234567',
+      phone: '04141234567',
       password: 'password123',
       fullName: 'Test',
       category: 'normal' as any,
     };
 
     passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
     cryptoService.hash.mockResolvedValue('hashed');
     passengerRepo.save.mockResolvedValue(
       new Passenger(
@@ -144,5 +221,194 @@ describe('CreatePassengerUseCase', () => {
     const result = await useCase.execute(dto);
     expect(result).toBeDefined();
     expect(walletService.createWallet).toHaveBeenCalled();
+  });
+
+  it('should create a passenger with student category and studentDocApproved false', async () => {
+    const dto = {
+      phone: '04241234567',
+      password: 'Pass1234',
+      fullName: 'Estudiante',
+      category: 'student' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed');
+    passengerRepo.save.mockResolvedValue(
+      new Passenger(
+        'uuid',
+        dto.phone,
+        null,
+        'hashed',
+        dto.fullName,
+        null,
+        null,
+        'student',
+        false,
+        true,
+        null,
+        null,
+        new Date(),
+        new Date(),
+      ),
+    );
+
+    const result = await useCase.execute(dto);
+
+    expect(result.category).toBe('student');
+    expect(result.studentDocApproved).toBe(false);
+  });
+
+  it('should create a passenger with elderly category', async () => {
+    const dto = {
+      phone: '04161234567',
+      password: 'Pass1234',
+      fullName: 'Adulto Mayor',
+      category: 'elderly' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed');
+    passengerRepo.save.mockResolvedValue(
+      new Passenger(
+        'uuid',
+        dto.phone,
+        null,
+        'hashed',
+        dto.fullName,
+        null,
+        null,
+        'elderly',
+        false,
+        true,
+        null,
+        null,
+        new Date(),
+        new Date(),
+      ),
+    );
+
+    const result = await useCase.execute(dto);
+
+    expect(result.category).toBe('elderly');
+    expect(result.isActive).toBe(true);
+  });
+
+  it('should create a passenger without optional fields (email, cedula)', async () => {
+    const dto = {
+      phone: '04261234567',
+      password: 'Pass1234',
+      fullName: 'Sin Opcionales',
+      category: 'normal' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed');
+    passengerRepo.save.mockResolvedValue(
+      new Passenger(
+        'uuid',
+        dto.phone,
+        null,
+        'hashed',
+        dto.fullName,
+        null,
+        null,
+        'normal',
+        false,
+        true,
+        null,
+        null,
+        new Date(),
+        new Date(),
+      ),
+    );
+
+    const result = await useCase.execute(dto);
+
+    expect(result.email).toBeNull();
+    expect(result.cedula).toBeNull();
+  });
+
+  it('should propagate error if repository save fails', async () => {
+    const dto = {
+      phone: '04121234567',
+      password: 'Pass1234',
+      fullName: 'Error al guardar',
+      category: 'normal' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed');
+    passengerRepo.save.mockRejectedValue(new Error('DB error'));
+
+    await expect(useCase.execute(dto)).rejects.toThrow('DB error');
+  });
+
+  it('should create a passenger with passport as cedula', async () => {
+    const dto = {
+      phone: '04141234567',
+      email: 'passenger@passport.com',
+      password: 'Pass1234',
+      fullName: 'Pasaporte Pasajero',
+      cedula: 'A1234567', // pasaporte válido
+      category: 'normal' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed_passport');
+    passengerRepo.save.mockResolvedValue(
+      new Passenger(
+        'uuid',
+        dto.phone,
+        dto.email,
+        'hashed_passport',
+        dto.fullName,
+        dto.cedula,
+        null,
+        'normal',
+        false,
+        true,
+        null,
+        null,
+        new Date(),
+        new Date(),
+      ),
+    );
+
+    const result = await useCase.execute(dto);
+
+    expect(result.cedula).toBe('A1234567');
+    expect(result.email).toBe('passenger@passport.com');
+    expect(passengerRepo.findByCedula).toHaveBeenCalledWith('A1234567');
+  });
+
+  it('should pass phone exactly as provided (no normalization)', async () => {
+    const dto = {
+      phone: '04141234567',
+      password: 'Pass1234',
+      fullName: 'Teléfono',
+      category: 'normal' as any,
+    };
+
+    passengerRepo.findByPhone.mockResolvedValue(null);
+    passengerRepo.findByEmail.mockResolvedValue(null);
+    passengerRepo.findByCedula.mockResolvedValue(null);
+    cryptoService.hash.mockResolvedValue('hashed');
+    passengerRepo.save.mockImplementation((passenger: Passenger) =>
+      Promise.resolve(passenger),
+    );
+
+    const result = await useCase.execute(dto);
+
+    expect(result.phone).toBe('04141234567');
   });
 });

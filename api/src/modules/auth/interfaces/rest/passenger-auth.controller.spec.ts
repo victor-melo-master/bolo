@@ -1,89 +1,147 @@
-// auth/interfaces/rest/admin-auth.controller.spec.ts
+// auth/interfaces/rest/passenger-auth.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminAuthController } from './admin-auth.controller';
-import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
-import { LoginAdminUseCase } from '../../application/use-cases/login-admin.use-case';
-import { GetAdminProfileUseCase } from '../../application/use-cases/get-admin-profile.use-case';
-import { UpdateAdminUseCase } from '../../application/use-cases/update-admin.use-case';
-import { DeleteAdminUseCase } from '../../application/use-cases/delete-admin.use-case';
+import { PassengerAuthController } from './passenger-auth.controller';
+import { LoginPassengerUseCase } from '../../application/use-cases/login-passenger.use-case';
+import { GetPassengerProfileUseCase } from '../../application/use-cases/get-passenger-profile.use-case';
+import { UpdatePassengerUseCase } from '../../application/use-cases/update-passenger.use-case';
+import { DeletePassengerUseCase } from '../../application/use-cases/delete-passenger.use-case';
+import { ChangePassengerPasswordUseCase } from '../../application/use-cases/change-passenger-password.use-case';
+import { ChangePasswordDto } from '../../application/dto/change-password.dto';
+import { CreatePassengerUseCase } from '../../application/use-cases/create-passanger.use-case';
 
-describe('AdminAuthController', () => {
-  let controller: AdminAuthController;
-  let createAdminUseCase: any;
-  let loginAdminUseCase: any;
-  let getAdminProfileUseCase: any;
-  let updateAdminUseCase: any;
-  let deleteAdminUseCase: any;
+describe('PassengerAuthController', () => {
+  let controller: PassengerAuthController;
+  let createPassengerUseCase: any;
+  let loginPassengerUseCase: any;
+  let getProfileUseCase: any;
+  let updatePassengerUseCase: any;
+  let deletePassengerUseCase: any;
+  let changePasswordUseCase: any;
 
   beforeEach(async () => {
-    createAdminUseCase = { execute: jest.fn() };
-    loginAdminUseCase = { execute: jest.fn() };
-    getAdminProfileUseCase = { execute: jest.fn() };
-    updateAdminUseCase = { execute: jest.fn() };
-    deleteAdminUseCase = { execute: jest.fn() };
+    createPassengerUseCase = { execute: jest.fn() };
+    loginPassengerUseCase = { execute: jest.fn() };
+    getProfileUseCase = { execute: jest.fn() };
+    updatePassengerUseCase = { execute: jest.fn() };
+    deletePassengerUseCase = { execute: jest.fn() };
+    changePasswordUseCase = { execute: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AdminAuthController],
+      controllers: [PassengerAuthController],
       providers: [
-        { provide: CreateAdminUseCase, useValue: createAdminUseCase },
-        { provide: LoginAdminUseCase, useValue: loginAdminUseCase },
-        { provide: GetAdminProfileUseCase, useValue: getAdminProfileUseCase },
-        { provide: UpdateAdminUseCase, useValue: updateAdminUseCase },
-        { provide: DeleteAdminUseCase, useValue: deleteAdminUseCase },
+        { provide: CreatePassengerUseCase, useValue: createPassengerUseCase },
+        { provide: LoginPassengerUseCase, useValue: loginPassengerUseCase },
+        { provide: GetPassengerProfileUseCase, useValue: getProfileUseCase },
+        { provide: UpdatePassengerUseCase, useValue: updatePassengerUseCase },
+        { provide: DeletePassengerUseCase, useValue: deletePassengerUseCase },
+        {
+          provide: ChangePassengerPasswordUseCase,
+          useValue: changePasswordUseCase,
+        },
       ],
     }).compile();
 
-    controller = module.get<AdminAuthController>(AdminAuthController);
+    controller = module.get<PassengerAuthController>(PassengerAuthController);
   });
 
-  describe('POST /auth/admin/register', () => {
-    it('should register an admin and return 201', async () => {
-      const dto = { phone: '+584141234501', password: 'Test1234', fullName: 'Admin Uno', role: 'super_admin' };
-      const mockAdmin = { id: 'uuid', phone: dto.phone, fullName: dto.fullName, role: dto.role, isActive: true, createdAt: new Date() };
-      createAdminUseCase.execute.mockResolvedValue(mockAdmin);
+  describe('POST /auth/passenger/register', () => {
+    it('should register a passenger and return 201', async () => {
+      const dto = {
+        phone: '04141234500',
+        password: 'Test1234',
+        fullName: 'Pasajero Uno',
+        category: 'normal',
+      };
+      const mockPassenger = {
+        id: 'uuid',
+        phone: dto.phone,
+        fullName: dto.fullName,
+        category: dto.category,
+        isActive: true,
+        createdAt: new Date(),
+      };
+      createPassengerUseCase.execute.mockResolvedValue(mockPassenger);
+
       const result = await controller.register(dto);
-      expect(createAdminUseCase.execute).toHaveBeenCalledWith(dto);
-      expect(result).toEqual(mockAdmin);
+
+      expect(createPassengerUseCase.execute).toHaveBeenCalledWith(dto);
+      expect(result).toEqual(mockPassenger);
     });
   });
 
-  describe('POST /auth/admin/login', () => {
+  describe('POST /auth/passenger/login', () => {
     it('should login and return token', async () => {
-      const dto = { phone: '+584141234501', password: 'Test1234' };
-      const mockResponse = { accessToken: 'token', user: { id: 'uuid', phone: dto.phone, fullName: 'Admin Uno', role: 'super_admin' } };
-      loginAdminUseCase.execute.mockResolvedValue(mockResponse);
+      const dto = { phone: '+584141234500', password: 'Test1234' };
+      const mockResponse = {
+        accessToken: 'token',
+        user: {
+          id: 'uuid',
+          phone: dto.phone,
+          fullName: 'Pasajero Uno',
+          role: 'passenger',
+        },
+      };
+      loginPassengerUseCase.execute.mockResolvedValue(mockResponse);
+
       const result = await controller.login(dto);
-      expect(loginAdminUseCase.execute).toHaveBeenCalledWith(dto.phone, dto.password);
+
+      expect(loginPassengerUseCase.execute).toHaveBeenCalledWith(
+        dto.phone,
+        dto.password,
+      );
       expect(result).toEqual(mockResponse);
     });
   });
 
-  describe('GET /auth/admin/profile', () => {
-    it('should return admin profile', async () => {
-      const mockProfile = { id: 'uuid', phone: '+584141234501', role: 'super_admin' };
-      getAdminProfileUseCase.execute.mockResolvedValue(mockProfile);
+  describe('GET /auth/passenger/profile', () => {
+    it('should return passenger profile', async () => {
+      const mockProfile = { id: 'uuid', phone: '+584141234500' };
+      getProfileUseCase.execute.mockResolvedValue(mockProfile);
+
       const result = await controller.getProfile({ user: { userId: 'uuid' } });
+
       expect(result).toEqual(mockProfile);
-      expect(getAdminProfileUseCase.execute).toHaveBeenCalledWith('uuid');
+      expect(getProfileUseCase.execute).toHaveBeenCalledWith('uuid');
     });
   });
 
-  describe('PUT /auth/admin/profile', () => {
-    it('should update admin profile', async () => {
+  describe('PUT /auth/passenger/profile', () => {
+    it('should update passenger profile', async () => {
       const dto = { fullName: 'Nuevo' };
       const mockUpdated = { id: 'uuid', fullName: 'Nuevo' };
-      updateAdminUseCase.execute.mockResolvedValue(mockUpdated);
-      const result = await controller.updateProfile({ user: { userId: 'uuid' } }, dto);
+      updatePassengerUseCase.execute.mockResolvedValue(mockUpdated);
+
+      const result = await controller.updateProfile(
+        { user: { userId: 'uuid' } },
+        dto,
+      );
+
       expect(result).toEqual(mockUpdated);
-      expect(updateAdminUseCase.execute).toHaveBeenCalledWith('uuid', dto);
+      expect(updatePassengerUseCase.execute).toHaveBeenCalledWith('uuid', dto);
     });
   });
 
-  describe('DELETE /auth/admin/profile', () => {
-    it('should soft delete admin', async () => {
-      deleteAdminUseCase.execute.mockResolvedValue(undefined);
+  describe('DELETE /auth/passenger/profile', () => {
+    it('should soft delete passenger', async () => {
+      deletePassengerUseCase.execute.mockResolvedValue(undefined);
+
       await controller.deleteProfile({ user: { userId: 'uuid' } });
-      expect(deleteAdminUseCase.execute).toHaveBeenCalledWith('uuid');
+
+      expect(deletePassengerUseCase.execute).toHaveBeenCalledWith('uuid');
+    });
+  });
+
+  describe('PUT /auth/passenger/password', () => {
+    it('should change password', async () => {
+      const dto: ChangePasswordDto = {
+        currentPassword: 'OldPass1',
+        newPassword: 'NewPass2',
+      };
+      changePasswordUseCase.execute.mockResolvedValue(undefined);
+
+      await controller.changePassword({ user: { userId: 'uuid' } }, dto);
+
+      expect(changePasswordUseCase.execute).toHaveBeenCalledWith('uuid', dto);
     });
   });
 });

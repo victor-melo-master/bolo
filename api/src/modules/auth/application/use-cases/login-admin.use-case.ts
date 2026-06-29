@@ -67,6 +67,9 @@ export class LoginAdminUseCase {
       expiresIn: '24h',
     });
 
+    // Actualizar lastLoginAt
+    await this.adminRepo.updateLastLogin(admin.id);
+
     // 6. Retornar token y datos básicos
     return {
       accessToken,

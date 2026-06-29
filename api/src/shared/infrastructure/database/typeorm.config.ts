@@ -40,6 +40,9 @@ import { ExchangeRateOrmEntity } from '../../../modules/fin/infrastructure/orm/e
 import { PassengerOrmEntity } from 'src/modules/auth/infrastructure/orm/passenger.orm-entity';
 import { AdminOrmEntity } from 'src/modules/auth/infrastructure/orm/admin.orm-entity';
 import { SessionOrmEntity } from 'src/modules/auth/infrastructure/orm/session.orm-entity';
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('TypeOrmConfig');
 
 // ─── Función auxiliar: leer secretos desde archivos Docker/K8s ───
 // Busca primero en un archivo de secreto montado por Docker Swarm o Kubernetes (ruta en variable fileEnvKey).
@@ -53,7 +56,7 @@ function readSecret(fileEnvKey: string, fallbackEnvKey?: string): string {
     } catch {
       // Si el archivo no existe o no se puede leer (ej. permisos), se loggea el error
       // pero se continúa con el fallback para no bloquear el arranque del servicio
-      console.error(`Error reading secret from ${filePath}`);
+      logger.error(`Error reading secret from ${filePath}`);
     }
   }
   // Fallback a variable de entorno directa, o cadena vacía si ninguna está definida

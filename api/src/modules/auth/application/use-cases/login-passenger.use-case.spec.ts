@@ -17,7 +17,7 @@ describe('LoginPassengerUseCase', () => {
 
   const mockPassenger = new Passenger(
     'passenger-id',
-    '+584141234500',
+    '04141234500',
     null, // email
     'hashed_pass',
     'Pasajero Uno',
@@ -64,9 +64,9 @@ describe('LoginPassengerUseCase', () => {
     cryptoService.compare.mockResolvedValue(true);
     jwtService.sign.mockReturnValue('mocked-token');
 
-    const result = await useCase.execute('+584141234500', 'Test1234');
+    const result = await useCase.execute('04141234500', 'Test1234');
 
-    expect(passengerRepo.findByPhone).toHaveBeenCalledWith('+584141234500');
+    expect(passengerRepo.findByPhone).toHaveBeenCalledWith('04141234500');
     expect(cryptoService.compare).toHaveBeenCalledWith(
       'Test1234',
       'hashed_pass',
@@ -87,7 +87,7 @@ describe('LoginPassengerUseCase', () => {
   it('should throw if password is wrong', async () => {
     passengerRepo.findByPhone.mockResolvedValue(mockPassenger);
     cryptoService.compare.mockResolvedValue(false);
-    await expect(useCase.execute('+584141234500', 'wrongpass')).rejects.toThrow(
+    await expect(useCase.execute('04141234500', 'wrongpass')).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
@@ -95,7 +95,7 @@ describe('LoginPassengerUseCase', () => {
   it('should throw if passenger is inactive', async () => {
     const inactivePassenger = { ...mockPassenger, isActive: false };
     passengerRepo.findByPhone.mockResolvedValue(inactivePassenger);
-    await expect(useCase.execute('+584141234500', 'pass')).rejects.toThrow(
+    await expect(useCase.execute('04141234500', 'pass')).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
@@ -105,7 +105,7 @@ describe('LoginPassengerUseCase', () => {
     cryptoService.compare.mockResolvedValue(true);
     jwtService.sign.mockReturnValue('token');
 
-    await useCase.execute('+584141234500', 'Test1234');
+    await useCase.execute('04141234500', 'Test1234');
 
     // Verificar que la sesión se guardó con los parámetros correctos
     const sessionArg = sessionRepo.save.mock.calls[0][0];

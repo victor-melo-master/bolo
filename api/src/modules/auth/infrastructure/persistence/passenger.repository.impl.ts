@@ -76,4 +76,18 @@ export class PassengerRepositoryImpl implements PassengerRepositoryPort {
       deletedAt: new Date(),
     });
   }
+
+  async findByEmail(email: string): Promise<Passenger | null> {
+    const orm = await this.ormRepo.findOne({ where: { email } });
+    return orm ? this.toDomain(orm) : null;
+  }
+
+  async findByCedula(cedula: string): Promise<Passenger | null> {
+    const orm = await this.ormRepo.findOne({ where: { cedula } });
+    return orm ? this.toDomain(orm) : null;
+  }
+
+  async updateLastLogin(userId: string): Promise<void> {
+    await this.ormRepo.update(userId, { lastLoginAt: new Date() });
+  }
 }

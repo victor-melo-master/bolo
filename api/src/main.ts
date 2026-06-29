@@ -58,4 +58,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 // Se invoca bootstrap() al arrancar el proceso; Captura errores no manejados durante el inicio
-bootstrap();
+void bootstrap();

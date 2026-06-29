@@ -20,6 +20,9 @@ import { GetPassengerProfileUseCase } from '../../application/use-cases/get-pass
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { UpdatePassengerDto } from '../../application/dto/update-passenger.dto';
 import { DeletePassengerUseCase } from '../../application/use-cases/delete-passenger.use-case';
+import { Throttle } from '@nestjs/throttler';
+import { ChangePasswordDto } from '../../application/dto/change-password.dto';
+import { ChangePassengerPasswordUseCase } from '../../application/use-cases/change-passenger-password.use-case';
 
 @Controller('auth/passenger')
 export class PassengerAuthController {
@@ -29,6 +32,7 @@ export class PassengerAuthController {
     private readonly getProfileUseCase: GetPassengerProfileUseCase,
     private readonly updatePassengerUseCase: UpdatePassengerUseCase,
     private readonly deletePassengerUseCase: DeletePassengerUseCase,
+    private readonly changePasswordUseCase: ChangePassengerPasswordUseCase,
   ) {}
 
   @Post('register')
@@ -45,6 +49,7 @@ export class PassengerAuthController {
     };
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 intentos por minuto
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
@@ -60,13 +65,20 @@ export class PassengerAuthController {
   @Put('profile')
   @UseGuards(JwtAuthGuard)
   async updateProfile(@Req() req: any, @Body() dto: UpdatePassengerDto) {
-    return this.updatePassengerUseCase.execute(req.user.userId, dto);
+    return this.updatePassengerUseCase.execute(req.user.userId as string, dto);
   }
 
   @Delete('profile')
-@UseGuards(JwtAuthGuard)
-@HttpCode(HttpStatus.NO_CONTENT)
-async deleteProfile(@Req() req: any) {
-  await this.deletePassengerUseCase.execute(req.user.userId);
-}
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteProfile(@Req() req: any) {
+    await this.deletePassengerUseCase.execute(req.user.userId as string);
+  }
+
+  @Put('password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+    await this.changePasswordUseCase.execute(req.user.userId as string, dto);
+  }
 }

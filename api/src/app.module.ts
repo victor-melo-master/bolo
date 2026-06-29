@@ -24,9 +24,10 @@
  */
 
 // ─── Módulos base de NestJS ───
-import { Module } from '@nestjs/common'; // @Module: decorador que define un módulo NestJS con imports, controllers y providers
+import { MiddlewareConsumer, Module } from '@nestjs/common'; // @Module: decorador que define un módulo NestJS con imports, controllers y providers
 import { TypeOrmModule } from '@nestjs/typeorm'; // TypeOrmModule.forRoot(): integración de TypeORM con NestJS para PostgreSQL
 import { ConfigModule } from '@nestjs/config'; // ConfigModule.forRoot(): carga variables de entorno y las expone globalmente
+import { ThrottlerModule } from '@nestjs/throttler';
 
 // ─── Módulos funcionales del monolito ───
 import { AuthModule } from './modules/auth/infrastructure/auth.module'; // Autenticación (JWT, usuarios, roles, asociaciones)
@@ -39,9 +40,18 @@ import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config';
 // ─── Controladores y servicios del módulo raíz ───
 import { AppController } from './app.controller'; // Controlador raíz: responde en GET / con "Hello World!"
 import { AppService } from './app.service'; // Servicio raíz: lógica del endpoint de bienvenida
+import { LoggingMiddleware } from './shared/interfaces/middleware/logging.middleware';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000, // 1 minuto en milisegundos
+          limit: 5, // máximo 5 peticiones por minuto
+        },
+      ],
+    }),
     // ConfigModule forRoot con isGlobal:true evita tener que importarlo en cada submódulo
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     // TypeOrmModule.forRoot usa la configuración compartida para conectar a PostgreSQL
@@ -57,4 +67,8 @@ import { AppService } from './app.service'; // Servicio raíz: lógica del endpo
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggingMiddleware).forRoutes('*');
+  }
+}

@@ -10,7 +10,7 @@ describe('AdminRepositoryImpl', () => {
 
   const mockOrmAdmin: AdminOrmEntity = {
     id: 'admin-id',
-    phone: '+584141234501',
+    phone: '04141234501',
     email: null,
     passwordHash: 'hashed_pass',
     fullName: 'Admin Uno',
@@ -29,7 +29,7 @@ describe('AdminRepositoryImpl', () => {
 
   const mockDomainAdmin = new Admin(
     'admin-id',
-    '+584141234501',
+    '04141234501',
     null,
     'hashed_pass',
     'Admin Uno',
@@ -58,11 +58,11 @@ describe('AdminRepositoryImpl', () => {
   describe('findByPhone', () => {
     it('should return domain admin when found', async () => {
       mockOrmRepo.findOne.mockResolvedValue(mockOrmAdmin);
-      const result = await repo.findByPhone('+584141234501');
+      const result = await repo.findByPhone('04141234501');
       expect(result).toBeInstanceOf(Admin);
-      expect(result?.phone).toBe('+584141234501');
+      expect(result?.phone).toBe('04141234501');
       expect(mockOrmRepo.findOne).toHaveBeenCalledWith({
-        where: { phone: '+584141234501' },
+        where: { phone: '04141234501' },
       });
     });
 

@@ -23,7 +23,7 @@
  * @see JwtAuthGuard
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
@@ -35,6 +35,8 @@ import type { SessionRepositoryPort } from '../../domain/interfaces/repositories
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private readonly logger = new Logger(JwtStrategy.name); // ✅ aquí
+
   constructor(
     @Inject(ADMIN_REPOSITORY_PORT)
     private readonly adminRepo: AdminRepositoryPort,
@@ -47,10 +49,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKeyProvider: (request, rawJwtToken, done) => {
-        this.resolveSecretKey(rawJwtToken)
+        this.resolveSecretKey(rawJwtToken as string)
           .then((key) => done(null, key))
           .catch((err) => {
-            console.error('ERROR en secretOrKeyProvider:', err);
+            this.logger.error('ERROR en secretOrKeyProvider', err);
             done(err);
           });
       },
@@ -69,7 +71,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Buscar la sesión activa
-    const session = await this.sessionRepo.findById(sessionId);
+    const session = await this.sessionRepo.findById(sessionId as string);
     if (!session || !session.isActive) {
       throw new Error('Sesión no encontrada o inactiva');
     }
