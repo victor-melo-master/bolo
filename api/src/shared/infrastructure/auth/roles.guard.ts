@@ -30,7 +30,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'; // Injectable, CanActivate (interfaz), ExecutionContext (contexto de ejecución)
 import { Reflector } from '@nestjs/core'; // Reflector: accede a metadatos almacenados por decoradores @SetMetadata
 import { ROLES_KEY } from '../../../shared/interfaces/decorators/roles.decorator'; // Clave para leer roles desde metadatos del manejador
-import { UserRole } from '../../../modules/auth/domain/entities/user.entity'; // Enum de roles de usuario (admin, super_admin, conductor, socio)
+import { AdminRole } from '../../../modules/auth/domain/entities/admin.entity';; // Enum de roles de usuario (admin, super_admin, conductor, socio)
 
 // Decorador @Injectable() permite que NestJS inyecte este guard en el contenedor IoC
 @Injectable()
@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     // Lee los roles requeridos desde los metadatos del manejador (método) o la clase (controlador)
     // getAllAndOverride busca primero en el método, y si no encuentra, en la clase
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+    const requiredRoles = this.reflector.getAllAndOverride<AdminRole[]>(
       ROLES_KEY, // Clave definida en roles.decorator.ts ('roles')
       [context.getHandler(), context.getClass()], // Busca en método y clase
     );
