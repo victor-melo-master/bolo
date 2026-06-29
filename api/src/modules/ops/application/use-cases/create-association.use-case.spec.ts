@@ -3,16 +3,16 @@ import { CreateAssociationUseCase } from './create-association.use-case';
 
 import { ForbiddenException, ConflictException } from '@nestjs/common';
 import { ASSOCIATION_REPOSITORY_PORT } from '../../../auth/domain/interfaces';
-import { USER_REPOSITORY_PORT } from '../../../auth/domain/interfaces';
-import { Association, User } from '../../../auth/domain/entities';
+import { ADMIN_REPOSITORY_PORT } from '../../../auth/domain/interfaces';
+import { Association, Admin } from '../../../auth/domain/entities';
 
 describe('CreateAssociationUseCase', () => {
   let useCase: CreateAssociationUseCase;
   let associationRepo: any;
-  let userRepo: any;
+  let adminRepo: any;
 
   // Usuario admin mock (sin asociación previa)
-  const mockAdmin = new User(
+  const mockAdmin = new Admin(
     'admin-id',
     '+584141234567',
     null,
@@ -20,16 +20,12 @@ describe('CreateAssociationUseCase', () => {
     'Admin',
     null,
     'association_admin',
+    null, // qrCode
+    null, // qrKey
+    1, // qrVersion
     null, // associationId: null → sin asociación
-    null,
-    null,
-    null,
-    1,
-    'normal',
-    false,
     true,
-    null,
-    null,
+    null, null,
     new Date(),
     new Date(),
   );
@@ -47,7 +43,7 @@ describe('CreateAssociationUseCase', () => {
       findByRif: jest.fn(),
       save: jest.fn(),
     };
-    userRepo = {
+    adminRepo = {
       findById: jest.fn(),
       updateAssociationId: jest.fn(),
     };
@@ -56,7 +52,7 @@ describe('CreateAssociationUseCase', () => {
       providers: [
         CreateAssociationUseCase,
         { provide: ASSOCIATION_REPOSITORY_PORT, useValue: associationRepo },
-        { provide: USER_REPOSITORY_PORT, useValue: userRepo },
+        { provide: ADMIN_REPOSITORY_PORT, useValue: adminRepo },
       ],
     }).compile();
 
@@ -64,7 +60,7 @@ describe('CreateAssociationUseCase', () => {
   });
 
   it('should create association and update admin', async () => {
-    userRepo.findById.mockResolvedValue(mockAdmin);
+    adminRepo.findById.mockResolvedValue(mockAdmin);
     associationRepo.findByRif.mockResolvedValue(null);
     associationRepo.save.mockResolvedValue(
       new Association(
@@ -82,10 +78,10 @@ describe('CreateAssociationUseCase', () => {
 
     const result = await useCase.execute(mockAdmin.id, validDto);
 
-    expect(userRepo.findById).toHaveBeenCalledWith('admin-id');
+    expect(adminRepo.findById).toHaveBeenCalledWith('admin-id');
     expect(associationRepo.findByRif).toHaveBeenCalledWith(validDto.rif);
     expect(associationRepo.save).toHaveBeenCalled();
-    expect(userRepo.updateAssociationId).toHaveBeenCalledWith(
+    expect(adminRepo.updateAssociationId).toHaveBeenCalledWith(
       'admin-id',
       'assoc-id',
     );
@@ -93,7 +89,7 @@ describe('CreateAssociationUseCase', () => {
   });
 
   it('should throw ForbiddenException if admin not found', async () => {
-    userRepo.findById.mockResolvedValue(null);
+    adminRepo.findById.mockResolvedValue(null);
     await expect(useCase.execute('unknown', validDto)).rejects.toThrow(
       ForbiddenException,
     );
@@ -101,7 +97,7 @@ describe('CreateAssociationUseCase', () => {
 
   it('should throw ForbiddenException if user is not association_admin', async () => {
     const passenger = { ...mockAdmin, role: 'passenger' };
-    userRepo.findById.mockResolvedValue(passenger);
+    adminRepo.findById.mockResolvedValue(passenger);
     await expect(useCase.execute('admin-id', validDto)).rejects.toThrow(
       ForbiddenException,
     );
@@ -109,14 +105,14 @@ describe('CreateAssociationUseCase', () => {
 
   it('should throw ConflictException if admin already has association', async () => {
     const adminWithAssoc = { ...mockAdmin, associationId: 'existing-assoc' };
-    userRepo.findById.mockResolvedValue(adminWithAssoc);
+    adminRepo.findById.mockResolvedValue(adminWithAssoc);
     await expect(useCase.execute('admin-id', validDto)).rejects.toThrow(
       ConflictException,
     );
   });
 
   it('should throw ConflictException if RIF already exists', async () => {
-    userRepo.findById.mockResolvedValue(mockAdmin);
+    adminRepo.findById.mockResolvedValue(mockAdmin);
     associationRepo.findByRif.mockResolvedValue(
       new Association(
         'assoc-id',

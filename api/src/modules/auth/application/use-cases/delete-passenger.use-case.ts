@@ -16,10 +16,6 @@ export class DeletePassengerUseCase {
       throw new NotFoundException('Pasajero no encontrado');
     }
     // Soft delete: marcamos deletedAt y desactivamos
-    await this.passengerRepo.save({
-      ...passenger,
-      isActive: false,
-      deletedAt: new Date(),
-    });
+    await this.passengerRepo.softDelete(passengerId);
   }
 }
