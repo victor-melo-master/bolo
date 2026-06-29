@@ -1,4 +1,16 @@
 // auth/application/dto/update-admin.dto.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UpdateAdminDto — Actualización de administrador
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * DTO parcial (todos los campos opcionales) para actualizar datos
+ * de un administrador existente.
+ *
+ * Capa: Aplicación (auth)
+ *
+ * @module UpdateAdminDto
+ */
 import { IsString, IsOptional, IsEmail } from 'class-validator';
 
 export class UpdateAdminDto {

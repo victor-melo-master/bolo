@@ -1,4 +1,14 @@
 // auth/application/use-cases/login-passenger.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginPassengerUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso autentique a un pasajero,
+ * valide credenciales y genere un token JWT.
+ *
+ * @module test/login-passenger.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { LoginPassengerUseCase } from './login-passenger.use-case';

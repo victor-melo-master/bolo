@@ -1,4 +1,14 @@
 // auth/application/use-cases/change-admin-password.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * ChangeAdminPasswordUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cambie la contraseña de un
+ * administrador validando la contraseña actual y manejando errores.
+ *
+ * @module test/change-admin-password.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { ChangeAdminPasswordUseCase } from './change-admin-password.use-case';

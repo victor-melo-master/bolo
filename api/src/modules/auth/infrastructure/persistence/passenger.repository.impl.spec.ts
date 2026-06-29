@@ -1,4 +1,14 @@
 // auth/infrastructure/persistence/passenger.repository.impl.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerRepositoryImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el repositorio de pasajeros implemente
+ * correctamente las operaciones de persistencia (CRUD).
+ *
+ * @module test/passenger.repository.impl.spec
+ */
 import { PassengerRepositoryImpl } from './passenger.repository.impl';
 import { Passenger } from '../../domain/entities/passenger.entity';
 import { PassengerOrmEntity } from '../orm/passenger.orm-entity';

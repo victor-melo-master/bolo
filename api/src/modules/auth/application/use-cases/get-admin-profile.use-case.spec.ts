@@ -1,4 +1,14 @@
 // auth/application/use-cases/get-admin-profile.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * GetAdminProfileUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso obtenga el perfil de un
+ * administrador por ID y lance NotFoundException si no existe.
+ *
+ * @module test/get-admin-profile.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { GetAdminProfileUseCase } from './get-admin-profile.use-case';

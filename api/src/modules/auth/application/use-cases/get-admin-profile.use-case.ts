@@ -1,4 +1,18 @@
 // auth/application/use-cases/get-admin-profile.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * GetAdminProfileUseCase — Obtener perfil de administrador
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Recupera los datos públicos del perfil de un administrador por su ID.
+ * Lanza NotFoundException si el admin no existe.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - AdminRepositoryPort: persistencia de admins
+ *
+ * @module GetAdminProfileUseCase
+ */
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
 import type { AdminRepositoryPort } from '../../domain/interfaces/repositories/admin.repository.port';

@@ -1,3 +1,20 @@
+// src/modules/auth/infrastructure/persistence/passenger.repository.impl.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerRepositoryImpl — Implementación de PassengerRepositoryPort (TypeORM)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Implementación del puerto de repositorio de pasajeros usando TypeORM.
+ * Provee métodos de acceso a datos para la entidad Passenger, incluyendo
+ * operaciones CRUD, búsqueda por campos específicos y soft delete.
+ *
+ * Capa: Infraestructura (auth)
+ * Dependencias:
+ *   - PassengerOrmEntity: entidad TypeORM para tabla auth.passengers
+ *   - Repository<PassengerOrmEntity>: repositorio TypeORM inyectado
+ *
+ * @module PassengerRepositoryImpl
+ */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

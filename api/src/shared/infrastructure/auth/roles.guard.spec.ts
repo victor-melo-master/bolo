@@ -1,3 +1,13 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * RolesGuard — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el guardia de roles restrinja el acceso
+ * según los roles requeridos.
+ *
+ * @module test/roles.guard.spec
+ */
 import { RolesGuard } from './roles.guard';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext } from '@nestjs/common';

@@ -1,3 +1,20 @@
+// shared/interfaces/decorators/is-cedula-or-passport.decorator.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * IsCedulaOrPassport — Decorador class-validator para cédula o pasaporte
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Decorador personalizado de class-validator que valida si un valor
+ * es una cédula venezolana (formato V/E + guión opcional + 6-10 dígitos)
+ * o un pasaporte (alfanumérico de 5 a 20 caracteres).
+ *
+ * Capa: Interfaces (shared)
+ * Dependencias:
+ *   - class-validator: registerDecorator, ValidationOptions
+ *
+ * @module IsCedulaOrPassport
+ */
+
 import { registerDecorator, ValidationOptions } from 'class-validator';
 
 export function IsCedulaOrPassport(validationOptions?: ValidationOptions) {

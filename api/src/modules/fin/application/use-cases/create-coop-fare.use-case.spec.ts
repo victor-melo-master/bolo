@@ -1,4 +1,14 @@
 // fin/application/use-cases/create-coop-fare.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateCoopFareUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cree una tarifa de cooperativa
+ * correctamente y maneje errores de validación.
+ *
+ * @module test/create-coop-fare.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { CreateCoopFareUseCase } from './create-coop-fare.use-case';

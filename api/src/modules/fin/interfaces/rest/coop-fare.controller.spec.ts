@@ -1,4 +1,14 @@
 // fin/interfaces/rest/coop-fare.controller.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CoopFareController — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el controlador de tarifas de cooperativa
+ * maneje correctamente las rutas HTTP y delegue en los casos de uso.
+ *
+ * @module test/coop-fare.controller.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CoopFareController } from './coop-fare.controller';
 import { CreateCoopFareUseCase } from '../../application/use-cases/create-coop-fare.use-case';

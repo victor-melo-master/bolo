@@ -1,3 +1,21 @@
+// shared/domain/value-objects/phone.vo.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * Phone — Value Object para número de teléfono venezolano
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Value Object inmutable que representa un número de teléfono móvil
+ * venezolano. Provee métodos de fábrica (create), validación (isValid),
+ * normalización (normalize) y comparación (equals).
+ *
+ * Los números se normalizan al formato +58XXXXXXXXX.
+ * Acepta formatos: 0414-XXX, +58414XXX, 414XXX.
+ *
+ * Capa: Dominio (shared)
+ *
+ * @module Phone
+ */
+
 import { InvalidPhoneException } from '../exceptions/invalid-phone.exception';
 
 export class Phone {

@@ -1,4 +1,24 @@
 // auth/interfaces/rest/admin-auth.controller.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminAuthController — Controlador REST de autenticación de administradores
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Controlador que expone los endpoints públicos y protegidos para el módulo
+ * de autenticación de administradores: login, creación (solo super_admin),
+ * perfil, actualización, eliminación y cambio de contraseña.
+ *
+ * Capa: Interfaces (auth)
+ * Dependencias:
+ *   - CreateAdminUseCase: caso de uso de creación de admin
+ *   - LoginAdminUseCase: caso de uso de login de admin
+ *   - GetAdminProfileUseCase: caso de uso de obtención de perfil
+ *   - UpdateAdminUseCase: caso de uso de actualización de admin
+ *   - DeleteAdminUseCase: caso de uso de eliminación de admin
+ *   - ChangeAdminPasswordUseCase: caso de uso de cambio de contraseña
+ *
+ * @module AdminAuthController
+ */
 import {
   Controller,
   Post,

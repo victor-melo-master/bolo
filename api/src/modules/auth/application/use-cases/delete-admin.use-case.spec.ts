@@ -1,4 +1,14 @@
 // auth/application/use-cases/delete-admin.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * DeleteAdminUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso elimine un administrador por ID
+ * y lance NotFoundException si no existe.
+ *
+ * @module test/delete-admin.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { DeleteAdminUseCase } from './delete-admin.use-case';

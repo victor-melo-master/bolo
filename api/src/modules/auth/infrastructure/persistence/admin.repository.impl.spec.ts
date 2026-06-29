@@ -1,4 +1,14 @@
 // auth/infrastructure/persistence/admin.repository.impl.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminRepositoryImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el repositorio de administradores implemente
+ * correctamente las operaciones de persistencia (CRUD).
+ *
+ * @module test/admin.repository.impl.spec
+ */
 import { AdminRepositoryImpl } from './admin.repository.impl';
 import { Admin } from '../../domain/entities/admin.entity';
 import { AdminOrmEntity } from '../orm/admin.orm-entity';

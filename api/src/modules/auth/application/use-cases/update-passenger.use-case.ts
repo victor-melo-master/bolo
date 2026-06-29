@@ -1,4 +1,18 @@
 // auth/application/use-cases/update-passenger.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UpdatePassengerUseCase — Actualización de pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Actualiza los datos editables de un pasajero (email, fullName,
+ * cedula, category). Lanza NotFoundException si el pasajero no existe.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - PassengerRepositoryPort: persistencia de pasajeros
+ *
+ * @module UpdatePassengerUseCase
+ */
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PASSENGER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/passenger.repository.port';
 import type { PassengerRepositoryPort } from '../../domain/interfaces/repositories/passenger.repository.port';

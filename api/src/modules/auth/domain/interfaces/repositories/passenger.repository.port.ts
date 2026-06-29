@@ -1,4 +1,18 @@
 // auth/domain/interfaces/repositories/passenger.repository.port.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerRepositoryPort — Puerto de Repositorio de Pasajeros
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Define el contrato para operaciones de persistencia de la entidad
+ * Passenger. Sigue el patrón Puerto-Adaptador (Hexagonal): el dominio
+ * programa contra esta abstracción, la infraestructura provee la
+ * implementación concreta.
+ *
+ * Capa: Dominio (auth) — Puerto de salida
+ *
+ * @module PassengerRepositoryPort
+ */
 
 import { Passenger } from '../../entities';
 

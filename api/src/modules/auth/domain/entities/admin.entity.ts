@@ -1,4 +1,18 @@
 // auth/domain/entities/admin.entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * Admin — Entidad de Dominio de Administrador
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Representa un administrador del sistema (conductor, admin de asociación
+ * o super admin). Entidad pura sin decoradores de ORM.
+ *
+ * Capa: Dominio (auth)
+ * Dependencias:
+ *   - (ninguna para entidades puras)
+ *
+ * @module Admin
+ */
 export type AdminRole = 'driver' | 'association_admin' | 'super_admin';
 
 export class Admin {

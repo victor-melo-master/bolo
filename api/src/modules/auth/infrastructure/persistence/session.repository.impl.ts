@@ -1,3 +1,20 @@
+// src/modules/auth/infrastructure/persistence/session.repository.impl.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * SessionRepositoryImpl — Implementación de SessionRepositoryPort (TypeORM)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Implementación del puerto de repositorio de sesiones usando TypeORM.
+ * Provee métodos para gestionar sesiones de autenticación, incluyendo
+ * creación, búsqueda por usuario/cliente y desactivación masiva.
+ *
+ * Capa: Infraestructura (auth)
+ * Dependencias:
+ *   - SessionOrmEntity: entidad TypeORM para tabla auth.sessions
+ *   - Repository<SessionOrmEntity>: repositorio TypeORM inyectado
+ *
+ * @module SessionRepositoryImpl
+ */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

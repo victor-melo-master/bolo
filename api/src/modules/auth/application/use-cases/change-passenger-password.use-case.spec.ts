@@ -1,4 +1,14 @@
 // auth/application/use-cases/change-passenger-password.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * ChangePassengerPasswordUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cambie la contraseña de un
+ * pasajero validando la contraseña actual y manejando errores.
+ *
+ * @module test/change-passenger-password.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { ChangePassengerPasswordUseCase } from './change-passenger-password.use-case';

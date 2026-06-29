@@ -1,4 +1,14 @@
 // auth/application/use-cases/delete-passenger.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * DeletePassengerUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso elimine un pasajero por ID
+ * y lance NotFoundException si no existe.
+ *
+ * @module test/delete-passenger.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { DeletePassengerUseCase } from './delete-passenger.use-case';

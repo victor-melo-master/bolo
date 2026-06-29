@@ -1,5 +1,14 @@
 // src/modules/fin/infrastructure/services/wallet.service.impl.spec.ts
-
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * WalletServiceImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el servicio de billeteras implemente
+ * correctamente la lógica de negocio asociada.
+ *
+ * @module test/wallet.service.impl.spec
+ */
 import { WalletServiceImpl } from './wallet.service.impl';
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { CreateWalletUseCase } from '../../application';

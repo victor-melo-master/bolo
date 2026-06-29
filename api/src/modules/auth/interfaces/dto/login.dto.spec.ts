@@ -1,4 +1,14 @@
 // src/modules/auth/interfaces/dto/login.dto.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginDto — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que las reglas de validación de LoginDto
+ * funcionen correctamente mediante class-validator.
+ *
+ * @module test/login.dto.spec
+ */
 // ─── Estrategia de tests ───
 // Se prueba que los decoradores de class-validator en LoginDto funcionan
 // correctamente. Se usa plainToInstance para convertir objetos planos a

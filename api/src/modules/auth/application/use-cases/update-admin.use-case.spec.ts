@@ -1,4 +1,14 @@
 // auth/application/use-cases/update-admin.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UpdateAdminUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso actualice los datos de un
+ * administrador y lance NotFoundException si no existe.
+ *
+ * @module test/update-admin.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateAdminUseCase } from './update-admin.use-case';

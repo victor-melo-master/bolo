@@ -1,4 +1,20 @@
 // auth/application/use-cases/change-admin-password.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * ChangeAdminPasswordUseCase — Cambio de contraseña de admin
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Valida la contraseña actual de un administrador y la actualiza
+ * por una nueva. Lanza UnauthorizedException si la contraseña actual
+ * es incorrecta y NotFoundException si el admin no existe.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - AdminRepositoryPort: persistencia de admins
+ *   - CryptoService: hashing y comparación de contraseñas
+ *
+ * @module ChangeAdminPasswordUseCase
+ */
 import {
   Injectable,
   Inject,

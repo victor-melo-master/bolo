@@ -1,3 +1,20 @@
+// src/modules/auth/infrastructure/persistence/admin.repository.impl.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminRepositoryImpl — Implementación de AdminRepositoryPort (TypeORM)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Implementación del puerto de repositorio de administradores usando TypeORM.
+ * Provee métodos de acceso a datos para la entidad Admin, incluyendo
+ * operaciones CRUD, búsqueda por campos específicos y soft delete.
+ *
+ * Capa: Infraestructura (auth)
+ * Dependencias:
+ *   - AdminOrmEntity: entidad TypeORM para tabla auth.admins
+ *   - Repository<AdminOrmEntity>: repositorio TypeORM inyectado
+ *
+ * @module AdminRepositoryImpl
+ */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

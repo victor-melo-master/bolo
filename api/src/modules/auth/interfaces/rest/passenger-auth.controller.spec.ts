@@ -1,4 +1,14 @@
 // auth/interfaces/rest/passenger-auth.controller.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerAuthController — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el controlador de autenticación de pasajeros
+ * maneje correctamente las rutas HTTP y delegue en los casos de uso.
+ *
+ * @module test/passenger-auth.controller.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassengerAuthController } from './passenger-auth.controller';
 import { LoginPassengerUseCase } from '../../application/use-cases/login-passenger.use-case';

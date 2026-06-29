@@ -1,4 +1,14 @@
 // auth/application/use-cases/create-passenger.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreatePassengerUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cree un pasajero correctamente,
+ * valide unicidad de teléfono/email, y maneje errores.
+ *
+ * @module test/create-passenger.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreatePassengerUseCase } from './create-passanger.use-case';
 import { PASSENGER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/passenger.repository.port';

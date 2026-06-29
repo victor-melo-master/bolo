@@ -1,4 +1,14 @@
 // auth/application/use-cases/create-admin.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateAdminUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cree un administrador correctamente,
+ * valide unicidad de teléfono/email/cédula, y maneje errores.
+ *
+ * @module test/create-admin.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateAdminUseCase } from './create-admin.use-case';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';

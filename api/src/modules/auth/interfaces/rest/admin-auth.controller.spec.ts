@@ -1,4 +1,14 @@
 // auth/interfaces/rest/admin-auth.controller.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminAuthController — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el controlador de autenticación de administradores
+ * maneje correctamente las rutas HTTP y delegue en los casos de uso.
+ *
+ * @module test/admin-auth.controller.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminAuthController } from './admin-auth.controller';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';

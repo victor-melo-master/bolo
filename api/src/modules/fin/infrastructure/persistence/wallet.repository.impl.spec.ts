@@ -1,3 +1,13 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * WalletRepositoryImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el repositorio de billeteras implemente
+ * correctamente las operaciones de persistencia.
+ *
+ * @module test/wallet.repository.impl.spec
+ */
 import { WalletRepositoryImpl } from './wallet.repository.impl';
 import { Wallet } from '../../domain/entities/wallet.entity';
 import { WalletOrmEntity } from '../orm/wallet.orm-entity';

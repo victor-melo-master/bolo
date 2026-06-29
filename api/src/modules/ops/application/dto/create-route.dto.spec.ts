@@ -1,4 +1,14 @@
 // ops/application/dto/create-route.dto.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateRouteDto — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que las reglas de validación de CreateRouteDto
+ * funcionen correctamente mediante class-validator.
+ *
+ * @module test/create-route.dto.spec
+ */
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateRouteDto } from './create-route.dto';

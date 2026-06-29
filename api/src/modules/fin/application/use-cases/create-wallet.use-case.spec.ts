@@ -1,3 +1,13 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateWalletUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cree una billetera correctamente
+ * y maneje errores de duplicado.
+ *
+ * @module test/create-wallet.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateWalletUseCase } from './create-wallet.use-case';
 import { WALLET_REPOSITORY_PORT } from '../../domain/interfaces/repositories/wallet.repository.port';

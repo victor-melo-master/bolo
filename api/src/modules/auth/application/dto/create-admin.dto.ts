@@ -1,4 +1,16 @@
 // auth/application/dto/create-admin.dto.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateAdminDto — Creación de administrador/conductor
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * DTO que valida los datos de entrada para registrar un nuevo admin
+ * (driver, association_admin o super_admin) mediante class-validator.
+ *
+ * Capa: Aplicación (auth)
+ *
+ * @module CreateAdminDto
+ */
 import {
   IsString,
   IsNotEmpty,

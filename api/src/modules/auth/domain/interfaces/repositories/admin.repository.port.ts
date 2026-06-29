@@ -1,4 +1,18 @@
 // auth/domain/interfaces/repositories/admin.repository.port.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminRepositoryPort — Puerto de Repositorio de Administradores
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Define el contrato para operaciones de persistencia de la entidad
+ * Admin. Sigue el patrón Puerto-Adaptador (Hexagonal): el dominio
+ * programa contra esta abstracción, la infraestructura provee la
+ * implementación concreta.
+ *
+ * Capa: Dominio (auth) — Puerto de salida
+ *
+ * @module AdminRepositoryPort
+ */
 
 import { Admin } from '../../entities';
 

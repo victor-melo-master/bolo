@@ -1,4 +1,16 @@
 // auth/application/dto/create-passenger.dto.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreatePassengerDto — Creación de pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * DTO que valida los datos de entrada para registrar un nuevo pasajero
+ * mediante class-validator. Soporta categorías: normal, student, elderly.
+ *
+ * Capa: Aplicación (auth)
+ *
+ * @module CreatePassengerDto
+ */
 import {
   IsString,
   IsNotEmpty,

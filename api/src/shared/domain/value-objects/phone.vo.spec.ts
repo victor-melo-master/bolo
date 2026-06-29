@@ -1,4 +1,14 @@
 // shared/domain/value-objects/phone.vo.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * Phone — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el value object Phone valide correctamente
+ * los números telefónicos y lance InvalidPhoneException.
+ *
+ * @module test/phone.vo.spec
+ */
 import { Phone } from './phone.vo';
 import { InvalidPhoneException } from '../exceptions/invalid-phone.exception';
 

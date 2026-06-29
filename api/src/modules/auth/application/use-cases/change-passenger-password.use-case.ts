@@ -1,4 +1,20 @@
 // auth/application/use-cases/change-passenger-password.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * ChangePassengerPasswordUseCase — Cambio de contraseña de pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Valida la contraseña actual de un pasajero y la actualiza
+ * por una nueva. Lanza UnauthorizedException si la contraseña actual
+ * es incorrecta y NotFoundException si el pasajero no existe.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - PassengerRepositoryPort: persistencia de pasajeros
+ *   - CryptoService: hashing y comparación de contraseñas
+ *
+ * @module ChangePassengerPasswordUseCase
+ */
 import {
   Injectable,
   Inject,

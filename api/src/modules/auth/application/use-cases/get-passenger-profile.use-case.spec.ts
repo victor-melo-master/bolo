@@ -1,4 +1,14 @@
 // auth/application/use-cases/get-passenger-profile.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * GetPassengerProfileUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso obtenga el perfil de un
+ * pasajero por ID y lance NotFoundException si no existe.
+ *
+ * @module test/get-passenger-profile.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { GetPassengerProfileUseCase } from './get-passenger-profile.use-case';

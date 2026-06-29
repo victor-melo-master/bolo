@@ -1,4 +1,14 @@
 // fin/infrastructure/persistence/coop-fare.repository.impl.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CoopFareRepositoryImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el repositorio de tarifas de cooperativa
+ * implemente correctamente las operaciones de persistencia.
+ *
+ * @module test/coop-fare.repository.impl.spec
+ */
 import { CoopFareRepositoryImpl } from './coop-fare.repository.impl';
 import { CoopFare } from '../../domain/entities/coop-fare.entity';
 import { CoopFareOrmEntity } from '../orm/coop-fare.orm-entity';

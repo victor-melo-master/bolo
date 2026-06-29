@@ -1,4 +1,14 @@
 // auth/application/use-cases/login-admin.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginAdminUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso autentique a un administrador,
+ * valide credenciales y genere un token JWT.
+ *
+ * @module test/login-admin.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { LoginAdminUseCase } from './login-admin.use-case';

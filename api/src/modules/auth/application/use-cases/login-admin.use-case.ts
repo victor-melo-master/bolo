@@ -1,4 +1,22 @@
 // auth/application/use-cases/login-admin.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginAdminUseCase — Inicio de sesión de administrador
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Autentica a un administrador por teléfono y contraseña,
+ * verifica que esté activo, crea una sesión JWT y retorna
+ * el token de acceso junto con los datos básicos del usuario.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - AdminRepositoryPort: persistencia de admins
+ *   - SessionRepositoryPort: gestión de sesiones
+ *   - CryptoService: comparación de contraseñas
+ *   - JwtService: generación de tokens JWT
+ *
+ * @module LoginAdminUseCase
+ */
 import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';

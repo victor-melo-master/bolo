@@ -1,3 +1,13 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateAssociationDto — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que las reglas de validación de CreateAssociationDto
+ * funcionen correctamente mediante class-validator.
+ *
+ * @module test/create-association.dto.spec
+ */
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateAssociationDto } from './create-association.dto';

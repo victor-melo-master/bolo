@@ -1,4 +1,22 @@
 // auth/application/use-cases/login-passenger.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginPassengerUseCase — Inicio de sesión de pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Autentica a un pasajero por teléfono y contraseña,
+ * verifica que esté activo, crea una sesión JWT y retorna
+ * el token de acceso junto con los datos básicos del usuario.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - PassengerRepositoryPort: persistencia de pasajeros
+ *   - SessionRepositoryPort: gestión de sesiones
+ *   - CryptoService: comparación de contraseñas
+ *   - JwtService: generación de tokens JWT
+ *
+ * @module LoginPassengerUseCase
+ */
 import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PASSENGER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/passenger.repository.port';

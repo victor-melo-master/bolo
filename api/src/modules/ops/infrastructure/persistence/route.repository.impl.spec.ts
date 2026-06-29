@@ -1,4 +1,14 @@
 // ops/infrastructure/persistence/route.repository.impl.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * RouteRepositoryImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el repositorio de rutas implemente
+ * correctamente las operaciones de persistencia.
+ *
+ * @module test/route.repository.impl.spec
+ */
 import { RouteRepositoryImpl } from './route.repository.impl';
 import { Route } from '../../domain/entities/route.entity';
 import { RouteOrmEntity } from '../orm/route.orm-entity';

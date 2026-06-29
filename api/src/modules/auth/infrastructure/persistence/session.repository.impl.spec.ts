@@ -1,4 +1,14 @@
 // auth/infrastructure/persistence/session.repository.impl.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * SessionRepositoryImpl — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el repositorio de sesiones implemente
+ * correctamente las operaciones de persistencia.
+ *
+ * @module test/session.repository.impl.spec
+ */
 import { SessionRepositoryImpl } from './session.repository.impl';
 import { Session } from '../../domain/entities/session.entity';
 import { SessionOrmEntity } from '../orm/session.orm-entity';

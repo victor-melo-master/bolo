@@ -1,4 +1,14 @@
 // ops/application/use-cases/create-route.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateRouteUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cree una ruta correctamente
+ * y maneje errores de validación.
+ *
+ * @module test/create-route.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { CreateRouteUseCase } from './create-route.use-case';

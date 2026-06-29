@@ -1,4 +1,21 @@
 // fin/application/use-cases/create-coop-fare.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateCoopFareUseCase — Creación de tarifario de cooperativa
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Orquesta la creación de un tarifario para una asociación/cooperativa.
+ * Valida que la tasa de cambio exista y que el nombre del tarifario
+ * no esté duplicado dentro de la misma asociación.
+ *
+ * Capa: Aplicación (fin)
+ * Dependencias:
+ *   - CoopFareRepositoryPort: persistencia de tarifarios
+ *   - ExchangeRateRepositoryPort: validación de tasa de cambio
+ *
+ * @module CreateCoopFareUseCase
+ */
+
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { COOP_FARE_REPOSITORY_PORT } from '../../domain/interfaces/repositories/coop-fare.repository.port';
 import type { CoopFareRepositoryPort } from '../../domain/interfaces/repositories/coop-fare.repository.port';

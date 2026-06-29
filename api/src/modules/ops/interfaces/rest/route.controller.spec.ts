@@ -1,4 +1,14 @@
 // ops/interfaces/rest/route.controller.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * RouteController — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el controlador de rutas maneje correctamente
+ * las rutas HTTP y delegue en los casos de uso.
+ *
+ * @module test/route.controller.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { RouteController } from './route.controller';
 import { CreateRouteUseCase } from '../../application/use-cases/create-route.use-case';

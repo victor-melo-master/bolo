@@ -1,5 +1,25 @@
 import { UpdatePassengerUseCase } from './../../application/use-cases/update-passenger.use-case';
 // auth/interfaces/rest/passenger-auth.controller.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerAuthController — Controlador REST de autenticación de pasajeros
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Controlador que expone los endpoints públicos y protegidos para el módulo
+ * de autenticación de pasajeros: registro, login, perfil, actualización,
+ * eliminación y cambio de contraseña.
+ *
+ * Capa: Interfaces (auth)
+ * Dependencias:
+ *   - CreatePassengerUseCase: caso de uso de registro de pasajero
+ *   - LoginPassengerUseCase: caso de uso de login de pasajero
+ *   - GetPassengerProfileUseCase: caso de uso de obtención de perfil
+ *   - UpdatePassengerUseCase: caso de uso de actualización de pasajero
+ *   - DeletePassengerUseCase: caso de uso de eliminación de pasajero
+ *   - ChangePassengerPasswordUseCase: caso de uso de cambio de contraseña
+ *
+ * @module PassengerAuthController
+ */
 import {
   Controller,
   Post,

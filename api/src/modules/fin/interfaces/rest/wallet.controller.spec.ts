@@ -1,4 +1,14 @@
 // src/modules/fin/interfaces/rest/wallet.controller.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * WalletController — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el controlador de billeteras maneje
+ * correctamente las rutas HTTP y delegue en los casos de uso.
+ *
+ * @module test/wallet.controller.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { WalletController } from './wallet.controller';
 import { WALLET_SERVICE_PORT } from '../../domain/interfaces/services/wallet.service.port';

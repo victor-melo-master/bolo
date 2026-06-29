@@ -1,4 +1,14 @@
 // auth/application/use-cases/update-passenger.use-case.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UpdatePassengerUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso actualice los datos de un
+ * pasajero y lance NotFoundException si no existe.
+ *
+ * @module test/update-passenger.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { UpdatePassengerUseCase } from './update-passenger.use-case';

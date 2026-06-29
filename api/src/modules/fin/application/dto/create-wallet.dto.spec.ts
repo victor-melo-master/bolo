@@ -1,4 +1,14 @@
 // src/modules/fin/application/dto/create-wallet.dto.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateWalletDto — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que las reglas de validación de CreateWalletDto
+ * funcionen correctamente mediante class-validator.
+ *
+ * @module test/create-wallet.dto.spec
+ */
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateWalletDto } from './create-wallet.dto';

@@ -1,4 +1,18 @@
 // auth/domain/entities/passenger.entity.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * Passenger — Entidad de Dominio de Pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Representa un pasajero/usuario del sistema. Entidad pura sin
+ * decoradores de ORM.
+ *
+ * Capa: Dominio (auth)
+ * Dependencias:
+ *   - (ninguna para entidades puras)
+ *
+ * @module Passenger
+ */
 export type PassengerCategory = 'normal' | 'student' | 'elderly';
 
 export class Passenger {

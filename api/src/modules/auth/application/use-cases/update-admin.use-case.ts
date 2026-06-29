@@ -1,4 +1,18 @@
 // auth/application/use-cases/update-admin.use-case.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UpdateAdminUseCase — Actualización de administrador
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Actualiza los datos editables de un administrador (email, fullName,
+ * cedula). Lanza NotFoundException si el admin no existe.
+ *
+ * Capa: Aplicación (auth)
+ * Dependencias:
+ *   - AdminRepositoryPort: persistencia de admins
+ *
+ * @module UpdateAdminUseCase
+ */
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
 import type { AdminRepositoryPort } from '../../domain/interfaces/repositories/admin.repository.port';

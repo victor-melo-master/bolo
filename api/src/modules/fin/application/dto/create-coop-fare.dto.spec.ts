@@ -1,4 +1,14 @@
 // fin/application/dto/create-coop-fare.dto.spec.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateCoopFareDto — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que las reglas de validación de CreateCoopFareDto
+ * funcionen correctamente mediante class-validator.
+ *
+ * @module test/create-coop-fare.dto.spec
+ */
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateCoopFareDto } from '.';

@@ -1,3 +1,13 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateAssociationUseCase — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el caso de uso cree una asociación correctamente
+ * y maneje errores de permisos y duplicados.
+ *
+ * @module test/create-association.use-case.spec
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateAssociationUseCase } from './create-association.use-case';
 

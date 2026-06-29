@@ -1,4 +1,14 @@
 // src/shared/application/services/crypto.service.spec.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CryptoService — Test Unitario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica que el servicio criptográfico implemente
+ * correctamente las operaciones de hash y comparación.
+ *
+ * @module test/crypto.service.spec
+ */
 // Importa el servicio a testear para verificar su comportamiento criptográfico
 import { CryptoService } from './crypto.service';
 
