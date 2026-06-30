@@ -15,7 +15,10 @@ import { IsString, IsOptional, IsEmail } from 'class-validator';
 
 export class UpdateAdminDto {
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    { require_tld: true, allow_ip_domain: false },
+    { message: 'El email no tiene un formato válido' },
+  )
   email?: string;
 
   @IsOptional()

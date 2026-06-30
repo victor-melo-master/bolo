@@ -17,6 +17,7 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
 import type { AdminRepositoryPort } from '../../domain/interfaces/repositories/admin.repository.port';
 import { UpdateAdminDto } from '../dto/update-admin.dto';
+import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 
 @Injectable()
 export class UpdateAdminUseCase {
@@ -29,6 +30,25 @@ export class UpdateAdminUseCase {
     const admin = await this.adminRepo.findById(adminId);
     if (!admin) {
       throw new NotFoundException('Admin no encontrado');
+    }
+
+    // Validar que el nuevo email no esté en uso por otro admin
+    if (dto.email && dto.email !== admin.email) {
+      const existingEmail = await this.adminRepo.findByEmail(dto.email);
+      if (existingEmail) {
+        throw new UserAlreadyExistsException(
+          'El email ya está registrado por otro administrador',
+        );
+      }
+    }
+
+    if (dto.cedula && dto.cedula !== admin.cedula) {
+      const existingCedula = await this.adminRepo.findByCedula(dto.cedula);
+      if (existingCedula) {
+        throw new UserAlreadyExistsException(
+          'La cédula ya está registrada por otro administrador',
+        );
+      }
     }
 
     const updated = await this.adminRepo.save({

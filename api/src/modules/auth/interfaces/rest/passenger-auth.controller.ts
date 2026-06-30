@@ -40,7 +40,7 @@ import { GetPassengerProfileUseCase } from '../../application/use-cases/get-pass
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { UpdatePassengerDto } from '../../application/dto/update-passenger.dto';
 import { DeletePassengerUseCase } from '../../application/use-cases/delete-passenger.use-case';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';
 import { ChangePassengerPasswordUseCase } from '../../application/use-cases/change-passenger-password.use-case';
 
@@ -62,15 +62,18 @@ export class PassengerAuthController {
     return {
       id: passenger.id,
       phone: passenger.phone,
+      email: passenger.email, // ← añadir
       fullName: passenger.fullName,
+      cedula: passenger.cedula, // ← añadir (si también falta)
       category: passenger.category,
       isActive: passenger.isActive,
       createdAt: passenger.createdAt,
     };
   }
 
-  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 intentos por minuto
+  @Throttle({ default: { limit: 100, ttl: 60000 } }) // 100 intentos por minuto (ajustado para testing)
   @Post('login')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
     return this.loginPassengerUseCase.execute(dto.phone, dto.password);

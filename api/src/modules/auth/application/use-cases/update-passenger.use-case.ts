@@ -18,6 +18,7 @@ import { PASSENGER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/
 import type { PassengerRepositoryPort } from '../../domain/interfaces/repositories/passenger.repository.port';
 import { UpdatePassengerDto } from '../dto/update-passenger.dto';
 import { PassengerCategory } from '../../domain/entities/passenger.entity';
+import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 
 @Injectable()
 export class UpdatePassengerUseCase {
@@ -30,6 +31,24 @@ export class UpdatePassengerUseCase {
     const passenger = await this.passengerRepo.findById(passengerId);
     if (!passenger) {
       throw new NotFoundException('Pasajero no encontrado');
+    }
+
+    if (dto.email && dto.email !== passenger.email) {
+      const existingEmail = await this.passengerRepo.findByEmail(dto.email);
+      if (existingEmail) {
+        throw new UserAlreadyExistsException(
+          'El email ya está registrado por otro usuario',
+        );
+      }
+    }
+
+    if (dto.cedula && dto.cedula !== passenger.cedula) {
+      const existingCedula = await this.passengerRepo.findByCedula(dto.cedula);
+      if (existingCedula) {
+        throw new UserAlreadyExistsException(
+          'La cédula ya está registrada por otro pasajero',
+        );
+      }
     }
 
     // Solo actualizar los campos enviados

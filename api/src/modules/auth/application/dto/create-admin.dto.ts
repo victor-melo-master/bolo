@@ -18,6 +18,7 @@ import {
   IsOptional,
   IsIn,
   Matches,
+  IsEmail,
 } from 'class-validator';
 import { IsVenezuelanPhone } from '../../../../shared/interfaces/decorators/is-venezuelan-phone.decorator';
 import { IsCedulaOrPassport } from 'src/shared/interfaces/decorators/is-cedula-or-passport.decorator';
@@ -40,7 +41,10 @@ export class CreateAdminDto {
   fullName: string;
 
   @IsOptional()
-  @IsString()
+  @IsEmail(
+    { require_tld: true, allow_ip_domain: false },
+    { message: 'El email no tiene un formato válido' },
+  )
   email?: string;
 
   @IsOptional()

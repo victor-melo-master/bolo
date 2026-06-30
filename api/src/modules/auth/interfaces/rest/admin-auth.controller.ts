@@ -31,7 +31,7 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
 import { CreateAdminDto } from '../../application/dto/create-admin.dto';
 import { LoginAdminUseCase } from '../../application/use-cases/login-admin.use-case';
@@ -61,8 +61,9 @@ export class AdminAuthController {
   // Solo el endpoint 'create' (protegido para super_admin) puede crear admins.
 
   // Login con rate limiting (5 intentos por minuto)
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   @Post('login')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
     return this.loginAdminUseCase.execute(dto.phone, dto.password);
@@ -82,6 +83,8 @@ export class AdminAuthController {
       role: admin.role,
       isActive: admin.isActive,
       createdAt: admin.createdAt,
+      email: admin.email, // ← añadir
+      cedula: admin.cedula, // ← añadir
     };
   }
 

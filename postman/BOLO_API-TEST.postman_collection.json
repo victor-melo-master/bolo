@@ -92,8 +92,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -155,8 +161,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -201,8 +213,14 @@
                 ],
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -255,8 +273,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -307,8 +331,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/password",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "password"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "password"
+                  ]
                 }
               },
               "response": []
@@ -361,8 +391,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -379,7 +415,7 @@
                       "});",
                       "",
                       "pm.test(\"Verify no content in response\", function () {",
-                      "    pm.expect(pm.response.body).to.be.empty;",
+                      "    pm.expect(pm.response.text()).to.be.empty;",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -399,8 +435,14 @@
                 ],
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -456,8 +498,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -519,8 +567,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -564,8 +618,14 @@
                 ],
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -618,8 +678,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -627,6 +693,20 @@
             {
               "name": "12 - Create Admin",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const uniqueSuffix = Date.now();",
+                      "pm.collectionVariables.set(\"admin2_phone\", \"0414\" + uniqueSuffix.toString().slice(-7));",
+                      "pm.collectionVariables.set(\"admin2_email\", \"admin2-\" + uniqueSuffix + \"@bolo.com\");",
+                      "pm.collectionVariables.set(\"admin2_cedula\", \"V\" + uniqueSuffix.toString().slice(-8));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
@@ -667,7 +747,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Asociación\",\n  \"email\": \"admin2@bolo.com\",\n  \"cedula\": \"V87654321\",\n  \"role\": \"association_admin\"\n}",
+                  "raw": "{\n  \"phone\": \"{{admin2_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Asociación\",\n  \"email\": \"{{admin2_email}}\",\n  \"cedula\": \"{{admin2_cedula}}\",\n  \"role\": \"association_admin\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -676,8 +756,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -701,24 +787,7 @@
                       "};",
                       "",
                       "pm.collectionVariables.set(\"temp_admin_phone\", admin.phone);",
-                      "pm.collectionVariables.set(\"temp_admin_password\", admin.password);",
-                      "",
-                      "const token = pm.collectionVariables.get(\"admin_token\");",
-                      "const baseUrl = pm.environment.get(\"baseUrl\");",
-                      "",
-                      "pm.sendRequest({",
-                      "    url: baseUrl + \"/auth/admin/create\",",
-                      "    method: \"POST\",",
-                      "    header: {",
-                      "        \"Content-Type\": \"application/json\",",
-                      "        \"Authorization\": \"Bearer \" + token",
-                      "    },",
-                      "    body: { mode: \"raw\", raw: JSON.stringify(admin) }",
-                      "}, function (err, response) {",
-                      "    if (err) { console.error(\"Error:\", err); return; }",
-                      "    if (response.code === 201) { console.log(\"Temp admin created\"); }",
-                      "    else { console.log(\"Unexpected:\", response.code, response.json()); }",
-                      "});"
+                      "pm.collectionVariables.set(\"temp_admin_password\", admin.password);"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -775,8 +844,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -824,8 +899,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -872,8 +953,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/password",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "password"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "password"
+                  ]
                 }
               },
               "response": []
@@ -926,8 +1013,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -960,8 +1053,14 @@
                 ],
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -1017,8 +1116,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -1085,8 +1190,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1151,8 +1262,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1214,8 +1331,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1279,8 +1402,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1293,7 +1422,9 @@
                   "script": {
                     "exec": [
                       "const uniqueSuffix = Date.now();",
-                      "pm.collectionVariables.set(\"passport_passenger_phone\", \"0424\" + uniqueSuffix.toString().slice(-7));"
+                      "pm.collectionVariables.set(\"passport_passenger_cedula\", \"A\" + uniqueSuffix.toString().slice(-7));",
+                      "pm.collectionVariables.set(\"passport_passenger_email\", \"passport-\" + uniqueSuffix + \"@email.com\");",
+                      "pm.collectionVariables.set(\"passport_passenger_phone\", \"0414\" + uniqueSuffix.toString().slice(-7));"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -1315,7 +1446,7 @@
                       "pm.test(\"Response includes cedula with passport value\", function () {",
                       "    const jsonData = pm.response.json();",
                       "    pm.expect(jsonData).to.have.property('cedula');",
-                      "    pm.expect(jsonData.cedula).to.equal('A1234567');",
+                      "    pm.expect(jsonData.cedula).to.match(/^A\\d{7}$/);",
                       "    pm.expect(jsonData).to.have.property('isActive');",
                       "    pm.expect(jsonData.isActive).to.be.true;",
                       "});"
@@ -1337,7 +1468,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"phone\": \"{{passport_passenger_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Pasaporte\",\n  \"cedula\": \"A1234567\",\n  \"category\": \"normal\"\n}",
+                  "raw": "{\n  \"phone\": \"{{passport_passenger_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Pasaporte\",\n  \"cedula\": \"{{passport_passenger_cedula}}\",\n  \"category\": \"normal\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1346,8 +1477,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1408,8 +1545,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1471,8 +1614,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1531,8 +1680,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -1596,8 +1751,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/password",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "password"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "password"
+                  ]
                 }
               },
               "response": []
@@ -1698,8 +1859,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1800,8 +1967,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -1902,8 +2075,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
                 }
               },
               "response": []
@@ -2005,8 +2184,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/passenger/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "passenger", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -2014,6 +2199,21 @@
             {
               "name": "Invalid Role - Admin Create",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const existingToken = pm.collectionVariables.get(\"admin_token\");",
+                      "if (!existingToken) {",
+                      "    console.error(\"admin_token no disponible\");",
+                      "    return;",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
@@ -2055,6 +2255,11 @@
                     "key": "Content-Type",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
@@ -2068,8 +2273,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -2128,8 +2339,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -2193,8 +2410,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/password",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "password"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "password"
+                  ]
                 }
               },
               "response": []
@@ -2208,15 +2431,11 @@
                     "exec": [
                       "const baseUrl = pm.environment.get(\"baseUrl\");",
                       "if (!baseUrl) {",
-                      "    console.error(\"baseUrl no está definida\");",
+                      "    console.error(\"baseUrl no está definida en las variables de entorno\");",
                       "    return;",
                       "}",
                       "",
                       "const uniqueSuffix = Date.now();",
-                      "const superAdminCredentials = {",
-                      "    phone: \"+584121234567\",",
-                      "    password: \"admin123\"",
-                      "};",
                       "",
                       "const baseAdmin = {",
                       "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
@@ -2229,35 +2448,35 @@
                       "",
                       "pm.collectionVariables.set(\"admin_base_email\", baseAdmin.email);",
                       "",
+                      "const existingToken = pm.collectionVariables.get(\"admin_token\");",
+                      "if (!existingToken) {",
+                      "    console.error(\"admin_token no disponible\");",
+                      "    return;",
+                      "}",
+                      "",
                       "pm.sendRequest({",
-                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    url: baseUrl + \"/auth/admin/create\",",
                       "    method: \"POST\",",
-                      "    header: { \"Content-Type\": \"application/json\" },",
-                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
-                      "}, function (err, loginResponse) {",
-                      "    if (err) { console.error(\"Error en login:\", err); return; }",
-                      "    if (loginResponse.code !== 200) {",
-                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\",",
+                      "        \"Authorization\": \"Bearer \" + existingToken",
+                      "    },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "}, function (err, createResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error al crear admin:\", err);",
                       "        return;",
                       "    }",
-                      "    const token = loginResponse.json().accessToken;",
-                      "    pm.collectionVariables.set(\"admin_token\", token);",
                       "",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/admin/create\",",
-                      "        method: \"POST\",",
-                      "        header: {",
-                      "            \"Content-Type\": \"application/json\",",
-                      "            \"Authorization\": \"Bearer \" + token",
-                      "        },",
-                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
-                      "    }, function (err2, createResponse) {",
-                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
-                      "        const status = createResponse.code;",
-                      "        if (status === 201) { console.log(\"Base admin created\"); }",
-                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
-                      "        else { console.log(\"Unexpected status:\", status); }",
-                      "    });",
+                      "    const status = createResponse.code;",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"Base admin created\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"Base admin already exists (unexpected)\");",
+                      "    } else {",
+                      "        console.log(\"Unexpected status:\", status);",
+                      "    }",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -2322,8 +2541,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -2337,15 +2562,11 @@
                     "exec": [
                       "const baseUrl = pm.environment.get(\"baseUrl\");",
                       "if (!baseUrl) {",
-                      "    console.error(\"baseUrl no está definida\");",
+                      "    console.error(\"baseUrl no está definida en las variables de entorno\");",
                       "    return;",
                       "}",
                       "",
                       "const uniqueSuffix = Date.now();",
-                      "const superAdminCredentials = {",
-                      "    phone: \"+584121234567\",",
-                      "    password: \"admin123\"",
-                      "};",
                       "",
                       "const baseAdmin = {",
                       "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
@@ -2358,35 +2579,35 @@
                       "",
                       "pm.collectionVariables.set(\"admin_base_cedula\", baseAdmin.cedula);",
                       "",
+                      "const existingToken = pm.collectionVariables.get(\"admin_token\");",
+                      "if (!existingToken) {",
+                      "    console.error(\"admin_token no disponible\");",
+                      "    return;",
+                      "}",
+                      "",
                       "pm.sendRequest({",
-                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    url: baseUrl + \"/auth/admin/create\",",
                       "    method: \"POST\",",
-                      "    header: { \"Content-Type\": \"application/json\" },",
-                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
-                      "}, function (err, loginResponse) {",
-                      "    if (err) { console.error(\"Error en login:\", err); return; }",
-                      "    if (loginResponse.code !== 200) {",
-                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\",",
+                      "        \"Authorization\": \"Bearer \" + existingToken",
+                      "    },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "}, function (err, createResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error al crear admin:\", err);",
                       "        return;",
                       "    }",
-                      "    const token = loginResponse.json().accessToken;",
-                      "    pm.collectionVariables.set(\"admin_token\", token);",
                       "",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/admin/create\",",
-                      "        method: \"POST\",",
-                      "        header: {",
-                      "            \"Content-Type\": \"application/json\",",
-                      "            \"Authorization\": \"Bearer \" + token",
-                      "        },",
-                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
-                      "    }, function (err2, createResponse) {",
-                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
-                      "        const status = createResponse.code;",
-                      "        if (status === 201) { console.log(\"Base admin created\"); }",
-                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
-                      "        else { console.log(\"Unexpected status:\", status); }",
-                      "    });",
+                      "    const status = createResponse.code;",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"Base admin created\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"Base admin already exists (unexpected)\");",
+                      "    } else {",
+                      "        console.log(\"Unexpected status:\", status);",
+                      "    }",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -2451,8 +2672,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/profile",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "profile"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
                 }
               },
               "response": []
@@ -2466,15 +2693,11 @@
                     "exec": [
                       "const baseUrl = pm.environment.get(\"baseUrl\");",
                       "if (!baseUrl) {",
-                      "    console.error(\"baseUrl no está definida\");",
+                      "    console.error(\"baseUrl no está definida en las variables de entorno\");",
                       "    return;",
                       "}",
                       "",
                       "const uniqueSuffix = Date.now();",
-                      "const superAdminCredentials = {",
-                      "    phone: \"+584121234567\",",
-                      "    password: \"admin123\"",
-                      "};",
                       "",
                       "const baseAdmin = {",
                       "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
@@ -2487,35 +2710,35 @@
                       "",
                       "pm.collectionVariables.set(\"admin_base_email\", baseAdmin.email);",
                       "",
+                      "const existingToken = pm.collectionVariables.get(\"admin_token\");",
+                      "if (!existingToken) {",
+                      "    console.error(\"admin_token no disponible\");",
+                      "    return;",
+                      "}",
+                      "",
                       "pm.sendRequest({",
-                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    url: baseUrl + \"/auth/admin/create\",",
                       "    method: \"POST\",",
-                      "    header: { \"Content-Type\": \"application/json\" },",
-                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
-                      "}, function (err, loginResponse) {",
-                      "    if (err) { console.error(\"Error en login:\", err); return; }",
-                      "    if (loginResponse.code !== 200) {",
-                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\",",
+                      "        \"Authorization\": \"Bearer \" + existingToken",
+                      "    },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "}, function (err, createResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error al crear admin:\", err);",
                       "        return;",
                       "    }",
-                      "    const token = loginResponse.json().accessToken;",
-                      "    pm.collectionVariables.set(\"admin_token\", token);",
                       "",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/admin/create\",",
-                      "        method: \"POST\",",
-                      "        header: {",
-                      "            \"Content-Type\": \"application/json\",",
-                      "            \"Authorization\": \"Bearer \" + token",
-                      "        },",
-                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
-                      "    }, function (err2, createResponse) {",
-                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
-                      "        const status = createResponse.code;",
-                      "        if (status === 201) { console.log(\"Base admin created\"); }",
-                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
-                      "        else { console.log(\"Unexpected status:\", status); }",
-                      "    });",
+                      "    const status = createResponse.code;",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"Base admin created\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"Base admin already exists (unexpected)\");",
+                      "    } else {",
+                      "        console.log(\"Unexpected status:\", status);",
+                      "    }",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -2580,8 +2803,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -2595,15 +2824,11 @@
                     "exec": [
                       "const baseUrl = pm.environment.get(\"baseUrl\");",
                       "if (!baseUrl) {",
-                      "    console.error(\"baseUrl no está definida\");",
+                      "    console.error(\"baseUrl no está definida en las variables de entorno\");",
                       "    return;",
                       "}",
                       "",
                       "const uniqueSuffix = Date.now();",
-                      "const superAdminCredentials = {",
-                      "    phone: \"+584121234567\",",
-                      "    password: \"admin123\"",
-                      "};",
                       "",
                       "const baseAdmin = {",
                       "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
@@ -2616,35 +2841,35 @@
                       "",
                       "pm.collectionVariables.set(\"admin_base_phone\", baseAdmin.phone);",
                       "",
+                      "const existingToken = pm.collectionVariables.get(\"admin_token\");",
+                      "if (!existingToken) {",
+                      "    console.error(\"admin_token no disponible\");",
+                      "    return;",
+                      "}",
+                      "",
                       "pm.sendRequest({",
-                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    url: baseUrl + \"/auth/admin/create\",",
                       "    method: \"POST\",",
-                      "    header: { \"Content-Type\": \"application/json\" },",
-                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
-                      "}, function (err, loginResponse) {",
-                      "    if (err) { console.error(\"Error en login:\", err); return; }",
-                      "    if (loginResponse.code !== 200) {",
-                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\",",
+                      "        \"Authorization\": \"Bearer \" + existingToken",
+                      "    },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "}, function (err, createResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error al crear admin:\", err);",
                       "        return;",
                       "    }",
-                      "    const token = loginResponse.json().accessToken;",
-                      "    pm.collectionVariables.set(\"admin_token\", token);",
                       "",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/admin/create\",",
-                      "        method: \"POST\",",
-                      "        header: {",
-                      "            \"Content-Type\": \"application/json\",",
-                      "            \"Authorization\": \"Bearer \" + token",
-                      "        },",
-                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
-                      "    }, function (err2, createResponse) {",
-                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
-                      "        const status = createResponse.code;",
-                      "        if (status === 201) { console.log(\"Base admin created\"); }",
-                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
-                      "        else { console.log(\"Unexpected status:\", status); }",
-                      "    });",
+                      "    const status = createResponse.code;",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"Base admin created\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"Base admin already exists (unexpected)\");",
+                      "    } else {",
+                      "        console.log(\"Unexpected status:\", status);",
+                      "    }",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -2709,8 +2934,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -2724,15 +2955,11 @@
                     "exec": [
                       "const baseUrl = pm.environment.get(\"baseUrl\");",
                       "if (!baseUrl) {",
-                      "    console.error(\"baseUrl no está definida\");",
+                      "    console.error(\"baseUrl no está definida en las variables de entorno\");",
                       "    return;",
                       "}",
                       "",
                       "const uniqueSuffix = Date.now();",
-                      "const superAdminCredentials = {",
-                      "    phone: \"+584121234567\",",
-                      "    password: \"admin123\"",
-                      "};",
                       "",
                       "const baseAdmin = {",
                       "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
@@ -2745,35 +2972,35 @@
                       "",
                       "pm.collectionVariables.set(\"admin_base_cedula\", baseAdmin.cedula);",
                       "",
+                      "const existingToken = pm.collectionVariables.get(\"admin_token\");",
+                      "if (!existingToken) {",
+                      "    console.error(\"admin_token no disponible\");",
+                      "    return;",
+                      "}",
+                      "",
                       "pm.sendRequest({",
-                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    url: baseUrl + \"/auth/admin/create\",",
                       "    method: \"POST\",",
-                      "    header: { \"Content-Type\": \"application/json\" },",
-                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
-                      "}, function (err, loginResponse) {",
-                      "    if (err) { console.error(\"Error en login:\", err); return; }",
-                      "    if (loginResponse.code !== 200) {",
-                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\",",
+                      "        \"Authorization\": \"Bearer \" + existingToken",
+                      "    },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "}, function (err, createResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error al crear admin:\", err);",
                       "        return;",
                       "    }",
-                      "    const token = loginResponse.json().accessToken;",
-                      "    pm.collectionVariables.set(\"admin_token\", token);",
                       "",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/admin/create\",",
-                      "        method: \"POST\",",
-                      "        header: {",
-                      "            \"Content-Type\": \"application/json\",",
-                      "            \"Authorization\": \"Bearer \" + token",
-                      "        },",
-                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
-                      "    }, function (err2, createResponse) {",
-                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
-                      "        const status = createResponse.code;",
-                      "        if (status === 201) { console.log(\"Base admin created\"); }",
-                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
-                      "        else { console.log(\"Unexpected status:\", status); }",
-                      "    });",
+                      "    const status = createResponse.code;",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"Base admin created\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"Base admin already exists (unexpected)\");",
+                      "    } else {",
+                      "        console.log(\"Unexpected status:\", status);",
+                      "    }",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -2838,8 +3065,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -2906,8 +3139,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -2976,8 +3215,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -3044,8 +3289,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -3058,7 +3309,9 @@
                   "script": {
                     "exec": [
                       "const uniqueSuffix = Date.now();",
-                      "pm.collectionVariables.set(\"passport_admin_phone\", \"0426\" + uniqueSuffix.toString().slice(-7));"
+                      "pm.collectionVariables.set(\"passport_admin_cedula\", \"B\" + uniqueSuffix.toString().slice(-7));",
+                      "pm.collectionVariables.set(\"passport_admin_email\", \"passport-admin-\" + uniqueSuffix + \"@email.com\");",
+                      "pm.collectionVariables.set(\"passport_admin_phone\", \"0414\" + uniqueSuffix.toString().slice(-7));"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -3080,7 +3333,7 @@
                       "pm.test(\"Response includes cedula with passport value\", function () {",
                       "    const jsonData = pm.response.json();",
                       "    pm.expect(jsonData).to.have.property('cedula');",
-                      "    pm.expect(jsonData.cedula).to.equal('B7654321');",
+                      "    pm.expect(jsonData.cedula).to.match(/^B\\d{7}$/);",
                       "    pm.expect(jsonData).to.have.property('isActive');",
                       "    pm.expect(jsonData.isActive).to.be.true;",
                       "});"
@@ -3107,7 +3360,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"phone\": \"{{passport_admin_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Pasaporte\",\n  \"email\": \"admin-passport@email.com\",\n  \"cedula\": \"B7654321\",\n  \"role\": \"driver\"\n}",
+                  "raw": "{\n  \"phone\": \"{{passport_admin_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Pasaporte\",\n  \"email\": \"{{passport_admin_email}}\",\n  \"cedula\": \"{{passport_admin_cedula}}\",\n  \"role\": \"driver\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3116,8 +3369,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
                 }
               },
               "response": []
@@ -3183,8 +3442,625 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/admin/create",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "admin", "create"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – GET /auth/passenger/profile (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – GET /auth/admin/profile (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – PUT /auth/passenger/profile (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Hacker\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – PUT /auth/admin/profile (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Hacker\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – DELETE /auth/passenger/profile (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – DELETE /auth/admin/profile (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authorization – POST /auth/admin/create (No Token)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates missing or invalid token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesUnauthorized =",
+                      "        message.includes('unauthorized') ||",
+                      "        message.includes('no autorizado') ||",
+                      "        message.includes('token') ||",
+                      "        message.includes('jwt') ||",
+                      "        message.includes('bearer');",
+                      "    pm.expect(indicatesUnauthorized).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234599\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Hacker Admin\",\n  \"role\": \"association_admin\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Passenger Profile – Duplicate Cedula",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "const basePassenger = {",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"passenger_cedula_dup\", basePassenger.cedula);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) { console.error(\"Error:\", err); return; }",
+                      "    if (response.code === 201) { console.log(\"Base passenger created\"); }",
+                      "    else { console.log(\"Unexpected:\", response.code); }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cedula\": \"{{passenger_cedula_dup}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Rate Limiting – 6th Login Attempt (Expect 429)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const loginPayload = {",
+                      "    phone: \"04141234567\",",
+                      "    password: \"WrongPass123\"",
+                      "};",
+                      "",
+                      "var done = 0;",
+                      "for (var i = 0; i < 100; i++) {",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/passenger/login\",",
+                      "        method: \"POST\",",
+                      "        header: { \"Content-Type\": \"application/json\" },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(loginPayload) }",
+                      "    }, function (err, response) {",
+                      "        done++;",
+                      "        if (err) { console.error(\"Error en intento \" + done + \":\", err); }",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 429\", function () {",
+                      "    pm.response.to.have.status(429);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates too many requests\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesRateLimit =",
+                      "        message.includes('too many requests') ||",
+                      "        message.includes('demasiadas solicitudes') ||",
+                      "        message.includes('rate limit') ||",
+                      "        message.includes('429') ||",
+                      "        message.includes('many request');",
+                      "    pm.expect(indicatesRateLimit).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"WrongPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "login"
+                  ]
                 }
               },
               "response": []

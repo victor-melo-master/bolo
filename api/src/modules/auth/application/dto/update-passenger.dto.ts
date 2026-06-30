@@ -15,7 +15,10 @@ import { IsString, IsOptional, IsEmail, IsIn } from 'class-validator';
 
 export class UpdatePassengerDto {
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    { require_tld: true, allow_ip_domain: false },
+    { message: 'El email no tiene un formato válido' },
+  )
   email?: string;
 
   @IsOptional()
