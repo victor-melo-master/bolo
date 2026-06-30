@@ -14,6 +14,7 @@
  */
 import { IsString, IsNotEmpty, MinLength, Matches } from 'class-validator';
 
+// Validador personalizado para comparar dos campos
 export class ChangePasswordDto {
   @IsString()
   @IsNotEmpty()
@@ -27,4 +28,8 @@ export class ChangePasswordDto {
       'La contraseña debe contener al menos una mayúscula, una minúscula y un número',
   })
   newPassword: string;
+
+  @IsString()
+  @IsNotEmpty()
+  newPasswordConfirmation: string;
 }

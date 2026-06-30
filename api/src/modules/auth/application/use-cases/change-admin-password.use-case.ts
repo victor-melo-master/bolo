@@ -20,6 +20,7 @@ import {
   Inject,
   UnauthorizedException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
 import type { AdminRepositoryPort } from '../../domain/interfaces/repositories/admin.repository.port';
@@ -38,6 +39,10 @@ export class ChangeAdminPasswordUseCase {
     const admin = await this.adminRepo.findById(adminId);
     if (!admin) {
       throw new NotFoundException('Admin no encontrado');
+    }
+
+    if (dto.newPassword !== dto.newPasswordConfirmation) {
+      throw new BadRequestException('Las contraseñas nuevas no coinciden');
     }
 
     const isCurrentValid = await this.cryptoService.compare(

@@ -273,7 +273,9 @@ services:
     logging: *default-logging
 
     environment:
-      VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
+      # VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
+      #! ANLAR EN PRODUCCION !#
+      VITE_API_URL:      http://localhost:3000
       VITE_ENVIRONMENT:  development
 
     ports:
