@@ -1,0 +1,3177 @@
+{
+  "info": {
+    "_postman_id": "7e6d40fb-bbd3-4497-89b9-29ab5cb71fba",
+    "name": "BOLO API - TEST",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52193681",
+    "_collection_link": "https://go.postman.co/collection/52193681-7e6d40fb-bbd3-4497-89b9-29ab5cb71fba?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "Validations",
+          "item": [
+            {
+              "name": "Invalid Phone - Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid phone\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia al teléfono",
+                      "pm.test(\"Error message mentions phone validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasPhoneError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('teléfono') ||",
+                      "        msg.toLowerCase().includes('phone') ||",
+                      "        msg.toLowerCase().includes('venezolano')",
+                      "    );",
+                      "    pm.expect(hasPhoneError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"123\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Week Password - Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for weak password\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia a la contraseña",
+                      "pm.test(\"Error message mentions password complexity\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasPasswordError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('contraseña') ||",
+                      "        msg.toLowerCase().includes('password') ||",
+                      "        msg.toLowerCase().includes('mayúscula') ||",
+                      "        msg.toLowerCase().includes('minúscula') ||",
+                      "        msg.toLowerCase().includes('número')",
+                      "    );",
+                      "    pm.expect(hasPasswordError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola (solo para debug)",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"123\",\n  \"fullName\": \"Juan Pérez\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Mail - Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid email\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia al email",
+                      "pm.test(\"Error message mentions email validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasEmailError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('email') ||",
+                      "        msg.toLowerCase().includes('correo')",
+                      "    );",
+                      "    pm.expect(hasEmailError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234568\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"email\": \"no-es-email\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid CI - Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid cedula\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia a la cédula o pasaporte",
+                      "pm.test(\"Error message mentions cedula or passport validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasCedulaError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('cédula') ||",
+                      "        msg.toLowerCase().includes('cedula') ||",
+                      "        msg.toLowerCase().includes('pasaporte') ||",
+                      "        msg.toLowerCase().includes('passport')",
+                      "    );",
+                      "    pm.expect(hasCedulaError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"cedula\": \"123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Extra Field - Passenger Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for extra field\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error hace referencia al campo no permitido",
+                      "pm.test(\"Error message mentions unknown property\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    // El mensaje puede ser un string o un array, dependiendo de la configuración",
+                      "    const message = jsonData.message;",
+                      "    if (Array.isArray(message)) {",
+                      "        const hasExtraFieldError = message.some(msg =>",
+                      "            msg.toLowerCase().includes('property') ||",
+                      "            msg.toLowerCase().includes('propiedad') ||",
+                      "            msg.toLowerCase().includes('extrafield') ||",
+                      "            msg.toLowerCase().includes('should not exist')",
+                      "        );",
+                      "        pm.expect(hasExtraFieldError).to.be.true;",
+                      "    } else {",
+                      "        // Si es un string, buscamos indicios de campo no permitido",
+                      "        const hasExtraFieldError = message.toLowerCase().includes('property') ||",
+                      "                                   message.toLowerCase().includes('propiedad') ||",
+                      "                                   message.toLowerCase().includes('should not exist');",
+                      "        pm.expect(hasExtraFieldError).to.be.true;",
+                      "    }",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log validation error\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation error:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"extraField\": \"no-deberia-permitirse\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Category - Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid category\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia a la categoría",
+                      "pm.test(\"Error message mentions category validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasCategoryError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('category') ||",
+                      "        msg.toLowerCase().includes('categoría') ||",
+                      "        msg.toLowerCase().includes('must be one of') ||",
+                      "        msg.toLowerCase().includes('debe ser uno de')",
+                      "    );",
+                      "    pm.expect(hasCategoryError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"category\": \"invalid-category\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Login – Invalid Credentials",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 401 (Unauthorized)",
+                      "pm.test(\"Status code is 401 for invalid credentials\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica credenciales inválidas",
+                      "pm.test(\"Error message indicates invalid credentials\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesInvalidCredentials = ",
+                      "        message.includes('credenciales') ||",
+                      "        message.includes('credentials') ||",
+                      "        message.includes('inválidas') ||",
+                      "        message.includes('invalid') ||",
+                      "        message.includes('incorrect');",
+                      "    pm.expect(indicatesInvalidCredentials).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"WrongPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Change Password – Wrong Current Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 401 (Unauthorized)",
+                      "pm.test(\"Status code is 401 for wrong current password\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica contraseña actual incorrecta",
+                      "pm.test(\"Error message indicates wrong current password\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesWrongPassword = ",
+                      "        message.includes('contraseña actual') ||",
+                      "        message.includes('current password') ||",
+                      "        message.includes('incorrecta') ||",
+                      "        message.includes('incorrect') ||",
+                      "        message.includes('inválida');",
+                      "    pm.expect(indicatesWrongPassword).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"WrongCurrentPass\",\n  \"newPassword\": \"NewPass1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Register – Duplicate Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate email\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica email duplicado",
+                      "pm.test(\"Error message indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateEmail = ",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateEmail).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "// Pasajero BASE con datos únicos",
+                      "const basePassenger = {",
+                      "    email: \"pasajero-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),           // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),            // cédula única",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "// Guardar email, teléfono y cédula en variables para los requests principales",
+                      "pm.collectionVariables.set(\"passenger_base_email\", basePassenger.email);",
+                      "pm.collectionVariables.set(\"passenger_base_phone\", basePassenger.phone);",
+                      "pm.collectionVariables.set(\"passenger_base_cedula\", basePassenger.cedula);",
+                      "",
+                      "// Crear el pasajero base",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en pre-request:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const status = response.code;",
+                      "    const json = response.json();",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"✅ Pre-request: pasajero base creado exitosamente\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"ℹ️ Pre-request: el pasajero base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "        console.log(\"Mensaje:\", json.message);",
+                      "    } else if (status === 400) {",
+                      "        console.log(\"❌ Pre-request: error de validación\");",
+                      "        console.log(\"Errores:\", json.message);",
+                      "    } else {",
+                      "        console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{passenger_base_email}}\",\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Duplicado Email\",\n  \"cedula\": \"V12345678\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Register – Duplicate Phone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate phone\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica teléfono duplicado",
+                      "pm.test(\"Error message indicates duplicate phone\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicatePhone = ",
+                      "        message.includes('teléfono') ||",
+                      "        message.includes('phone') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicatePhone).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "// Pasajero BASE con datos únicos",
+                      "const basePassenger = {",
+                      "    email: \"pasajero-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),           // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),            // cédula única",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "// Guardar email, teléfono y cédula en variables para los requests principales",
+                      "pm.collectionVariables.set(\"passenger_base_email\", basePassenger.email);",
+                      "pm.collectionVariables.set(\"passenger_base_phone\", basePassenger.phone);",
+                      "pm.collectionVariables.set(\"passenger_base_cedula\", basePassenger.cedula);",
+                      "",
+                      "// Crear el pasajero base",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en pre-request:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const status = response.code;",
+                      "    const json = response.json();",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"✅ Pre-request: pasajero base creado exitosamente\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"ℹ️ Pre-request: el pasajero base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "        console.log(\"Mensaje:\", json.message);",
+                      "    } else if (status === 400) {",
+                      "        console.log(\"❌ Pre-request: error de validación\");",
+                      "        console.log(\"Errores:\", json.message);",
+                      "    } else {",
+                      "        console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"pasajero-nuevo@email.com\",\n  \"phone\": \"{{passenger_base_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Duplicado Phone\",\n  \"cedula\": \"V12345678\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Register – Duplicate Cedula",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate cedula\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica cédula duplicada",
+                      "pm.test(\"Error message indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateCedula = ",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateCedula).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "// Pasajero BASE con datos únicos",
+                      "const basePassenger = {",
+                      "    email: \"pasajero-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),           // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),            // cédula única",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "// Guardar email, teléfono y cédula en variables para los requests principales",
+                      "pm.collectionVariables.set(\"passenger_base_email\", basePassenger.email);",
+                      "pm.collectionVariables.set(\"passenger_base_phone\", basePassenger.phone);",
+                      "pm.collectionVariables.set(\"passenger_base_cedula\", basePassenger.cedula);",
+                      "",
+                      "// Crear el pasajero base",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en pre-request:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const status = response.code;",
+                      "    const json = response.json();",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"✅ Pre-request: pasajero base creado exitosamente\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"ℹ️ Pre-request: el pasajero base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "        console.log(\"Mensaje:\", json.message);",
+                      "    } else if (status === 400) {",
+                      "        console.log(\"❌ Pre-request: error de validación\");",
+                      "        console.log(\"Errores:\", json.message);",
+                      "    } else {",
+                      "        console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"pasajero-nuevo-cedula@email.com\",\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Duplicado Cedula\",\n  \"cedula\": \"{{passenger_base_cedula}}\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Passenger Profile – Duplicate Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate email in profile update\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica email duplicado",
+                      "pm.test(\"Error message indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateEmail = ",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateEmail).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const registerUrl = baseUrl + \"/auth/passenger/register\";",
+                      "",
+                      "// Usuario BASE con un email diferente al que usas normalmente",
+                      "const baseUser = {",
+                      "    email: \"duplicado@email.com\",   // email que queremos duplicar",
+                      "    phone: \"04145551234\",          // teléfono DIFERENTE al del usuario logueado",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Usuario Base\",",
+                      "    cedula: \"V87654321\",           // cédula DIFERENTE",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: registerUrl,",
+                      "    method: \"POST\",",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\"",
+                      "    },",
+                      "    body: {",
+                      "        mode: \"raw\",",
+                      "        raw: JSON.stringify(baseUser)",
+                      "    }",
+                      "}, function (err, response) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en pre-request:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const status = response.code;",
+                      "    const json = response.json();",
+                      "",
+                      "    if (status === 201) {",
+                      "        console.log(\"✅ Pre-request: usuario base creado exitosamente\");",
+                      "    } else if (status === 409) {",
+                      "        console.log(\"ℹ️ Pre-request: el usuario base ya existe (esto es esperado)\");",
+                      "        console.log(\"Mensaje:\", json.message);",
+                      "    } else if (status === 400) {",
+                      "        console.log(\"❌ Pre-request: error de validación\");",
+                      "        console.log(\"Errores:\", json.message);",
+                      "    } else {",
+                      "        console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"duplicado@email.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "passenger",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Role - Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid role\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia al rol",
+                      "pm.test(\"Error message mentions role validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasRoleError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('role') ||",
+                      "        msg.toLowerCase().includes('rol') ||",
+                      "        msg.toLowerCase().includes('must be one of') ||",
+                      "        msg.toLowerCase().includes('debe ser uno de')",
+                      "    );",
+                      "    pm.expect(hasRoleError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"role\": \"invalid-role\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Login – Invalid Credentials",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 401 (Unauthorized)",
+                      "pm.test(\"Status code is 401 for invalid admin credentials\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica credenciales inválidas",
+                      "pm.test(\"Error message indicates invalid credentials\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesInvalidCredentials = ",
+                      "        message.includes('credenciales') ||",
+                      "        message.includes('credentials') ||",
+                      "        message.includes('inválidas') ||",
+                      "        message.includes('invalid') ||",
+                      "        message.includes('incorrect');",
+                      "    pm.expect(indicatesInvalidCredentials).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"WrongPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Update Pass– Wrong Pass",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 401 (Unauthorized)",
+                      "pm.test(\"Status code is 401 for wrong current admin password\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica contraseña actual incorrecta",
+                      "pm.test(\"Error message indicates wrong current password\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesWrongPassword = ",
+                      "        message.includes('contraseña actual') ||",
+                      "        message.includes('current password') ||",
+                      "        message.includes('incorrecta') ||",
+                      "        message.includes('incorrect') ||",
+                      "        message.includes('inválida');",
+                      "    pm.expect(indicatesWrongPassword).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"WrongCurrentPass\",\n  \"newPassword\": \"NewPass1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Admin Profile – Duplicate Email.",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate email in admin profile update\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica email duplicado",
+                      "pm.test(\"Error message indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateEmail = ",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateEmail).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now(); // Ejemplo: 1712345678901",
+                      "",
+                      "// Credenciales del super_admin por defecto (creado por el seeder)",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "// Admin BASE con datos únicos",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),        // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),          // cédula única",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "// Guardar el email del admin base en una variable para el request principal",
+                      "pm.collectionVariables.set(\"admin_base_email\", baseAdmin.email);",
+                      "",
+                      "// Paso 1: Login como super_admin para obtener el token",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en login:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"❌ No se pudo autenticar como super_admin. Status:\", loginResponse.code);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    console.log(\"✅ Login exitoso. Token obtenido.\");",
+                      "",
+                      "    // Guardar el token en la variable de colección para el request principal",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    // Paso 2: Crear el admin base usando el token",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err, createResponse) {",
+                      "        if (err) {",
+                      "            console.error(\"Error al crear admin:\", err);",
+                      "            return;",
+                      "        }",
+                      "",
+                      "        const status = createResponse.code;",
+                      "        const json = createResponse.json();",
+                      "",
+                      "        if (status === 201) {",
+                      "            console.log(\"✅ Pre-request: admin base creado exitosamente\");",
+                      "        } else if (status === 409) {",
+                      "            console.log(\"ℹ️ Pre-request: el admin base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "            console.log(\"Mensaje:\", json.message);",
+                      "        } else if (status === 400) {",
+                      "            console.log(\"❌ Pre-request: error de validación\");",
+                      "            console.log(\"Errores:\", json.message);",
+                      "        } else {",
+                      "            console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "        }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_base_email}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Admin Profile – Duplicate CI",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate cedula in profile update\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica cédula duplicada",
+                      "pm.test(\"Error message indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateCedula = ",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateCedula).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now(); // Ejemplo: 1712345678901",
+                      "",
+                      "// Credenciales del super_admin por defecto (creado por el seeder)",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "// Admin BASE con datos únicos",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),        // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),          // cédula única",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "// Guardar la cédula del admin base en una variable para el request principal",
+                      "pm.collectionVariables.set(\"admin_base_cedula\", baseAdmin.cedula);",
+                      "",
+                      "// Paso 1: Login como super_admin para obtener el token",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en login:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"❌ No se pudo autenticar como super_admin. Status:\", loginResponse.code);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    console.log(\"✅ Login exitoso. Token obtenido.\");",
+                      "",
+                      "    // Guardar el token en la variable de colección para el request principal",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    // Paso 2: Crear el admin base usando el token",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err, createResponse) {",
+                      "        if (err) {",
+                      "            console.error(\"Error al crear admin:\", err);",
+                      "            return;",
+                      "        }",
+                      "",
+                      "        const status = createResponse.code;",
+                      "        const json = createResponse.json();",
+                      "",
+                      "        if (status === 201) {",
+                      "            console.log(\"✅ Pre-request: admin base creado exitosamente\");",
+                      "        } else if (status === 409) {",
+                      "            console.log(\"ℹ️ Pre-request: el admin base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "            console.log(\"Mensaje:\", json.message);",
+                      "        } else if (status === 400) {",
+                      "            console.log(\"❌ Pre-request: error de validación\");",
+                      "            console.log(\"Errores:\", json.message);",
+                      "        } else {",
+                      "            console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "        }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cedula\": \"{{admin_base_cedula}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Create – Duplicate Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate email in admin create\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica email duplicado",
+                      "pm.test(\"Error message indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateEmail = ",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateEmail).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now(); // Ejemplo: 1712345678901",
+                      "",
+                      "// Credenciales del super_admin por defecto (creado por el seeder)",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "// Admin BASE con datos únicos",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),        // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),          // cédula única",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "// Guardar el email del admin base en una variable para el request principal",
+                      "pm.collectionVariables.set(\"admin_base_email\", baseAdmin.email);",
+                      "",
+                      "// Paso 1: Login como super_admin para obtener el token",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en login:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"❌ No se pudo autenticar como super_admin. Status:\", loginResponse.code);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    console.log(\"✅ Login exitoso. Token obtenido.\");",
+                      "",
+                      "    // Guardar el token en la variable de colección para el request principal",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    // Paso 2: Crear el admin base usando el token",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err, createResponse) {",
+                      "        if (err) {",
+                      "            console.error(\"Error al crear admin:\", err);",
+                      "            return;",
+                      "        }",
+                      "",
+                      "        const status = createResponse.code;",
+                      "        const json = createResponse.json();",
+                      "",
+                      "        if (status === 201) {",
+                      "            console.log(\"✅ Pre-request: admin base creado exitosamente\");",
+                      "        } else if (status === 409) {",
+                      "            console.log(\"ℹ️ Pre-request: el admin base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "            console.log(\"Mensaje:\", json.message);",
+                      "        } else if (status === 400) {",
+                      "            console.log(\"❌ Pre-request: error de validación\");",
+                      "            console.log(\"Errores:\", json.message);",
+                      "        } else {",
+                      "            console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "        }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_base_email}}\",\n  \"phone\": \"04149876543\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Duplicado\",\n  \"cedula\": \"V87654321\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Create – Duplicate Phone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate phone\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica teléfono duplicado",
+                      "pm.test(\"Error message indicates duplicate phone\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicatePhone = ",
+                      "        message.includes('teléfono') ||",
+                      "        message.includes('phone') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicatePhone).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now(); // Ejemplo: 1712345678901",
+                      "",
+                      "// Credenciales del super_admin por defecto (creado por el seeder)",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "// Admin BASE con datos únicos",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),        // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),          // cédula única",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "// Guardar el teléfono del admin base en una variable para el request principal",
+                      "pm.collectionVariables.set(\"admin_base_phone\", baseAdmin.phone);",
+                      "",
+                      "// Paso 1: Login como super_admin para obtener el token",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en login:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"❌ No se pudo autenticar como super_admin. Status:\", loginResponse.code);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    console.log(\"✅ Login exitoso. Token obtenido.\");",
+                      "",
+                      "    // Guardar el token en la variable de colección para el request principal",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    // Paso 2: Crear el admin base usando el token",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err, createResponse) {",
+                      "        if (err) {",
+                      "            console.error(\"Error al crear admin:\", err);",
+                      "            return;",
+                      "        }",
+                      "",
+                      "        const status = createResponse.code;",
+                      "        const json = createResponse.json();",
+                      "",
+                      "        if (status === 201) {",
+                      "            console.log(\"✅ Pre-request: admin base creado exitosamente\");",
+                      "        } else if (status === 409) {",
+                      "            console.log(\"ℹ️ Pre-request: el admin base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "            console.log(\"Mensaje:\", json.message);",
+                      "        } else if (status === 400) {",
+                      "            console.log(\"❌ Pre-request: error de validación\");",
+                      "            console.log(\"Errores:\", json.message);",
+                      "        } else {",
+                      "            console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "        }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{admin_base_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Duplicado Phone\",\n  \"email\": \"admin-nuevo@email.com\",\n  \"cedula\": \"V98765432\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "POST {{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "POST {{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Create – Duplicate CI",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 409 (Conflict)",
+                      "pm.test(\"Status code is 409 for duplicate cedula\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error indica cédula duplicada",
+                      "pm.test(\"Error message indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicateCedula = ",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicateCedula).to.be.true;",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log error message\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Error message:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Obtener baseUrl de las variables de entorno",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"❌ baseUrl no está definida en las variables de entorno\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "// Generar un sufijo único basado en el timestamp",
+                      "const uniqueSuffix = Date.now(); // Ejemplo: 1712345678901",
+                      "",
+                      "// Credenciales del super_admin por defecto (creado por el seeder)",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "// Admin BASE con datos únicos",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",   // email único",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),        // teléfono único",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),          // cédula única",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "// Guardar la cédula del admin base en una variable para el request principal",
+                      "pm.collectionVariables.set(\"admin_base_cedula\", baseAdmin.cedula);",
+                      "",
+                      "// Paso 1: Login como super_admin para obtener el token",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) {",
+                      "        console.error(\"Error en login:\", err);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"❌ No se pudo autenticar como super_admin. Status:\", loginResponse.code);",
+                      "        return;",
+                      "    }",
+                      "",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    console.log(\"✅ Login exitoso. Token obtenido.\");",
+                      "",
+                      "    // Guardar el token en la variable de colección para el request principal",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    // Paso 2: Crear el admin base usando el token",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err, createResponse) {",
+                      "        if (err) {",
+                      "            console.error(\"Error al crear admin:\", err);",
+                      "            return;",
+                      "        }",
+                      "",
+                      "        const status = createResponse.code;",
+                      "        const json = createResponse.json();",
+                      "",
+                      "        if (status === 201) {",
+                      "            console.log(\"✅ Pre-request: admin base creado exitosamente\");",
+                      "        } else if (status === 409) {",
+                      "            console.log(\"ℹ️ Pre-request: el admin base ya existe (esto NO debería pasar con datos únicos)\");",
+                      "            console.log(\"Mensaje:\", json.message);",
+                      "        } else if (status === 400) {",
+                      "            console.log(\"❌ Pre-request: error de validación\");",
+                      "            console.log(\"Errores:\", json.message);",
+                      "        } else {",
+                      "            console.log(\"❌ Pre-request: respuesta inesperada\", status, json);",
+                      "        }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04149876543\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Duplicado Cedula\",\n  \"email\": \"admin-nuevo-cedula@email.com\",\n  \"cedula\": \"{{admin_base_cedula}}\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Phone Duplicate - Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid phone\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia al teléfono",
+                      "pm.test(\"Error message mentions phone validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasPhoneError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('teléfono') ||",
+                      "        msg.toLowerCase().includes('phone') ||",
+                      "        msg.toLowerCase().includes('venezolano')",
+                      "    );",
+                      "    pm.expect(hasPhoneError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"123\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"admin@email.com\",\n  \"cedula\": \"V12345678\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Cedula - Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid cedula\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia a la cédula o pasaporte",
+                      "pm.test(\"Error message mentions cedula or passport validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasCedulaError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('cédula') ||",
+                      "        msg.toLowerCase().includes('cedula') ||",
+                      "        msg.toLowerCase().includes('pasaporte') ||",
+                      "        msg.toLowerCase().includes('passport')",
+                      "    );",
+                      "    pm.expect(hasCedulaError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"admin@email.com\",\n  \"cedula\": \"123\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Email - Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for invalid email\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error es un array",
+                      "pm.test(\"Response has validation error messages array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "// 4. Verificar que al menos un mensaje hace referencia al email",
+                      "pm.test(\"Error message mentions email validation\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasEmailError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('email') ||",
+                      "        msg.toLowerCase().includes('correo')",
+                      "    );",
+                      "    pm.expect(hasEmailError).to.be.true;",
+                      "});",
+                      "",
+                      "// 5. Opcional: imprimir los mensajes de error en la consola",
+                      "pm.test(\"Log validation errors\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation errors:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"no-es-email\",\n  \"cedula\": \"V12345678\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Extra Field - Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// 1. Verificar que la respuesta tiene status 400 (Bad Request)",
+                      "pm.test(\"Status code is 400 for extra field\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "// 2. Verificar que la respuesta es JSON",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "// 3. Verificar que el mensaje de error hace referencia al campo no permitido",
+                      "pm.test(\"Error message mentions unknown property\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    // El mensaje puede ser un string o un array, dependiendo de la configuración",
+                      "    const message = jsonData.message;",
+                      "    if (Array.isArray(message)) {",
+                      "        const hasExtraFieldError = message.some(msg =>",
+                      "            msg.toLowerCase().includes('property') ||",
+                      "            msg.toLowerCase().includes('propiedad') ||",
+                      "            msg.toLowerCase().includes('extrafield') ||",
+                      "            msg.toLowerCase().includes('should not exist')",
+                      "        );",
+                      "        pm.expect(hasExtraFieldError).to.be.true;",
+                      "    } else {",
+                      "        // Si es un string, buscamos indicios de campo no permitido",
+                      "        const hasExtraFieldError = message.toLowerCase().includes('property') ||",
+                      "                                   message.toLowerCase().includes('propiedad') ||",
+                      "                                   message.toLowerCase().includes('should not exist');",
+                      "        pm.expect(hasExtraFieldError).to.be.true;",
+                      "    }",
+                      "});",
+                      "",
+                      "// 4. Opcional: imprimir el mensaje de error en la consola",
+                      "pm.test(\"Log validation error\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    console.log(\"Validation error:\", jsonData.message);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"admin@email.com\",\n  \"cedula\": \"V12345678\",\n  \"role\": \"driver\",\n  \"extraField\": \"no-deberia-permitirse\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Register Pasanger",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Verificar que la respuesta tiene status 201 (Created)",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar que la respuesta es JSON",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "// Verificar que la respuesta tiene los campos esperados",
+                  "pm.test(\"Response has expected fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('phone');",
+                  "    pm.expect(jsonData).to.have.property('fullName');",
+                  "    pm.expect(jsonData).to.have.property('category');",
+                  "    pm.expect(jsonData).to.have.property('isActive');",
+                  "    pm.expect(jsonData).to.have.property('createdAt');",
+                  "});",
+                  "",
+                  "// Opcional: guardar el ID del pasajero en una variable de colección",
+                  "pm.test(\"Save passenger ID to collection variable\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"passenger_id\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"email\": \"juan@email.com\",\n  \"cedula\": \"V12345678\",\n  \"category\": \"normal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/passenger/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "passenger",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Passanger",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. Verificar que la respuesta tiene status 200",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// 2. Verificar que la respuesta es JSON",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "// 3. Verificar que la respuesta tiene accessToken y user",
+                  "pm.test(\"Response has accessToken and user\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('id');",
+                  "    pm.expect(jsonData.user).to.have.property('phone');",
+                  "    pm.expect(jsonData.user).to.have.property('fullName');",
+                  "    pm.expect(jsonData.user).to.have.property('role');",
+                  "});",
+                  "",
+                  "// 4. Guardar el token en una variable de colección para usarlo en otros requests",
+                  "pm.test(\"Save accessToken to collection variable\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"auth_token\", jsonData.accessToken);",
+                  "});",
+                  "",
+                  "// 5. Opcional: guardar el ID del usuario",
+                  "pm.test(\"Save passenger ID to collection variable\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"passenger_id\", jsonData.user.id);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/passenger/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "passenger",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Passenger Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has passenger profile fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('phone');",
+                  "    pm.expect(jsonData).to.have.property('fullName');",
+                  "    pm.expect(jsonData).to.have.property('category');",
+                  "    pm.expect(jsonData).to.have.property('isActive');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/passenger/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "passenger",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "LoginAdminBolo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. Verificar status 200",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// 2. Verificar que es JSON",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "// 3. Verificar estructura de la respuesta",
+                  "pm.test(\"Response has accessToken and admin user\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('id');",
+                  "    pm.expect(jsonData.user).to.have.property('phone');",
+                  "    pm.expect(jsonData.user).to.have.property('fullName');",
+                  "    pm.expect(jsonData.user).to.have.property('role'); // super_admin, association_admin, driver",
+                  "});",
+                  "",
+                  "// 4. Guardar el token de admin en una variable de colección",
+                  "pm.test(\"Save admin accessToken to collection variable\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"admin_token\", jsonData.accessToken);",
+                  "});",
+                  "",
+                  "// 5. Opcional: guardar el ID del admin",
+                  "pm.test(\"Save admin ID to collection variable\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"admin_id\", jsonData.user.id);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+584121234567\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "login"
+              ],
+              "query": [
+                {
+                  "key": "",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Admin Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has admin profile fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('phone');",
+                  "    pm.expect(jsonData).to.have.property('fullName');",
+                  "    pm.expect(jsonData).to.have.property('role');",
+                  "    pm.expect(jsonData).to.have.property('associationId'); // puede ser null",
+                  "    pm.expect(jsonData).to.have.property('isActive');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has admin fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('phone');",
+                  "    pm.expect(jsonData).to.have.property('fullName');",
+                  "    pm.expect(jsonData).to.have.property('role');",
+                  "    pm.expect(jsonData).to.have.property('isActive');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Asociación\",\n  \"email\": \"admin2@bolo.com\",\n  \"cedula\": \"V87654321\",\n  \"role\": \"association_admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ops",
+      "item": []
+    },
+    {
+      "name": "fin",
+      "item": []
+    },
+    {
+      "name": "trip",
+      "item": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "passenger_id",
+      "value": ""
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "admin_id",
+      "value": ""
+    },
+    {
+      "key": "admin_base_email",
+      "value": ""
+    },
+    {
+      "key": "passenger_base_email",
+      "value": ""
+    },
+    {
+      "key": "passenger_base_phone",
+      "value": ""
+    },
+    {
+      "key": "passenger_base_cedula",
+      "value": ""
+    },
+    {
+      "key": "admin_base_phone",
+      "value": ""
+    },
+    {
+      "key": "admin_base_cedula",
+      "value": ""
+    }
+  ]
+}

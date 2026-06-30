@@ -1,0 +1,3271 @@
+{
+  "info": {
+    "_postman_id": "7e6d40fb-bbd3-4497-89b9-29ab5cb71fba",
+    "name": "BOLO API - TEST",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52193681"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "Happy Path",
+          "item": [
+            {
+              "name": "1 - Register Passenger",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "const passenger = {",
+                      "  phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "  password: \"Pass1234\",",
+                      "  fullName: \"Pasajero Test \" + uniqueSuffix,",
+                      "  email: \"pasajero-\" + uniqueSuffix + \"@email.com\",",
+                      "  cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "  category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"auth_passenger_phone\", passenger.phone);",
+                      "pm.collectionVariables.set(\"auth_passenger_password\", passenger.password);",
+                      "pm.collectionVariables.set(\"auth_passenger_email\", passenger.email);",
+                      "pm.collectionVariables.set(\"auth_passenger_cedula\", passenger.cedula);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has expected fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('phone');",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData).to.have.property('category');",
+                      "    pm.expect(jsonData).to.have.property('email');",
+                      "    pm.expect(jsonData).to.have.property('cedula');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData).to.have.property('createdAt');",
+                      "    pm.expect(jsonData.isActive).to.be.true;",
+                      "    pm.expect(jsonData.category).to.equal('normal');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{auth_passenger_phone}}\",\n  \"password\": \"{{auth_passenger_password}}\",\n  \"fullName\": \"Pasajero Test\",\n  \"email\": \"{{auth_passenger_email}}\",\n  \"cedula\": \"{{auth_passenger_cedula}}\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2 - Login Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has accessToken and user\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('accessToken');",
+                      "    pm.expect(jsonData).to.have.property('user');",
+                      "    pm.expect(jsonData.user).to.have.property('id');",
+                      "    pm.expect(jsonData.user).to.have.property('phone');",
+                      "    pm.expect(jsonData.user).to.have.property('fullName');",
+                      "    pm.expect(jsonData.user).to.have.property('role');",
+                      "    pm.expect(jsonData.user.role).to.equal('passenger');",
+                      "});",
+                      "",
+                      "pm.test(\"Save accessToken\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"auth_token\", jsonData.accessToken);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{auth_passenger_phone}}\",\n  \"password\": \"{{auth_passenger_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3 - Get Passenger Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has passenger profile fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('phone');",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData).to.have.property('email');",
+                      "    pm.expect(jsonData).to.have.property('cedula');",
+                      "    pm.expect(jsonData).to.have.property('category');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData.isActive).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "4 - Update Passenger Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has updated fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData.fullName).to.equal('Juan Actualizado');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Juan Actualizado\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "5 - Change Passenger Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});",
+                      "",
+                      "pm.test(\"Save new password for subsequent tests\", function () {",
+                      "    pm.collectionVariables.set(\"auth_passenger_new_password\", \"NewPass5678\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"{{auth_passenger_password}}\",\n  \"newPassword\": \"NewPass5678\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "password"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "6 - Login with New Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has accessToken\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('accessToken');",
+                      "});",
+                      "",
+                      "pm.test(\"Re-save token and update password var\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"auth_token\", jsonData.accessToken);",
+                      "    pm.collectionVariables.set(\"auth_passenger_password\", \"NewPass5678\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{auth_passenger_phone}}\",\n  \"password\": \"NewPass5678\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "7 - Soft Delete Passenger",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});",
+                      "",
+                      "pm.test(\"Verify no content in response\", function () {",
+                      "    pm.expect(pm.response.body).to.be.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "8 - Login After Passenger Delete (Expect 401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates user inactive or invalid\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesInactive =",
+                      "        message.includes('inactivo') ||",
+                      "        message.includes('inactive') ||",
+                      "        message.includes('credenciales') ||",
+                      "        message.includes('invalid') ||",
+                      "        message.includes('no encontrado') ||",
+                      "        message.includes('not found');",
+                      "    pm.expect(indicatesInactive).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{auth_passenger_phone}}\",\n  \"password\": \"NewPass5678\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "9 - Login Admin (Super Admin)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has accessToken and admin user\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('accessToken');",
+                      "    pm.expect(jsonData).to.have.property('user');",
+                      "    pm.expect(jsonData.user).to.have.property('id');",
+                      "    pm.expect(jsonData.user).to.have.property('phone');",
+                      "    pm.expect(jsonData.user).to.have.property('fullName');",
+                      "    pm.expect(jsonData.user).to.have.property('role');",
+                      "    pm.expect(jsonData.user.role).to.equal('super_admin');",
+                      "});",
+                      "",
+                      "pm.test(\"Save admin accessToken\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"admin_token\", jsonData.accessToken);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+584121234567\",\n  \"password\": \"admin123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "10 - Get Admin Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has admin profile fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('phone');",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData).to.have.property('role');",
+                      "    pm.expect(jsonData).to.have.property('associationId');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData.role).to.equal('super_admin');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "11 - Update Admin Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has updated fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData.fullName).to.equal('Admin Actualizado');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Admin Actualizado\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "12 - Create Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has admin fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('phone');",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData).to.have.property('role');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData.role).to.equal('association_admin');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Asociación\",\n  \"email\": \"admin2@bolo.com\",\n  \"cedula\": \"V87654321\",\n  \"role\": \"association_admin\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "13 - Create Temp Admin (for Soft Delete)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "const admin = {",
+                      "  phone: \"0416\" + uniqueSuffix.toString().slice(-7),",
+                      "  password: \"TempPass123\",",
+                      "  fullName: \"Temp Admin \" + uniqueSuffix,",
+                      "  email: \"temp-admin-\" + uniqueSuffix + \"@email.com\",",
+                      "  cedula: \"V\" + (90000000 + uniqueSuffix).toString().slice(-8),",
+                      "  role: \"association_admin\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"temp_admin_phone\", admin.phone);",
+                      "pm.collectionVariables.set(\"temp_admin_password\", admin.password);",
+                      "",
+                      "const token = pm.collectionVariables.get(\"admin_token\");",
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/create\",",
+                      "    method: \"POST\",",
+                      "    header: {",
+                      "        \"Content-Type\": \"application/json\",",
+                      "        \"Authorization\": \"Bearer \" + token",
+                      "    },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(admin) }",
+                      "}, function (err, response) {",
+                      "    if (err) { console.error(\"Error:\", err); return; }",
+                      "    if (response.code === 201) { console.log(\"Temp admin created\"); }",
+                      "    else { console.log(\"Unexpected:\", response.code, response.json()); }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has temp admin fields\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('phone');",
+                      "    pm.expect(jsonData).to.have.property('fullName');",
+                      "    pm.expect(jsonData).to.have.property('role');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData.role).to.equal('association_admin');",
+                      "    pm.expect(jsonData.isActive).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{temp_admin_phone}}\",\n  \"password\": \"{{temp_admin_password}}\",\n  \"fullName\": \"Temp Admin\",\n  \"email\": \"temp-admin@email.com\",\n  \"role\": \"association_admin\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "14 - Login Temp Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Save temp admin token\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('accessToken');",
+                      "    pm.collectionVariables.set(\"temp_admin_token\", jsonData.accessToken);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{temp_admin_phone}}\",\n  \"password\": \"{{temp_admin_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "15 - Change Admin Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{temp_admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"{{temp_admin_password}}\",\n  \"newPassword\": \"NewAdminPass1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "password"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "16 - Login Admin with New Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has accessToken\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('accessToken');",
+                      "});",
+                      "",
+                      "pm.test(\"Re-save temp token and update password var\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"temp_admin_token\", jsonData.accessToken);",
+                      "    pm.collectionVariables.set(\"temp_admin_password\", \"NewAdminPass1\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{temp_admin_phone}}\",\n  \"password\": \"NewAdminPass1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "17 - Soft Delete Temp Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{temp_admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "18 - Login Admin After Delete (Expect 401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates user inactive or invalid\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesInactive =",
+                      "        message.includes('inactivo') ||",
+                      "        message.includes('inactive') ||",
+                      "        message.includes('credenciales') ||",
+                      "        message.includes('invalid') ||",
+                      "        message.includes('no encontrado') ||",
+                      "        message.includes('not found');",
+                      "    pm.expect(indicatesInactive).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{temp_admin_phone}}\",\n  \"password\": \"NewAdminPass1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "login"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Validations",
+          "item": [
+            {
+              "name": "Invalid Phone - Passenger Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions phone\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasPhoneError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('teléfono') ||",
+                      "        msg.toLowerCase().includes('phone')",
+                      "    );",
+                      "    pm.expect(hasPhoneError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"123\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Weak Password - Passenger Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions password\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasPasswordError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('contraseña') ||",
+                      "        msg.toLowerCase().includes('password') ||",
+                      "        msg.toLowerCase().includes('mayúscula') ||",
+                      "        msg.toLowerCase().includes('minúscula') ||",
+                      "        msg.toLowerCase().includes('número')",
+                      "    );",
+                      "    pm.expect(hasPasswordError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"123\",\n  \"fullName\": \"Juan Pérez\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Email - Passenger Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasEmailError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('email') ||",
+                      "        msg.toLowerCase().includes('correo')",
+                      "    );",
+                      "    pm.expect(hasEmailError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234568\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"email\": \"no-es-email\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Cedula - Passenger Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions cedula or passport\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasCedulaError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('cédula') ||",
+                      "        msg.toLowerCase().includes('cedula') ||",
+                      "        msg.toLowerCase().includes('pasaporte') ||",
+                      "        msg.toLowerCase().includes('passport')",
+                      "    );",
+                      "    pm.expect(hasCedulaError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"cedula\": \"123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Valid Passport - Passenger Register",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const uniqueSuffix = Date.now();",
+                      "pm.collectionVariables.set(\"passport_passenger_phone\", \"0424\" + uniqueSuffix.toString().slice(-7));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response includes cedula with passport value\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('cedula');",
+                      "    pm.expect(jsonData.cedula).to.equal('A1234567');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData.isActive).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{passport_passenger_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Pasaporte\",\n  \"cedula\": \"A1234567\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Extra Field Rejected - Passenger Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions unknown property\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message;",
+                      "    if (Array.isArray(message)) {",
+                      "        const hasExtraFieldError = message.some(msg =>",
+                      "            msg.toLowerCase().includes('property') ||",
+                      "            msg.toLowerCase().includes('should not exist')",
+                      "        );",
+                      "        pm.expect(hasExtraFieldError).to.be.true;",
+                      "    } else {",
+                      "        pm.expect(message.toLowerCase()).to.include('property');",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"extraField\": \"no-deberia-permitirse\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Category - Passenger Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions category\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasCategoryError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('category') ||",
+                      "        msg.toLowerCase().includes('must be one of')",
+                      "    );",
+                      "    pm.expect(hasCategoryError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Juan Pérez\",\n  \"category\": \"invalid-category\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Login – Invalid Credentials",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates invalid credentials\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesInvalid =",
+                      "        message.includes('credenciales') ||",
+                      "        message.includes('credentials') ||",
+                      "        message.includes('inválidas') ||",
+                      "        message.includes('invalid') ||",
+                      "        message.includes('incorrect');",
+                      "    pm.expect(indicatesInvalid).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"WrongPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Change Password – Wrong Current Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates wrong current password\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesWrong =",
+                      "        message.includes('contraseña actual') ||",
+                      "        message.includes('current password') ||",
+                      "        message.includes('incorrecta') ||",
+                      "        message.includes('incorrect') ||",
+                      "        message.includes('inválida');",
+                      "    pm.expect(indicatesWrong).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"WrongCurrentPass\",\n  \"newPassword\": \"NewPass1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "password"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Register – Duplicate Email",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "const basePassenger = {",
+                      "    email: \"pasajero-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"passenger_base_email\", basePassenger.email);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) { console.error(\"Error en pre-request:\", err); return; }",
+                      "    const status = response.code;",
+                      "    if (status === 201) { console.log(\"Base passenger created\"); }",
+                      "    else if (status === 409) { console.log(\"Base passenger already exists (unexpected)\"); }",
+                      "    else { console.log(\"Unexpected status:\", status, response.json()); }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{passenger_base_email}}\",\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Duplicado Email\",\n  \"cedula\": \"V12345678\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Register – Duplicate Phone",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "const basePassenger = {",
+                      "    email: \"pasajero-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"passenger_base_phone\", basePassenger.phone);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) { console.error(\"Error en pre-request:\", err); return; }",
+                      "    const status = response.code;",
+                      "    if (status === 201) { console.log(\"Base passenger created\"); }",
+                      "    else if (status === 409) { console.log(\"Base passenger already exists (unexpected)\"); }",
+                      "    else { console.log(\"Unexpected status:\", status, response.json()); }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate phone\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('teléfono') ||",
+                      "        message.includes('phone') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"pasajero-nuevo@email.com\",\n  \"phone\": \"{{passenger_base_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Duplicado Phone\",\n  \"cedula\": \"V12345678\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Passenger Register – Duplicate Cedula",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "",
+                      "const basePassenger = {",
+                      "    email: \"pasajero-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Pasajero Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"passenger_base_cedula\", basePassenger.cedula);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(basePassenger) }",
+                      "}, function (err, response) {",
+                      "    if (err) { console.error(\"Error en pre-request:\", err); return; }",
+                      "    const status = response.code;",
+                      "    if (status === 201) { console.log(\"Base passenger created\"); }",
+                      "    else if (status === 409) { console.log(\"Base passenger already exists (unexpected)\"); }",
+                      "    else { console.log(\"Unexpected status:\", status, response.json()); }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"pasajero-nuevo-cedula@email.com\",\n  \"phone\": \"04141234567\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Pasajero Duplicado Cedula\",\n  \"cedula\": \"{{passenger_base_cedula}}\",\n  \"category\": \"normal\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Passenger Profile – Duplicate Email",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const baseUser = {",
+                      "    email: \"duplicado@email.com\",",
+                      "    phone: \"04145551234\",",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Usuario Base\",",
+                      "    cedula: \"V87654321\",",
+                      "    category: \"normal\"",
+                      "};",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/passenger/register\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(baseUser) }",
+                      "}, function (err, response) {",
+                      "    if (err) { console.error(\"Error en pre-request:\", err); return; }",
+                      "    const status = response.code;",
+                      "    if (status === 201) { console.log(\"Base user created\"); }",
+                      "    else if (status === 409) { console.log(\"Base user already exists (expected if re-run)\"); }",
+                      "    else { console.log(\"Unexpected status:\", status, response.json()); }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{auth_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"duplicado@email.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/passenger/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "passenger", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Role - Admin Create",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions role\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasRoleError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('role') ||",
+                      "        msg.toLowerCase().includes('must be one of')",
+                      "    );",
+                      "    pm.expect(hasRoleError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"role\": \"invalid-role\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Login – Invalid Credentials",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates invalid credentials\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesInvalid =",
+                      "        message.includes('credenciales') ||",
+                      "        message.includes('credentials') ||",
+                      "        message.includes('inválidas') ||",
+                      "        message.includes('invalid') ||",
+                      "        message.includes('incorrect');",
+                      "    pm.expect(indicatesInvalid).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234567\",\n  \"password\": \"WrongPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Change Password – Wrong Current Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates wrong current password\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesWrong =",
+                      "        message.includes('contraseña actual') ||",
+                      "        message.includes('current password') ||",
+                      "        message.includes('incorrecta') ||",
+                      "        message.includes('incorrect') ||",
+                      "        message.includes('inválida');",
+                      "    pm.expect(indicatesWrong).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"WrongCurrentPass\",\n  \"newPassword\": \"NewPass1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "password"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Admin Profile – Duplicate Email",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"admin_base_email\", baseAdmin.email);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) { console.error(\"Error en login:\", err); return; }",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "        return;",
+                      "    }",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err2, createResponse) {",
+                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
+                      "        const status = createResponse.code;",
+                      "        if (status === 201) { console.log(\"Base admin created\"); }",
+                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
+                      "        else { console.log(\"Unexpected status:\", status); }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_base_email}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Admin Profile – Duplicate Cedula",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"admin_base_cedula\", baseAdmin.cedula);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) { console.error(\"Error en login:\", err); return; }",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "        return;",
+                      "    }",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err2, createResponse) {",
+                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
+                      "        const status = createResponse.code;",
+                      "        if (status === 201) { console.log(\"Base admin created\"); }",
+                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
+                      "        else { console.log(\"Unexpected status:\", status); }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cedula\": \"{{admin_base_cedula}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "profile"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Create – Duplicate Email",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"admin_base_email\", baseAdmin.email);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) { console.error(\"Error en login:\", err); return; }",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "        return;",
+                      "    }",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err2, createResponse) {",
+                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
+                      "        const status = createResponse.code;",
+                      "        if (status === 201) { console.log(\"Base admin created\"); }",
+                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
+                      "        else { console.log(\"Unexpected status:\", status); }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('email') ||",
+                      "        message.includes('correo') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_base_email}}\",\n  \"phone\": \"04149876543\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Duplicado\",\n  \"cedula\": \"V87654321\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Create – Duplicate Phone",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"admin_base_phone\", baseAdmin.phone);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) { console.error(\"Error en login:\", err); return; }",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "        return;",
+                      "    }",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err2, createResponse) {",
+                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
+                      "        const status = createResponse.code;",
+                      "        if (status === 201) { console.log(\"Base admin created\"); }",
+                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
+                      "        else { console.log(\"Unexpected status:\", status); }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate phone\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('teléfono') ||",
+                      "        message.includes('phone') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{admin_base_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Duplicado Phone\",\n  \"email\": \"admin-nuevo@email.com\",\n  \"cedula\": \"V98765432\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin Create – Duplicate Cedula",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const baseUrl = pm.environment.get(\"baseUrl\");",
+                      "if (!baseUrl) {",
+                      "    console.error(\"baseUrl no está definida\");",
+                      "    return;",
+                      "}",
+                      "",
+                      "const uniqueSuffix = Date.now();",
+                      "const superAdminCredentials = {",
+                      "    phone: \"+584121234567\",",
+                      "    password: \"admin123\"",
+                      "};",
+                      "",
+                      "const baseAdmin = {",
+                      "    email: \"admin-duplicado-\" + uniqueSuffix + \"@email.com\",",
+                      "    phone: \"0414\" + uniqueSuffix.toString().slice(-7),",
+                      "    password: \"Pass1234\",",
+                      "    fullName: \"Admin Base \" + uniqueSuffix,",
+                      "    cedula: \"V\" + uniqueSuffix.toString().slice(-8),",
+                      "    role: \"driver\"",
+                      "};",
+                      "",
+                      "pm.collectionVariables.set(\"admin_base_cedula\", baseAdmin.cedula);",
+                      "",
+                      "pm.sendRequest({",
+                      "    url: baseUrl + \"/auth/admin/login\",",
+                      "    method: \"POST\",",
+                      "    header: { \"Content-Type\": \"application/json\" },",
+                      "    body: { mode: \"raw\", raw: JSON.stringify(superAdminCredentials) }",
+                      "}, function (err, loginResponse) {",
+                      "    if (err) { console.error(\"Error en login:\", err); return; }",
+                      "    if (loginResponse.code !== 200) {",
+                      "        console.error(\"No se pudo autenticar como super_admin\");",
+                      "        return;",
+                      "    }",
+                      "    const token = loginResponse.json().accessToken;",
+                      "    pm.collectionVariables.set(\"admin_token\", token);",
+                      "",
+                      "    pm.sendRequest({",
+                      "        url: baseUrl + \"/auth/admin/create\",",
+                      "        method: \"POST\",",
+                      "        header: {",
+                      "            \"Content-Type\": \"application/json\",",
+                      "            \"Authorization\": \"Bearer \" + token",
+                      "        },",
+                      "        body: { mode: \"raw\", raw: JSON.stringify(baseAdmin) }",
+                      "    }, function (err2, createResponse) {",
+                      "        if (err2) { console.error(\"Error al crear admin:\", err2); return; }",
+                      "        const status = createResponse.code;",
+                      "        if (status === 201) { console.log(\"Base admin created\"); }",
+                      "        else if (status === 409) { console.log(\"Base admin already exists (unexpected)\"); }",
+                      "        else { console.log(\"Unexpected status:\", status); }",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error indicates duplicate cedula\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message.toLowerCase();",
+                      "    const indicatesDuplicate =",
+                      "        message.includes('cédula') ||",
+                      "        message.includes('cedula') ||",
+                      "        message.includes('duplicado') ||",
+                      "        message.includes('duplicate') ||",
+                      "        message.includes('ya está registrado') ||",
+                      "        message.includes('already registered');",
+                      "    pm.expect(indicatesDuplicate).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04149876543\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Duplicado Cedula\",\n  \"email\": \"admin-nuevo-cedula@email.com\",\n  \"cedula\": \"{{admin_base_cedula}}\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Phone - Admin Create",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions phone\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasPhoneError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('teléfono') ||",
+                      "        msg.toLowerCase().includes('phone')",
+                      "    );",
+                      "    pm.expect(hasPhoneError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"123\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"admin@email.com\",\n  \"cedula\": \"V12345678\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Cedula - Admin Create",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions cedula or passport\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasCedulaError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('cédula') ||",
+                      "        msg.toLowerCase().includes('cedula') ||",
+                      "        msg.toLowerCase().includes('pasaporte') ||",
+                      "        msg.toLowerCase().includes('passport')",
+                      "    );",
+                      "    pm.expect(hasCedulaError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"admin@email.com\",\n  \"cedula\": \"123\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Invalid Email - Admin Create",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response has validation error messages\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData.message).to.be.an('array');",
+                      "    pm.expect(jsonData.message.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions email\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const hasEmailError = jsonData.message.some(msg =>",
+                      "        msg.toLowerCase().includes('email') ||",
+                      "        msg.toLowerCase().includes('correo')",
+                      "    );",
+                      "    pm.expect(hasEmailError).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"no-es-email\",\n  \"cedula\": \"V12345678\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Valid Passport - Admin Create",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const uniqueSuffix = Date.now();",
+                      "pm.collectionVariables.set(\"passport_admin_phone\", \"0426\" + uniqueSuffix.toString().slice(-7));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Response includes cedula with passport value\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('cedula');",
+                      "    pm.expect(jsonData.cedula).to.equal('B7654321');",
+                      "    pm.expect(jsonData).to.have.property('isActive');",
+                      "    pm.expect(jsonData.isActive).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{passport_admin_phone}}\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Pasaporte\",\n  \"email\": \"admin-passport@email.com\",\n  \"cedula\": \"B7654321\",\n  \"role\": \"driver\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Extra Field Rejected - Admin Create",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Response is JSON\", function () {",
+                      "    pm.response.to.be.json;",
+                      "});",
+                      "",
+                      "pm.test(\"Error mentions unknown property\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    const message = jsonData.message;",
+                      "    if (Array.isArray(message)) {",
+                      "        const hasExtraFieldError = message.some(msg =>",
+                      "            msg.toLowerCase().includes('property') ||",
+                      "            msg.toLowerCase().includes('should not exist')",
+                      "        );",
+                      "        pm.expect(hasExtraFieldError).to.be.true;",
+                      "    } else {",
+                      "        pm.expect(message.toLowerCase()).to.include('property');",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"04141234560\",\n  \"password\": \"Pass1234\",\n  \"fullName\": \"Admin Test\",\n  \"email\": \"admin@email.com\",\n  \"cedula\": \"V12345678\",\n  \"role\": \"driver\",\n  \"extraField\": \"no-deberia-permitirse\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "create"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "temp_admin_token",
+      "value": ""
+    },
+    {
+      "key": "auth_passenger_phone",
+      "value": ""
+    },
+    {
+      "key": "auth_passenger_password",
+      "value": ""
+    },
+    {
+      "key": "auth_passenger_new_password",
+      "value": ""
+    },
+    {
+      "key": "auth_passenger_email",
+      "value": ""
+    },
+    {
+      "key": "auth_passenger_cedula",
+      "value": ""
+    },
+    {
+      "key": "temp_admin_phone",
+      "value": ""
+    },
+    {
+      "key": "temp_admin_password",
+      "value": ""
+    },
+    {
+      "key": "passport_passenger_phone",
+      "value": ""
+    },
+    {
+      "key": "passport_admin_phone",
+      "value": ""
+    },
+    {
+      "key": "passenger_base_email",
+      "value": ""
+    },
+    {
+      "key": "passenger_base_phone",
+      "value": ""
+    },
+    {
+      "key": "passenger_base_cedula",
+      "value": ""
+    },
+    {
+      "key": "admin_base_email",
+      "value": ""
+    },
+    {
+      "key": "admin_base_phone",
+      "value": ""
+    },
+    {
+      "key": "admin_base_cedula",
+      "value": ""
+    }
+  ]
+}
