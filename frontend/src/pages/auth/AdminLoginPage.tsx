@@ -1,3 +1,17 @@
+// src/pages/auth/AdminLoginPage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminLoginPage — Página de inicio de sesión para administradores
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza el formulario LoginForm configurado para admins.
+ * Redirige a /dashboard tras un login exitoso.
+ *
+ * Capa: page
+ * Dependencias: useLogin(admin), LoginForm, react-router-dom
+ *
+ * @module AdminLoginPage
+ */
 import { useLogin } from "../../modules/auth/hooks/useLogin";
 import LoginForm from "../../modules/auth/components/LoginForm";
 import { useNavigate, Link } from "react-router-dom";

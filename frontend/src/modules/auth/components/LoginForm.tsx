@@ -1,3 +1,19 @@
+// src/modules/auth/components/LoginForm.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * LoginForm — Formulario de inicio de sesión
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza campos de teléfono y contraseña con validación Zod
+ * mediante React Hook Form. Muestra errores de validación en
+ * tiempo real y el error del servidor.
+ *
+ * Capa: UI (componente de formulario)
+ * Dependencias: react-hook-form, @hookform/resolvers, validation
+ * Props: onSubmit, isLoading, error
+ *
+ * @module LoginForm
+ */
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '../utils/validation';

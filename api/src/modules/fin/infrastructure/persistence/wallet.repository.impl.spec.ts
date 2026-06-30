@@ -1,3 +1,4 @@
+// src/modules/fin/infrastructure/persistence/wallet.repository.impl.spec.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * WalletRepositoryImpl — Test Unitario

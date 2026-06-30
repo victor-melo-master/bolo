@@ -1,4 +1,19 @@
 // src/shared/guards/ProtectedRoute.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * ProtectedRoute — Guardia de rutas protegidas
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Verifica la existencia del token y opcionalmente exige un rol
+ * específico (super_admin, association_admin, driver). Redirige
+ * a "/" si no hay sesión o a "/unauthorized" si el rol no coincide.
+ *
+ * Capa: guard (route protection)
+ * Dependencias: react-router-dom, authStore
+ * Props: requiredRole?: AdminRole
+ *
+ * @module ProtectedRoute
+ */
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 

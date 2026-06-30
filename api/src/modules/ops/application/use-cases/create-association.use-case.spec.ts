@@ -1,3 +1,4 @@
+// src/modules/ops/application/use-cases/create-association.use-case.spec.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * CreateAssociationUseCase — Test Unitario

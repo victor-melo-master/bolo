@@ -1,4 +1,19 @@
 // src/pages/dashboard/DashboardPage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * DashboardPage — Panel principal post-autenticación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Muestra los datos del usuario autenticado (nombre, teléfono,
+ * rol/categoría) y enlaces de navegación a editar perfil, cambiar
+ * contraseña y crear admin (solo super_admin). Incluye botón de
+ * cerrar sesión.
+ *
+ * Capa: page
+ * Dependencias: authStore, react-router-dom, auth type guards
+ *
+ * @module DashboardPage
+ */
 import { useAuthStore } from '../../shared/store/authStore';
 import { useNavigate, Link } from 'react-router-dom';
 import { isAdminProfile, isPassengerProfile } from '../../modules/auth/types';

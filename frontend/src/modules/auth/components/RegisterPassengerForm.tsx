@@ -1,4 +1,19 @@
 // src/modules/auth/components/RegisterPassengerForm.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * RegisterPassengerForm — Formulario de registro de pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza campos para registro completo (nombre, teléfono,
+ * contraseña con toggle, email, cédula, categoría). Valida con
+ * Zod y deshabilita el botón mientras no sea válido.
+ *
+ * Capa: UI (componente de formulario)
+ * Dependencias: react-hook-form, zod, EyeIcon
+ * Props: onSubmit, isLoading, error
+ *
+ * @module RegisterPassengerForm
+ */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

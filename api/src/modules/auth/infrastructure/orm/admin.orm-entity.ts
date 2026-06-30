@@ -1,13 +1,22 @@
-// auth/infrastructure/orm/admin.orm-entity.ts
+// src/modules/auth/infrastructure/orm/admin.orm-entity.ts — Ruta relativa desde src/
 /**
- * Mapeo ORM de la tabla `auth.admins`.
- * Contraparte de infraestructura de la entidad de dominio Admin.
+ * ═══════════════════════════════════════════════════════════════
+ * AdminOrmEntity — Entidad TypeORM para tabla auth.admins
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Mapeo ORM de la tabla `auth.admins`. Contraparte de
+ * infraestructura de la entidad de dominio Admin.
  *
  * Campos adicionales respecto a passengers: role, qr_code, qr_key,
  * qr_version, association_id.
  *
  * Esquema: auth
  * Tabla: admins
+ *
+ * Capa: Infraestructura (auth/orm)
+ *
+ * @see Admin
+ * @see AdminRepositoryImpl
  */
 
 import {

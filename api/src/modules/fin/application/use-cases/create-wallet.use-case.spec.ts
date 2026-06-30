@@ -1,3 +1,4 @@
+// src/modules/fin/application/use-cases/create-wallet.use-case.spec.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * CreateWalletUseCase — Test Unitario

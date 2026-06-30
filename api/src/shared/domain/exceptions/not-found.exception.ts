@@ -9,6 +9,8 @@
  * global la traduce a HTTP 404.
  *
  * Capa: Dominio (shared) — Excepción
+ *
+ * @module NotFoundException
  */
 
 // ─── Excepción de dominio: Recurso no encontrado ───

@@ -1,7 +1,11 @@
-// auth/infrastructure/orm/session.orm-entity.ts
+// src/modules/auth/infrastructure/orm/session.orm-entity.ts — Ruta relativa desde src/
 /**
- * Mapeo ORM de la tabla `auth.sessions`.
- * Contraparte de infraestructura de la entidad de dominio Session.
+ * ═══════════════════════════════════════════════════════════════
+ * SessionOrmEntity — Entidad TypeORM para tabla auth.sessions
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Mapeo ORM de la tabla `auth.sessions`. Contraparte de
+ * infraestructura de la entidad de dominio Session.
  *
  * Almacena las sesiones JWT activas por usuario y tipo de cliente.
  *
@@ -10,6 +14,11 @@
  *
  * Esquema: auth
  * Tabla: sessions
+ *
+ * Capa: Infraestructura (auth/orm)
+ *
+ * @see Session
+ * @see SessionRepositoryImpl
  */
 
 import {

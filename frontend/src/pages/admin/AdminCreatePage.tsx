@@ -1,4 +1,18 @@
 // src/pages/admin/AdminCreatePage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdminCreatePage — Página de creación de administradores
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza el formulario CreateAdminForm usando el hook
+ * useCreateAdmin. Solo accesible para usuarios con rol
+ * super_admin (protegido por ProtectedRoute).
+ *
+ * Capa: page
+ * Dependencias: useCreateAdmin, CreateAdminForm, router
+ *
+ * @module AdminCreatePage
+ */
 import { useCreateAdmin } from '../../modules/auth/hooks/useCreateAdmin';
 import CreateAdminForm from '../../modules/auth/components/CreateAdminForm';
 import { Link } from 'react-router-dom';

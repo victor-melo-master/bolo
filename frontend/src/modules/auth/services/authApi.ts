@@ -1,3 +1,18 @@
+// src/modules/auth/services/authApi.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * authApi — Llamadas a la API de autenticación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Agrupa todas las operaciones del módulo auth (login, registro,
+ * perfil, cambio de contraseña, eliminación de cuenta) separadas
+ * por rol: pasajero (/auth/passenger) y admin (/auth/admin).
+ *
+ * Capa: service (API calls)
+ * Dependencias: apiClient, auth types
+ *
+ * @module authApi
+ */
 import { apiClient } from '../../../api/client';
 import type {
   LoginRequest,

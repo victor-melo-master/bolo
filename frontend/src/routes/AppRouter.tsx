@@ -1,3 +1,18 @@
+// src/routes/AppRouter.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AppRouter — Enrutador principal de la aplicación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Define todas las rutas públicas y protegidas usando
+ * createBrowserRouter. Las rutas protegidas se envuelven con
+ * <ProtectedRoute> y admiten restricción por rol (super_admin).
+ *
+ * Capa: routing
+ * Dependencias: react-router-dom, ProtectedRoute, page components
+ *
+ * @module AppRouter
+ */
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ProtectedRoute } from '../shared/guards/ProtectedRoute';
 import HomePage from '../pages/HomePage';

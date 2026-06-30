@@ -1,3 +1,17 @@
+// src/pages/auth/PassengerLoginPage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerLoginPage — Página de inicio de sesión para pasajeros
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza el formulario LoginForm configurado para pasajeros.
+ * Redirige a /dashboard tras un login exitoso.
+ *
+ * Capa: page
+ * Dependencias: useLogin(passenger), LoginForm, react-router-dom
+ *
+ * @module PassengerLoginPage
+ */
 import { useLogin } from "../../modules/auth/hooks/useLogin";
 import LoginForm from "../../modules/auth/components/LoginForm";
 import { useNavigate, Link } from "react-router-dom";

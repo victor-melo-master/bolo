@@ -1,13 +1,22 @@
-// auth/infrastructure/orm/passenger.orm-entity.ts
+// src/modules/auth/infrastructure/orm/passenger.orm-entity.ts — Ruta relativa desde src/
 /**
- * Mapeo ORM de la tabla `auth.passengers`.
- * Contraparte de infraestructura de la entidad de dominio Passenger.
+ * ═══════════════════════════════════════════════════════════════
+ * PassengerOrmEntity — Entidad TypeORM para tabla auth.passengers
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Mapeo ORM de la tabla `auth.passengers`. Contraparte de
+ * infraestructura de la entidad de dominio Passenger.
  *
  * Campos principales: phone, email, password_hash, full_name, cedula,
  * jwt_key, category, student_doc_approved.
  *
  * Esquema: auth
  * Tabla: passengers
+ *
+ * Capa: Infraestructura (auth/orm)
+ *
+ * @see Passenger
+ * @see PassengerRepositoryImpl
  */
 
 import {

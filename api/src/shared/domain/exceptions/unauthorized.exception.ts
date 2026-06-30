@@ -10,6 +10,8 @@
  * un HTTP 401/403 según el contexto.
  *
  * Capa: Dominio (shared) — Excepción
+ *
+ * @module UnauthorizedException
  */
 
 // ─── Excepción de dominio: Acceso no autorizado ───

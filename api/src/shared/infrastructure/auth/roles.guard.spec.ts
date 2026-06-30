@@ -1,3 +1,4 @@
+// src/shared/infrastructure/auth/roles.guard.spec.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * RolesGuard — Test Unitario

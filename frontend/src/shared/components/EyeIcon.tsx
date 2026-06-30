@@ -1,3 +1,19 @@
+// src/shared/components/EyeIcon.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * EyeIcon — Icono SVG para mostrar/ocultar contraseña
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza un ojo abierto (open=true) o cerrado (open=false)
+ * usando paths SVG. Usado en formularios que requieren toggle
+ * de visibilidad de contraseña.
+ *
+ * Capa: UI (shared component)
+ * Dependencias: none (pure SVG)
+ * Props: open, size?
+ *
+ * @module EyeIcon
+ */
 interface Props {
   open: boolean;
   size?: number;

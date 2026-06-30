@@ -1,4 +1,19 @@
 // src/modules/auth/components/CreateAdminForm.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CreateAdminForm — Formulario de creación de administradores
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza campos para crear un nuevo admin (teléfono, nombre,
+ * contraseña, email, cédula, rol). Solo accesible para usuarios
+ * super_admin. Valida con Zod y muestra mensaje de éxito.
+ *
+ * Capa: UI (componente de formulario)
+ * Dependencias: react-hook-form, zod, EyeIcon
+ * Props: onSubmit, isLoading, error, success
+ *
+ * @module CreateAdminForm
+ */
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createAdminSchema } from "../utils/validation";

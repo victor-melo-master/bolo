@@ -1,4 +1,17 @@
 // src/modules/auth/hooks/useUpdateProfile.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * useUpdateProfile — Hook para actualizar el perfil
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Expone execute() que envía los cambios al endpoint correcto
+ * según el tipo de usuario y actualiza el perfil en authStore.
+ *
+ * Capa: hook (business logic)
+ * Dependencias: authApi, authStore, react
+ *
+ * @module useUpdateProfile
+ */
 import { useState } from "react";
 import {
   updatePassengerProfile,

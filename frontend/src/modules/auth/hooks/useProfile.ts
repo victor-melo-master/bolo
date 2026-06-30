@@ -1,4 +1,18 @@
 // src/modules/auth/hooks/useProfile.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * useProfile — Hook para obtener el perfil del usuario
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Al montarse, llama al endpoint de perfil correspondiente según
+ * el tipo de usuario (admin/passenger) y sincroniza los datos con
+ * authStore vía setUser.
+ *
+ * Capa: hook (data fetching)
+ * Dependencias: authApi, authStore, react
+ *
+ * @module useProfile
+ */
 import { useState, useEffect } from "react";
 import { getPassengerProfile, getAdminProfile } from "../services/authApi";
 import { useAuthStore } from "../../../shared/store/authStore";

@@ -1,4 +1,18 @@
 // src/modules/auth/hooks/useChangePassword.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * useChangePassword — Hook para cambiar la contraseña
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Expone execute() que llama al endpoint de cambio de contraseña
+ * según el tipo de usuario y gestiona estados de carga, error y
+ * éxito.
+ *
+ * Capa: hook (business logic)
+ * Dependencias: authApi, authStore, react
+ *
+ * @module useChangePassword
+ */
 import { useState } from "react";
 import {
   changePassengerPassword,

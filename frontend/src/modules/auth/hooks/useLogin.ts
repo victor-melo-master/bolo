@@ -1,4 +1,19 @@
 // src/modules/auth/hooks/useLogin.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * useLogin — Hook para inicio de sesión
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Recibe el tipo de usuario (passenger | admin) y expone execute()
+ * que llama al endpoint correspondiente, persiste el token y el
+ * perfil en authStore y maneja estados de carga/error.
+ *
+ * Capa: hook (business logic)
+ * Dependencias: authApi, authStore, react
+ * @param userType — "passenger" | "admin"
+ *
+ * @module useLogin
+ */
 import { useState } from "react";
 import { loginPassenger, loginAdmin } from "../services/authApi";
 import { useAuthStore } from "../../../shared/store/authStore";

@@ -1,4 +1,19 @@
 // src/api/client.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * apiClient — Cliente HTTP genérico con autenticación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Envuelve fetch con inyección automática del token JWT desde
+ * authStore, serialización JSON y manejo centralizado de errores.
+ * Lanza ApiError con status code para respuestas no-ok.
+ *
+ * Capa: service (API client)
+ * Dependencias: authStore, fetch API
+ * Exporta: apiClient<T>, ApiError
+ *
+ * @module apiClient
+ */
 import { useAuthStore } from "../shared/store/authStore";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";

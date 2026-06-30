@@ -1,4 +1,18 @@
 // src/pages/profile/ProfilePage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * ProfilePage — Página de edición de perfil
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Obtiene el perfil actual vía useProfile y muestra el formulario
+ * ProfileForm para editar los datos. Usa useUpdateProfile para
+ * enviar los cambios al backend.
+ *
+ * Capa: page
+ * Dependencias: useProfile, useUpdateProfile, ProfileForm, router
+ *
+ * @module ProfilePage
+ */
 import { useProfile } from '../../modules/auth/hooks/useProfile';
 import { useUpdateProfile } from '../../modules/auth/hooks/useUpdateProfile';
 import ProfileForm from '../../modules/auth/components/ProfileForm';

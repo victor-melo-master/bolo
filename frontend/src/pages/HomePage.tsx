@@ -1,3 +1,17 @@
+// src/pages/HomePage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * HomePage — Página de inicio / selección de rol
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Muestra el logotipo de BOLO y dos enlaces para que el usuario
+ * elija su tipo de acceso: pasajero o administrador.
+ *
+ * Capa: page
+ * Dependencias: react-router-dom (Link)
+ *
+ * @module HomePage
+ */
 import { Link } from "react-router-dom";
 
 export default function HomePage() {

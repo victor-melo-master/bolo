@@ -1,5 +1,5 @@
-import { GetPassengerProfileUseCase } from './../application/use-cases/get-passenger-profile.use-case';
 // src/modules/auth/infrastructure/auth.module.ts — Ruta relativa desde src/
+import { GetPassengerProfileUseCase } from './../application/use-cases/get-passenger-profile.use-case';
 /**
  * ═══════════════════════════════════════════════════════════════
  * AuthModule — Módulo de Infraestructura de Autenticación

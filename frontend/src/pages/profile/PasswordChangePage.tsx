@@ -1,4 +1,17 @@
 // src/pages/profile/PasswordChangePage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PasswordChangePage — Página de cambio de contraseña
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza el formulario PasswordChangeForm usando el hook
+ * useChangePassword para gestionar la lógica de negocio.
+ *
+ * Capa: page
+ * Dependencias: useChangePassword, PasswordChangeForm, router
+ *
+ * @module PasswordChangePage
+ */
 import { useChangePassword } from '../../modules/auth/hooks/useChangePassword';
 import PasswordChangeForm from '../../modules/auth/components/PasswordChangeForm';
 import { Link } from 'react-router-dom';

@@ -1,3 +1,18 @@
+// src/modules/auth/types/index.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * auth types — Tipos y guards del módulo de autenticación
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Define las interfaces PassengerProfile, AdminProfile y los tipos
+ * para login, registro, actualización de perfil y cambio de
+ * contraseña. Incluye type guards isAdminProfile / isPassengerProfile.
+ *
+ * Capa: types
+ * Dependencias: none
+ *
+ * @module authTypes
+ */
 // ── Usuario base (respuesta de login / perfil) ──
 export interface PassengerProfile {
   id: string;

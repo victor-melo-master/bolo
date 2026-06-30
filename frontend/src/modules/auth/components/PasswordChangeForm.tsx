@@ -1,4 +1,19 @@
 // src/modules/auth/components/PasswordChangeForm.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * PasswordChangeForm — Formulario de cambio de contraseña
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza tres campos (actual, nueva, confirmación) con toggle
+ * de visibilidad individual. Valida con Zod incluyendo la
+ * confirmación de coincidencia. Muestra mensaje de éxito.
+ *
+ * Capa: UI (componente de formulario)
+ * Dependencias: react-hook-form, zod, EyeIcon
+ * Props: onSubmit, isLoading, error, success
+ *
+ * @module PasswordChangeForm
+ */
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

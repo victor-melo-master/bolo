@@ -1,3 +1,4 @@
+// src/modules/ops/application/dto/create-association.dto.spec.ts — Ruta relativa desde src/
 /**
  * ═══════════════════════════════════════════════════════════════
  * CreateAssociationDto — Test Unitario

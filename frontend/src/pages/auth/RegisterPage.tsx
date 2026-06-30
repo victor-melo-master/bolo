@@ -1,4 +1,17 @@
 // src/pages/auth/RegisterPage.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * RegisterPage — Página de registro de pasajero
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Renderiza el formulario RegisterPassengerForm. Tras un registro
+ * exitoso, inicia sesión automáticamente y redirige a /dashboard.
+ *
+ * Capa: page
+ * Dependencias: useRegisterPassenger, RegisterPassengerForm, router
+ *
+ * @module RegisterPage
+ */
 import { useRegisterPassenger } from '../../modules/auth/hooks/useRegisterPassenger';
 import RegisterPassengerForm from '../../modules/auth/components/RegisterPassengerForm';
 import { useNavigate, Link } from 'react-router-dom';

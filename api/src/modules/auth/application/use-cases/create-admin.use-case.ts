@@ -17,6 +17,8 @@
  *   - WalletServicePort: creación de billetera (opcional)
  *
  * Capa: Aplicación (auth)
+ *
+ * @module CreateAdminUseCase
  */
 
 import { Injectable, Inject, Optional } from '@nestjs/common';

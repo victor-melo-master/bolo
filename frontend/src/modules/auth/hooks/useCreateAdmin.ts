@@ -1,4 +1,18 @@
 // src/modules/auth/hooks/useCreateAdmin.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * useCreateAdmin — Hook para crear administradores
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Expone execute() que envía los datos de creación de un admin
+ * (solo super_admin puede usar esto) y gestiona estados de
+ * carga, error y éxito.
+ *
+ * Capa: hook (business logic)
+ * Dependencias: authApi, react
+ *
+ * @module useCreateAdmin
+ */
 import { useState } from "react";
 import { createAdmin } from "../services/authApi";
 import type { CreateAdminRequest } from "../types";

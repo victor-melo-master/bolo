@@ -1,4 +1,19 @@
 // src/modules/auth/utils/validation.ts
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * validation — Esquemas Zod para validación de formularios
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Define esquemas Zod con saneamiento de teléfono venezolano y
+ * cédula/pasaporte. Exporta los esquemas usados por React Hook Form
+ * (login, registro, perfil, cambio de contraseña, creación admin)
+ * y los tipos inferidos correspondientes.
+ *
+ * Capa: validation
+ * Dependencias: zod
+ *
+ * @module validation
+ */
 import { z } from 'zod';
 
 const venezuelanPhoneRegex = /^(\+58)?0?(412|414|416|424|426|422)\d{7}$/;
