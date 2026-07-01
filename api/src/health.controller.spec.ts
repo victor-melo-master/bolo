@@ -12,40 +12,51 @@
  */
 
 // ─── Importaciones del proyecto y de NestJS Terminus ───
+// src/health.controller.spec.ts
+// src/health.controller.spec.ts
+
+// src/health.controller.spec.ts
+
 import { HealthController } from './health.controller';
-import { HealthCheckService } from '@nestjs/terminus';
+import {
+  HealthCheckResult,
+  HealthCheckService,
+  HealthIndicatorResult,
+  HealthIndicatorStatus,
+  TypeOrmHealthIndicator,
+} from '@nestjs/terminus';
 
-// describe: agrupa tests relacionados con HealthController
 describe('HealthController', () => {
-  let controller: HealthController; // Instancia del controlador bajo prueba
-  let healthCheckService: jest.Mocked<HealthCheckService>; // Mock tipado del servicio externo de Terminus
+  let controller: HealthController;
+  let healthCheckService: jest.Mocked<HealthCheckService>;
 
-  // beforeEach: se ejecuta antes de cada test para tener un mock fresco
   beforeEach(() => {
-    // Se mockea manualmente HealthCheckService en lugar de usar Test.createTestingModule
-    // porque queremos control total sobre el comportamiento del mock y evitar la inicialización
-    // completa del módulo de Terminus (que requiere dependencias adicionales)
     healthCheckService = {
-      check: jest.fn(), // jest.fn() crea una función mockeada; mockResolvedValue controla su retorno
-    } as any; // Cast a any para evitar errores de tipado por propiedades no implementadas del mock
+      check: jest.fn(),
+    } as any;
 
-    // Inyección manual del mock en el controlador (no usa el contenedor DI de NestJS)
-    controller = new HealthController(healthCheckService);
+    const dbIndicator = {} as TypeOrmHealthIndicator; // no lo usamos directamente
+    controller = new HealthController(healthCheckService, dbIndicator);
   });
 
-  // it: caso de prueba individual — verifica que el healthcheck delegue correctamente en Terminus
-  it('should return health check result', async () => {
-    // mockResult simula la respuesta que Terminus devolvería en un escenario normal
-    const mockResult = { status: 'ok', details: {} };
-    // mockResolvedValue: hace que check() retorne una Promise resuelta con el mockResult
-    healthCheckService.check.mockResolvedValue(mockResult);
+  it('should delegate to health.check with an array and return its result', async () => {
+    const mockResult = {
+      status: 'ok',
+      details: { database: { status: 'up' } },
+    };
+    healthCheckService.check.mockResolvedValue(
+      mockResult as HealthCheckResult<
+        HealthIndicatorResult<
+          string,
+          HealthIndicatorStatus,
+          Record<string, any>
+        >
+      >,
+    );
 
-    // Ejecuta el método check() del controlador (que internamente llama a health.check([]))
     const result = await controller.check();
 
-    // Assert 1: el valor retornado por el controlador debe ser exactamente el mock proporcionado
+    expect(healthCheckService.check).toHaveBeenCalledWith(expect.any(Array));
     expect(result).toEqual(mockResult);
-    // Assert 2: verifica que health.check() fue invocado con un array vacío (sin indicadores registrados)
-    expect(healthCheckService.check).toHaveBeenCalledWith([]);
   });
 });

@@ -9,10 +9,13 @@
  *
  * @module test/change-admin-password.use-case.spec
  */
+// auth/application/use-cases/change-admin-password.use-case.spec.ts
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { ChangeAdminPasswordUseCase } from './change-admin-password.use-case';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
+import { SESSION_REPOSITORY_PORT } from '../../domain/interfaces'; // <-- añadido
 import { CryptoService } from '../../../../shared/application/services/crypto.service';
 import { Admin } from '../../domain/entities/admin.entity';
 
@@ -20,6 +23,7 @@ describe('ChangeAdminPasswordUseCase', () => {
   let useCase: ChangeAdminPasswordUseCase;
   let adminRepo: any;
   let cryptoService: any;
+  let sessionRepo: any; // <-- añadido
 
   const mockAdmin = new Admin(
     'admin-id',
@@ -49,12 +53,16 @@ describe('ChangeAdminPasswordUseCase', () => {
       hash: jest.fn(),
       compare: jest.fn(),
     };
+    sessionRepo = {
+      deactivateAllForUser: jest.fn().mockResolvedValue(undefined), // <-- añadido
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChangeAdminPasswordUseCase,
         { provide: ADMIN_REPOSITORY_PORT, useValue: adminRepo },
         { provide: CryptoService, useValue: cryptoService },
+        { provide: SESSION_REPOSITORY_PORT, useValue: sessionRepo }, // <-- añadido
       ],
     }).compile();
 
@@ -71,6 +79,7 @@ describe('ChangeAdminPasswordUseCase', () => {
     await useCase.execute('admin-id', {
       currentPassword: 'OldPass1',
       newPassword: 'NewPass2',
+      newPasswordConfirmation: 'NewPass2',
     });
 
     expect(adminRepo.findById).toHaveBeenCalledWith('admin-id');
@@ -82,6 +91,11 @@ describe('ChangeAdminPasswordUseCase', () => {
     expect(adminRepo.save).toHaveBeenCalledWith(
       expect.objectContaining({ passwordHash: 'new_hashed' }),
     );
+    // Verifica que se invaliden sesiones activas del admin
+    expect(sessionRepo.deactivateAllForUser).toHaveBeenCalledWith(
+      'admin-id',
+      'admin',
+    );
   });
 
   it('should throw UnauthorizedException if current password is wrong', async () => {
@@ -92,6 +106,7 @@ describe('ChangeAdminPasswordUseCase', () => {
       useCase.execute('admin-id', {
         currentPassword: 'WrongPass',
         newPassword: 'NewPass2',
+        newPasswordConfirmation: 'NewPass2',
       }),
     ).rejects.toThrow(UnauthorizedException);
 
@@ -105,6 +120,7 @@ describe('ChangeAdminPasswordUseCase', () => {
       useCase.execute('unknown-id', {
         currentPassword: 'OldPass1',
         newPassword: 'NewPass2',
+        newPasswordConfirmation: 'NewPass2',
       }),
     ).rejects.toThrow(NotFoundException);
 

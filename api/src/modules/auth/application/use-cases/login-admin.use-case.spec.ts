@@ -9,6 +9,8 @@
  *
  * @module test/login-admin.use-case.spec
  */
+// auth/application/use-cases/login-admin.use-case.spec.ts
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { LoginAdminUseCase } from './login-admin.use-case';
@@ -27,19 +29,19 @@ describe('LoginAdminUseCase', () => {
 
   const mockAdmin = new Admin(
     'admin-id',
-    '04141234501',
-    null, // email
+    '04141234567',
+    null,
     'hashed_pass',
     'Admin Uno',
-    null, // cedula
+    null,
     'super_admin',
-    null, // qrCode
-    null, // qrKey
-    1, // qrVersion
-    null, // associationId
-    true, // isActive
-    null, // deletedAt
-    null, // lastLoginAt
+    null,
+    null,
+    1,
+    null,
+    true,
+    null,
+    null,
     new Date(),
     new Date(),
   );
@@ -47,9 +49,11 @@ describe('LoginAdminUseCase', () => {
   beforeEach(async () => {
     adminRepo = {
       findByPhone: jest.fn(),
+      updateLastLogin: jest.fn(), // ← añadido aquí
     };
     sessionRepo = {
       save: jest.fn(),
+      deactivateAllForUser: jest.fn(),
     };
     cryptoService = {
       compare: jest.fn(),
@@ -76,9 +80,9 @@ describe('LoginAdminUseCase', () => {
     cryptoService.compare.mockResolvedValue(true);
     jwtService.sign.mockReturnValue('mocked-token');
 
-    const result = await useCase.execute('04141234501', 'Test1234');
+    const result = await useCase.execute('04141234567', 'Test1234');
 
-    expect(adminRepo.findByPhone).toHaveBeenCalledWith('04141234501');
+    expect(adminRepo.findByPhone).toHaveBeenCalledWith('04141234567');
     expect(cryptoService.compare).toHaveBeenCalledWith(
       'Test1234',
       'hashed_pass',
@@ -86,7 +90,7 @@ describe('LoginAdminUseCase', () => {
     expect(sessionRepo.save).toHaveBeenCalled();
     expect(jwtService.sign).toHaveBeenCalled();
     expect(result.accessToken).toBe('mocked-token');
-    expect(result.user.role).toBe('super_admin');
+    expect(result.user.id).toBe('admin-id');
   });
 
   it('should throw if admin not found', async () => {
@@ -99,7 +103,7 @@ describe('LoginAdminUseCase', () => {
   it('should throw if password is wrong', async () => {
     adminRepo.findByPhone.mockResolvedValue(mockAdmin);
     cryptoService.compare.mockResolvedValue(false);
-    await expect(useCase.execute('04141234501', 'wrongpass')).rejects.toThrow(
+    await expect(useCase.execute('04141234567', 'wrongpass')).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
@@ -107,7 +111,7 @@ describe('LoginAdminUseCase', () => {
   it('should throw if admin is inactive', async () => {
     const inactiveAdmin = { ...mockAdmin, isActive: false };
     adminRepo.findByPhone.mockResolvedValue(inactiveAdmin);
-    await expect(useCase.execute('04141234501', 'pass')).rejects.toThrow(
+    await expect(useCase.execute('04141234567', 'pass')).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
@@ -117,7 +121,7 @@ describe('LoginAdminUseCase', () => {
     cryptoService.compare.mockResolvedValue(true);
     jwtService.sign.mockReturnValue('token');
 
-    await useCase.execute('04141234501', 'Test1234');
+    await useCase.execute('04141234567', 'Test1234');
 
     const sessionArg = sessionRepo.save.mock.calls[0][0];
     expect(sessionArg.userId).toBe('admin-id');

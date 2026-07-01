@@ -9,6 +9,8 @@
  *
  * @module test/login-passenger.use-case.spec
  */
+// auth/application/use-cases/login-passenger.use-case.spec.ts
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { LoginPassengerUseCase } from './login-passenger.use-case';
@@ -28,11 +30,11 @@ describe('LoginPassengerUseCase', () => {
   const mockPassenger = new Passenger(
     'passenger-id',
     '04141234500',
-    null, // email
+    null,
     'hashed_pass',
     'Pasajero Uno',
-    null, // cedula
-    null, // jwtKey
+    null,
+    null,
     'normal',
     false,
     true,
@@ -45,9 +47,11 @@ describe('LoginPassengerUseCase', () => {
   beforeEach(async () => {
     passengerRepo = {
       findByPhone: jest.fn(),
+      updateLastLogin: jest.fn(), // ← añadido aquí
     };
     sessionRepo = {
       save: jest.fn(),
+      deactivateAllForUser: jest.fn(),
     };
     cryptoService = {
       compare: jest.fn(),
@@ -117,7 +121,6 @@ describe('LoginPassengerUseCase', () => {
 
     await useCase.execute('04141234500', 'Test1234');
 
-    // Verificar que la sesión se guardó con los parámetros correctos
     const sessionArg = sessionRepo.save.mock.calls[0][0];
     expect(sessionArg.userId).toBe('passenger-id');
     expect(sessionArg.userType).toBe('passenger');

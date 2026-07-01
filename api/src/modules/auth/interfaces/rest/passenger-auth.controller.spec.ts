@@ -9,7 +9,10 @@
  *
  * @module test/passenger-auth.controller.spec
  */
+// auth/interfaces/rest/passenger-auth.controller.spec.ts
+
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { PassengerAuthController } from './passenger-auth.controller';
 import { LoginPassengerUseCase } from '../../application/use-cases/login-passenger.use-case';
 import { GetPassengerProfileUseCase } from '../../application/use-cases/get-passenger-profile.use-case';
@@ -18,6 +21,7 @@ import { DeletePassengerUseCase } from '../../application/use-cases/delete-passe
 import { ChangePassengerPasswordUseCase } from '../../application/use-cases/change-passenger-password.use-case';
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';
 import { CreatePassengerUseCase } from '../../application/use-cases/create-passanger.use-case';
+import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 
 describe('PassengerAuthController', () => {
   let controller: PassengerAuthController;
@@ -49,7 +53,12 @@ describe('PassengerAuthController', () => {
           useValue: changePasswordUseCase,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(ThrottlerGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<PassengerAuthController>(PassengerAuthController);
   });
@@ -146,6 +155,7 @@ describe('PassengerAuthController', () => {
       const dto: ChangePasswordDto = {
         currentPassword: 'OldPass1',
         newPassword: 'NewPass2',
+        newPasswordConfirmation: 'NewPass2',
       };
       changePasswordUseCase.execute.mockResolvedValue(undefined);
 

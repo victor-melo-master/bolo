@@ -9,7 +9,11 @@
  *
  * @module test/admin-auth.controller.spec
  */
+// auth/interfaces/rest/admin-auth.controller.spec.ts
+
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler'; // ← añadir
+import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard'; // ← añadir
 import { AdminAuthController } from './admin-auth.controller';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
 import { LoginAdminUseCase } from '../../application/use-cases/login-admin.use-case';
@@ -49,7 +53,12 @@ describe('AdminAuthController', () => {
           useValue: changePasswordUseCase,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(ThrottlerGuard)
+      .useValue({ canActivate: () => true }) // Mock del throttler
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true }) // Mock del JWT
+      .compile();
 
     controller = module.get<AdminAuthController>(AdminAuthController);
   });
@@ -146,6 +155,7 @@ describe('AdminAuthController', () => {
       const dto: ChangePasswordDto = {
         currentPassword: 'OldPass1',
         newPassword: 'NewPass2',
+        newPasswordConfirmation: 'NewPass2', // añadido para que coincida con el DTO real
       };
       changePasswordUseCase.execute.mockResolvedValue(undefined);
 

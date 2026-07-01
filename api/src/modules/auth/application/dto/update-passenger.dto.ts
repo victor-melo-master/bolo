@@ -12,6 +12,7 @@
  * @module UpdatePassengerDto
  */
 import { IsString, IsOptional, IsEmail, IsIn } from 'class-validator';
+import { IsCedulaOrPassport } from '../../../../shared/interfaces/decorators/is-cedula-or-passport.decorator';
 
 export class UpdatePassengerDto {
   @IsOptional()
@@ -26,7 +27,7 @@ export class UpdatePassengerDto {
   fullName?: string;
 
   @IsOptional()
-  @IsString()
+  @IsCedulaOrPassport()
   cedula?: string;
 
   @IsOptional()

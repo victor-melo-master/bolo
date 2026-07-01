@@ -21,7 +21,7 @@ import {
   IsEmail,
 } from 'class-validator';
 import { IsVenezuelanPhone } from '../../../../shared/interfaces/decorators/is-venezuelan-phone.decorator';
-import { IsCedulaOrPassport } from 'src/shared/interfaces/decorators/is-cedula-or-passport.decorator';
+import { IsCedulaOrPassport } from '../../../../shared/interfaces/decorators/is-cedula-or-passport.decorator';
 
 export class CreatePassengerDto {
   @IsVenezuelanPhone()

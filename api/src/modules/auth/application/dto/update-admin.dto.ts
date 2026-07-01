@@ -12,6 +12,7 @@
  * @module UpdateAdminDto
  */
 import { IsString, IsOptional, IsEmail } from 'class-validator';
+import { IsCedulaOrPassport } from '../../../../shared/interfaces/decorators/is-cedula-or-passport.decorator';
 
 export class UpdateAdminDto {
   @IsOptional()
@@ -26,6 +27,6 @@ export class UpdateAdminDto {
   fullName?: string;
 
   @IsOptional()
-  @IsString()
+  @IsCedulaOrPassport()
   cedula?: string;
 }
