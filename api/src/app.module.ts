@@ -43,6 +43,7 @@ import { AppService } from './app.service'; // Servicio raíz: lógica del endpo
 import { LoggingMiddleware } from './shared/interfaces/middleware/logging.middleware';
 import { HealthController } from './health.controller';
 import { TerminusModule } from '@nestjs/terminus';
+import { SharedModule } from './shared/infrastructure/shared.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { TerminusModule } from '@nestjs/terminus';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     // TypeOrmModule.forRoot usa la configuración compartida para conectar a PostgreSQL
     TypeOrmModule.forRoot(typeOrmConfig),
+    SharedModule,
     // AuthModule es el único módulo funcional implementado; los demás están comentados
     AuthModule,
     // FinModule, // Módulo financiero (billetera, tarifas, transacciones)

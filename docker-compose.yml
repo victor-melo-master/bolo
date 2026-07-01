@@ -228,9 +228,9 @@ services:
       - jwt_secret
       - qr_hmac_secret
 
-    #! Para pruebas rápidas, exponer puerto 3000 de lo contrario comentar o eliminar !#
-    ports:
-      - "127.0.0.1:3000:3000" # Exponer API para pruebas rápidas
+    # #! Para pruebas rápidas, exponer puerto 3000 de lo contrario comentar o eliminar !#
+    # ports:
+    #   - "127.0.0.1:3000:3000" # Exponer API para pruebas rápidas
 
     # Puerto NO expuesto al host: solo el middleware accede por api_net
     expose:
@@ -274,9 +274,7 @@ services:
     logging: *default-logging
 
     environment:
-      # VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
-      #! ANLAR EN PRODUCCION !#
-      VITE_API_URL:      http://localhost:3000
+      VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
       VITE_ENVIRONMENT:  development
 
     ports:

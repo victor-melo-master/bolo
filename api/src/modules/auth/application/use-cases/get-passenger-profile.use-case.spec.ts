@@ -48,7 +48,9 @@ describe('GetPassengerProfileUseCase', () => {
       ],
     }).compile();
 
-    useCase = module.get<GetPassengerProfileUseCase>(GetPassengerProfileUseCase);
+    useCase = module.get<GetPassengerProfileUseCase>(
+      GetPassengerProfileUseCase,
+    );
   });
 
   it('should return passenger profile when found', async () => {
@@ -72,6 +74,8 @@ describe('GetPassengerProfileUseCase', () => {
   it('should throw NotFoundException if passenger not found', async () => {
     passengerRepo.findById.mockResolvedValue(null);
 
-    await expect(useCase.execute('unknown-id')).rejects.toThrow(NotFoundException);
+    await expect(useCase.execute('unknown-id')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });
