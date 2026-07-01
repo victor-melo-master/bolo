@@ -51,10 +51,15 @@ export class UpdateAdminUseCase {
       }
     }
 
-    const updated = await this.adminRepo.save({
+    const updatedData = {
       ...admin,
-      ...dto,
-    });
+      fullName: dto.fullName !== undefined ? dto.fullName : admin.fullName,
+      email: dto.email !== undefined ? dto.email : admin.email,
+      cedula: dto.cedula !== undefined ? dto.cedula : admin.cedula,
+      // role no se actualiza por este endpoint
+    };
+
+    const updated = await this.adminRepo.save(updatedData);
 
     return {
       id: updated.id,

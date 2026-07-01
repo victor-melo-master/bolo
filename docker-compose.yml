@@ -180,8 +180,11 @@ services:
         condition: service_healthy
 
     healthcheck:
-      <<: *hc-defaults
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10               # ← más reintentos
+      start_period: 60s         # ← más tiempo de gracia
 
     deploy:
       resources:

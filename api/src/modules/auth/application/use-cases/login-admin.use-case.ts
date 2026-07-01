@@ -81,6 +81,7 @@ export class LoginAdminUseCase {
       role: admin.role,
       userType: 'admin',
       sessionId: session.id,
+      associationId: admin.associationId ?? null, // ← nuevo campo
     };
 
     const accessToken = this.jwtService.sign(payload, {

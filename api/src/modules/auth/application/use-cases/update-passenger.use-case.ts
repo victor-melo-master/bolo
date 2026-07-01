@@ -52,12 +52,18 @@ export class UpdatePassengerUseCase {
     }
 
     // Solo actualizar los campos enviados
-    const { category, ...restDto } = dto;
-    const updated = await this.passengerRepo.save({
-      ...passenger,
-      ...restDto,
-      ...(category && { category: category as PassengerCategory }),
-    });
+    const updatedData = {
+      ...passenger, // copia las propiedades originales
+      fullName: dto.fullName !== undefined ? dto.fullName : passenger.fullName,
+      email: dto.email !== undefined ? dto.email : passenger.email,
+      cedula: dto.cedula !== undefined ? dto.cedula : passenger.cedula,
+      category:
+        dto.category !== undefined
+          ? (dto.category as PassengerCategory)
+          : passenger.category,
+    };
+
+    const updated = await this.passengerRepo.save(updatedData);
 
     return {
       id: updated.id,

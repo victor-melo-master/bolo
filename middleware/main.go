@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis_rate/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -98,9 +99,10 @@ func generateUUID() string {
 // ---------- Estructura de claims personalizados ----------
 type CustomClaims struct {
 	jwt.RegisteredClaims
-	UserID    string `json:"sub"`
-	Role      string `json:"role"`
-	SessionID string `json:"sessionId"`
+	UserID        string `json:"sub"`
+	Role          string `json:"role"`
+	SessionID     string `json:"sessionId"`
+	AssociationID string `json:"associationId"` // ← nuevo
 }
 
 // ---------- Validación de JWT ----------
@@ -218,6 +220,21 @@ func initPostgreSQL() *pgxpool.Pool {
 	return nil
 }
 
+func rateLimitMiddleware(rdb *redis.Client) fiber.Handler {
+	limiter := redis_rate.NewLimiter(rdb)
+	return func(c *fiber.Ctx) error {
+		ctx := context.Background()
+		res, err := limiter.Allow(ctx, c.IP(), redis_rate.PerMinute(5))
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"message": "Error interno"})
+		}
+		if res.Remaining < 0 {
+			return c.Status(429).JSON(fiber.Map{"message": "Demasiadas peticiones"})
+		}
+		return c.Next()
+	}
+}
+
 // ---------- Punto de entrada ----------
 func main() {
 	// Inicializar servicios externos
@@ -268,6 +285,8 @@ func main() {
 		"/api/auth/admin/login",
 		"/api/health",
 	}
+
+	app.Use("/api/*", rateLimitMiddleware(rdb))
 
 	// ---- Middleware de autenticación/autorización JWT ----
 	app.Use("/api/*", func(c *fiber.Ctx) error {
