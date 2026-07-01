@@ -25,6 +25,8 @@ import { PASSENGER_REPOSITORY_PORT } from '../../domain/interfaces/repositories/
 import type { PassengerRepositoryPort } from '../../domain/interfaces/repositories/passenger.repository.port';
 import { CryptoService } from '../../../../shared/application/services/crypto.service';
 import { ChangePasswordDto } from '../dto/change-password.dto';
+import { SESSION_REPOSITORY_PORT } from '../../domain/interfaces';
+import type { SessionRepositoryPort } from '../../domain/interfaces/repositories/session.repository.port';
 
 @Injectable()
 export class ChangePassengerPasswordUseCase {
@@ -32,6 +34,8 @@ export class ChangePassengerPasswordUseCase {
     @Inject(PASSENGER_REPOSITORY_PORT)
     private readonly passengerRepo: PassengerRepositoryPort,
     private readonly cryptoService: CryptoService,
+    @Inject(SESSION_REPOSITORY_PORT)
+    private readonly sessionRepo: SessionRepositoryPort,
   ) {}
 
   async execute(passengerId: string, dto: ChangePasswordDto): Promise<void> {
@@ -57,5 +61,8 @@ export class ChangePassengerPasswordUseCase {
       ...passenger,
       passwordHash: newHash,
     });
+
+    // Invalidar todas las sesiones activas del pasajero
+    await this.sessionRepo.deactivateAllForUser(passengerId, 'passenger');
   }
 }

@@ -60,6 +60,8 @@ export class LoginPassengerUseCase {
       throw new InvalidCredentialsException('Usuario inactivo');
     }
 
+    await this.sessionRepo.deactivateAllForUser(passenger.id, 'passenger');
+
     // 4. Crear una nueva sesión (rota la clave JWT)
     const jwtKey = randomUUID();
     const session = Session.create({

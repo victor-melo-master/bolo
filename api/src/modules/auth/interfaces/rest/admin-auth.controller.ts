@@ -61,7 +61,7 @@ export class AdminAuthController {
   // Solo el endpoint 'create' (protegido para super_admin) puede crear admins.
 
   // Login con rate limiting (5 intentos por minuto)
-  @Throttle({ default: { limit: 100, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)

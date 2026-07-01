@@ -32,7 +32,7 @@ export function useLogin(userType: UserType) {
       const loginFn = userType === "passenger" ? loginPassenger : loginAdmin;
       const response = await loginFn(data);
       login(response.accessToken, response.user);
-      console.log("Token después de login:", useAuthStore.getState().token);
+      // console.log("Token después de login:", useAuthStore.getState().token);
       login(response.accessToken, response.user);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");

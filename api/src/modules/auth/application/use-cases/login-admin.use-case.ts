@@ -60,6 +60,9 @@ export class LoginAdminUseCase {
       throw new InvalidCredentialsException('Usuario inactivo');
     }
 
+    // Invalidar sesiones anteriores del mismo usuario y tipo
+    await this.sessionRepo.deactivateAllForUser(admin.id, 'admin');
+
     // 4. Crear una nueva sesión (rota la clave JWT)
     const jwtKey = randomUUID();
     const session = Session.create({

@@ -93,9 +93,12 @@ import { DeletePassengerUseCase } from '../application/use-cases/delete-passenge
 import { DeleteAdminUseCase } from '../application/use-cases/delete-admin.use-case';
 import { ChangePassengerPasswordUseCase } from '../application/use-cases/change-passenger-password.use-case';
 import { ChangeAdminPasswordUseCase } from '../application/use-cases/change-admin-password.use-case';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SessionCleanupService } from './services/session-cleanup.service';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       PassengerOrmEntity,
       AdminOrmEntity,
@@ -132,6 +135,8 @@ import { ChangeAdminPasswordUseCase } from '../application/use-cases/change-admi
 
     // Servicios compartidos
     CryptoService,
+    // Limpieza
+    SessionCleanupService,
 
     // Vinculación puerto → implementación
     { provide: PASSENGER_REPOSITORY_PORT, useClass: PassengerRepositoryImpl },

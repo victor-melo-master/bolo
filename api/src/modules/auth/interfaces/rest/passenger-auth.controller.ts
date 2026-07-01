@@ -71,7 +71,7 @@ export class PassengerAuthController {
     };
   }
 
-  @Throttle({ default: { limit: 100, ttl: 60000 } }) // 100 intentos por minuto (ajustado para testing)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)

@@ -27,5 +27,6 @@ export interface SessionRepositoryPort {
   ): Promise<Session | null>;
   deactivateAllForUser(userId: string, userType: string): Promise<void>;
   save(session: Session): Promise<Session>;
-  findById(id: string): Promise<Session | null>; // ← añadir esta línea
+  findById(id: string): Promise<Session | null>;
+  deactivateExpired(): Promise<void>;
 }

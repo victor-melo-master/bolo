@@ -46,9 +46,9 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: 'http://localhost:5173', // URL de tu frontend React/Vite
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // si usas cookies o autenticación con sesiones
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    credentials: true,
   });
 
   app.use(helmet());

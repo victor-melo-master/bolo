@@ -247,7 +247,7 @@ services:
 
     healthcheck:
       <<: *hc-defaults
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
 
     deploy:
       resources:

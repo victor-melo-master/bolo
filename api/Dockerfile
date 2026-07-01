@@ -43,10 +43,13 @@ RUN apk add --no-cache dumb-init && \
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
+# Copia el código compilado desde el stage build
 COPY --from=build /app/dist ./dist
 
 # Corre como usuario sin privilegios
 USER bolo:bolo
 
 EXPOSE 3000
-CMD ["dumb-init", "node", "--max-old-space-size=4096", "/app/node_modules/.bin/nest", "start", "--watch"]
+
+# Ejecuta el código compilado, NO nest start --watch
+CMD ["dumb-init", "node", "dist/main.js"]

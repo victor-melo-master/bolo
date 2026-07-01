@@ -17,6 +17,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { LessThan } from 'typeorm';
 import { Repository } from 'typeorm';
 import { SessionRepositoryPort } from '../../domain/interfaces/repositories/session.repository.port';
 import { Session } from '../../domain/entities/session.entity';
@@ -89,5 +90,12 @@ export class SessionRepositoryImpl implements SessionRepositoryPort {
   async findById(id: string): Promise<Session | null> {
     const orm = await this.ormRepo.findOne({ where: { id } });
     return orm ? this.toDomain(orm) : null;
+  }
+
+  async deactivateExpired(): Promise<void> {
+    await this.ormRepo.update(
+      { isActive: true, expiresAt: LessThan(new Date()) },
+      { isActive: false },
+    );
   }
 }

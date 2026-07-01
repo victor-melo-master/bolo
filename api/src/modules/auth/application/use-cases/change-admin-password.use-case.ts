@@ -26,6 +26,8 @@ import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admi
 import type { AdminRepositoryPort } from '../../domain/interfaces/repositories/admin.repository.port';
 import { CryptoService } from '../../../../shared/application/services/crypto.service';
 import { ChangePasswordDto } from '../dto/change-password.dto';
+import { SESSION_REPOSITORY_PORT } from '../../domain/interfaces';
+import type { SessionRepositoryPort } from '../../domain/interfaces/repositories/session.repository.port';
 
 @Injectable()
 export class ChangeAdminPasswordUseCase {
@@ -33,6 +35,8 @@ export class ChangeAdminPasswordUseCase {
     @Inject(ADMIN_REPOSITORY_PORT)
     private readonly adminRepo: AdminRepositoryPort,
     private readonly cryptoService: CryptoService,
+    @Inject(SESSION_REPOSITORY_PORT)
+    private readonly sessionRepo: SessionRepositoryPort,
   ) {}
 
   async execute(adminId: string, dto: ChangePasswordDto): Promise<void> {
@@ -58,5 +62,8 @@ export class ChangeAdminPasswordUseCase {
       ...admin,
       passwordHash: newHash,
     });
+
+    // Invalidar todas las sesiones activas del admin
+    await this.sessionRepo.deactivateAllForUser(adminId, 'admin');
   }
 }

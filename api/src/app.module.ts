@@ -41,9 +41,12 @@ import { typeOrmConfig } from './shared/infrastructure/database/typeorm.config';
 import { AppController } from './app.controller'; // Controlador raíz: responde en GET / con "Hello World!"
 import { AppService } from './app.service'; // Servicio raíz: lógica del endpoint de bienvenida
 import { LoggingMiddleware } from './shared/interfaces/middleware/logging.middleware';
+import { HealthController } from './health.controller';
+import { TerminusModule } from '@nestjs/terminus';
 
 @Module({
   imports: [
+    TerminusModule,
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -64,7 +67,7 @@ import { LoggingMiddleware } from './shared/interfaces/middleware/logging.middle
     // TripModule,    // Módulo de viajes (tracking GPS, pagos)
     // AuditModule,   // Módulo de auditoría (logs inmutables)
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {
