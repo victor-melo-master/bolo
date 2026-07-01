@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { SESSION_REPOSITORY_PORT } from '../../domain/interfaces';
 import type { SessionRepositoryPort } from '../../domain/interfaces/repositories/session.repository.port';
-import { SESSION_REPOSITORY_PORT } from '../../domain/interfaces/repositories/session.repository.port';
 
 @Injectable()
 export class SessionCleanupService {
@@ -10,8 +10,9 @@ export class SessionCleanupService {
     private readonly sessionRepo: SessionRepositoryPort,
   ) {}
 
-  @Cron('0 * * * *') // se ejecuta cada hora en el minuto 0
+  @Cron(CronExpression.EVERY_HOUR)
   async handleExpiredSessions() {
+    console.log('Ejecutando limpieza de sesiones expiradas...');
     await this.sessionRepo.deactivateExpired();
   }
 }

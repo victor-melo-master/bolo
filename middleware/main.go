@@ -110,8 +110,9 @@ type CustomClaims struct {
 // validateJWT decodifica el token, obtiene la clave de sesión (Redis/PostgreSQL)
 // y verifica la firma. Devuelve los claims si es válido.
 func validateJWT(tokenStr string) (CustomClaims, error) {
-	// 1. Decodificar sin verificar para obtener el sessionId
 	parser := jwt.NewParser()
+
+	// Decodificar sin verificar para extraer sessionId
 	unverifiedToken, _, err := parser.ParseUnverified(tokenStr, &CustomClaims{})
 	if err != nil {
 		return CustomClaims{}, fmt.Errorf("token inválido")
@@ -121,16 +122,20 @@ func validateJWT(tokenStr string) (CustomClaims, error) {
 		return CustomClaims{}, fmt.Errorf("token sin sessionId")
 	}
 
-	// 2. Obtener la clave de la sesión desde Redis (o PostgreSQL)
+	// Obtener la clave de sesión
 	jwtKey, err := getSessionKey(claims.SessionID)
 	if err != nil {
 		return CustomClaims{}, fmt.Errorf("sesión no encontrada o inactiva")
 	}
 
-	// 3. Verificar firma y expiración con la clave obtenida
-	verifiedToken, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(jwtKey), nil
-	})
+	// Verificar firma, expiración, issuer y audience
+	verifiedToken, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(jwtKey), nil
+		},
+		jwt.WithIssuer("bolo-api"),      // ← nuevo
+		jwt.WithAudience("bolo-client"), // ← nuevo
+	)
 	if err != nil {
 		return CustomClaims{}, fmt.Errorf("token inválido: %v", err)
 	}

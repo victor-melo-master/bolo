@@ -17,7 +17,7 @@
  */
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan } from 'typeorm';
+import { In, LessThan } from 'typeorm';
 import { Repository } from 'typeorm';
 import { SessionRepositoryPort } from '../../domain/interfaces/repositories/session.repository.port';
 import { Session } from '../../domain/entities/session.entity';
@@ -113,5 +113,34 @@ export class SessionRepositoryImpl implements SessionRepositoryPort {
       { isActive: true, expiresAt: LessThan(new Date()) },
       { isActive: false },
     );
+  }
+
+  async findActiveSessionsByUser(
+    userId: string,
+    userType: string,
+    clientType: string,
+  ): Promise<Session[]> {
+    const orms = await this.ormRepo.find({
+      where: {
+        userId,
+        userType: userType as any,
+        clientType: clientType as any,
+        isActive: true,
+      },
+      order: { createdAt: 'ASC' }, // las más antiguas primero
+    });
+    return orms.map((orm) => this.toDomain(orm));
+  }
+
+  async deactivateSessions(sessionIds: string[]): Promise<void> {
+    if (sessionIds.length === 0) return;
+
+    // 1. Desactivar en BD
+    await this.ormRepo.update({ id: In(sessionIds) }, { isActive: false });
+
+    // 2. Eliminar claves de Redis
+    const pipeline = this.redis.pipeline();
+    sessionIds.forEach((id) => pipeline.del(`session:${id}`));
+    await pipeline.exec();
   }
 }

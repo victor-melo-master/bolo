@@ -5,7 +5,8 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * Autentica a un pasajero por teléfono y contraseña,
- * verifica que esté activo, crea una sesión JWT y retorna
+ * verifica que esté activo, aplica límite de sesiones activas
+ * (1 para phone, 5 para web/tablet), crea una sesión JWT y retorna
  * el token de acceso junto con los datos básicos del usuario.
  *
  * Capa: Aplicación (auth)
@@ -57,10 +58,25 @@ export class LoginPassengerUseCase {
 
     // 3. Verificar que esté activo
     if (!passenger.isActive) {
-      throw new InvalidCredentialsException('Usuario inactivo');
+      throw new InvalidCredentialsException('Credenciales inválidas');
     }
 
-    await this.sessionRepo.deactivateAllForUser(passenger.id, 'passenger');
+    // Límite de sesiones activas por tipo de cliente (M12)
+    const maxSessions = clientType === 'phone' ? 1 : 5;
+    const activeSessions = await this.sessionRepo.findActiveSessionsByUser(
+      passenger.id,
+      'passenger',
+      clientType,
+    );
+
+    if (activeSessions.length >= maxSessions) {
+      const sessionsToRemove = activeSessions.slice(
+        0,
+        activeSessions.length - maxSessions + 1,
+      );
+      const idsToRemove = sessionsToRemove.map((s) => s.id);
+      await this.sessionRepo.deactivateSessions(idsToRemove);
+    }
 
     // 4. Crear una nueva sesión (rota la clave JWT)
     const jwtKey = randomUUID();
@@ -80,6 +96,9 @@ export class LoginPassengerUseCase {
       role: 'passenger',
       userType: 'passenger',
       sessionId: session.id,
+      iss: 'bolo-api',
+      aud: 'bolo-client',
+      typ: 'at+jwt', // RFC 9068
     };
 
     const accessToken = this.jwtService.sign(payload, {

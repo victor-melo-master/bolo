@@ -6,6 +6,7 @@
  *
  * Actualiza los datos editables de un administrador (email, fullName,
  * cedula). Lanza NotFoundException si el admin no existe.
+ * Previene mass assignment asignando explícitamente solo los campos permitidos.
  *
  * Capa: Aplicación (auth)
  * Dependencias:
@@ -51,6 +52,7 @@ export class UpdateAdminUseCase {
       }
     }
 
+    // Construir objeto solo con los campos editables (previene mass assignment, A07)
     const updatedData = {
       ...admin,
       fullName: dto.fullName !== undefined ? dto.fullName : admin.fullName,
