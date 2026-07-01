@@ -9,7 +9,6 @@
  *
  * @module test/passenger-auth.controller.spec
  */
-// auth/interfaces/rest/passenger-auth.controller.spec.ts
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -102,11 +101,16 @@ describe('PassengerAuthController', () => {
       };
       loginPassengerUseCase.execute.mockResolvedValue(mockResponse);
 
-      const result = await controller.login(dto);
+      const res = { setHeader: jest.fn() }; // ← objeto respuesta simulado
+      const result = await controller.login(dto, res);
 
       expect(loginPassengerUseCase.execute).toHaveBeenCalledWith(
         dto.phone,
         dto.password,
+      );
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Set-Cookie',
+        expect.any(String),
       );
       expect(result).toEqual(mockResponse);
     });

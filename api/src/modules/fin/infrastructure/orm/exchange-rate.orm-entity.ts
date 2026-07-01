@@ -18,6 +18,7 @@
  * Capa: Infraestructura (fin/orm)
  *
  * @see ExchangeRate
+ * @module ExchangeRateOrmEntity
  */
 
 import {

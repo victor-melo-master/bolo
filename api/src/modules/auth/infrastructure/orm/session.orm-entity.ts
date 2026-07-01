@@ -19,6 +19,7 @@
  *
  * @see Session
  * @see SessionRepositoryImpl
+ * @module SessionOrmEntity
  */
 
 import {

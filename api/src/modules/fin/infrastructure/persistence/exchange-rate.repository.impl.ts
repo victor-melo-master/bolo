@@ -13,6 +13,7 @@
  * Capa: Infraestructura (fin/persistence)
  *
  * @see ExchangeRateRepositoryPort
+ * @module ExchangeRateRepositoryImpl
  */
 
 // ─── Importaciones de NestJS y TypeORM ───

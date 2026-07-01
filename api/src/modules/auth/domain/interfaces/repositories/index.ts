@@ -1,6 +1,12 @@
-// src/modules/auth/domain/interfaces/repositories/index.ts
+// src/modules/auth/domain/interfaces/repositories/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para puertos de repositorio del módulo auth.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Puertos de Repositorio del Módulo Auth
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Agrupa los puertos de repositorio (AdminRepositoryPort,
+ * PassengerRepositoryPort, SessionRepositoryPort, etc.) y sus
+ * tokens de inyección de dependencias correspondientes.
  *
  * @module auth/domain/interfaces/repositories
  */

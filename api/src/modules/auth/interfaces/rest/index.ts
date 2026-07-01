@@ -1,6 +1,12 @@
 // src/modules/auth/interfaces/rest/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para controladores REST del módulo auth.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Controladores REST del Módulo Auth
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Centraliza las exportaciones de todos los controladores REST del
+ * módulo auth (AdminAuthController, PassengerAuthController) para
+ * simplificar las importaciones desde auth.module.ts.
  *
  * @module auth/interfaces/rest
  */

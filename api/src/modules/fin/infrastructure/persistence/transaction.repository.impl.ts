@@ -13,6 +13,7 @@
  * Capa: Infraestructura (fin/persistence)
  *
  * @see TransactionRepositoryPort
+ * @module TransactionRepositoryImpl
  */
 
 // ─── Importaciones de NestJS y TypeORM ───

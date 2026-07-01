@@ -1,4 +1,18 @@
-// auth/application/use-cases/update-admin.use-case.spec.ts
+// src/modules/auth/application/use-cases/update-admin.use-case.spec.ts — Ruta relativa desde src/
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * UpdateAdminUseCase — Tests Unitarios
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Pruebas unitarias para el caso de uso de actualización de
+ * administradores. Verifica la actualización correcta de campos,
+ * el lanzamiento de NotFoundException cuando el admin no existe,
+ * y las validaciones de unicidad de email y cédula.
+ *
+ * Capa: Application (auth) — Tests
+ *
+ * @module UpdateAdminUseCaseTests
+ */
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';

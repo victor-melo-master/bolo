@@ -18,6 +18,7 @@
  * Capa: Infraestructura (fin/orm)
  *
  * @see Wallet
+ * @module WalletOrmEntity
  */
 
 // Decoradores de TypeORM para mapeo objeto-relacional

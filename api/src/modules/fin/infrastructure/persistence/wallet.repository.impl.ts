@@ -13,6 +13,7 @@
  * Capa: Infraestructura (fin/persistence)
  *
  * @see WalletRepositoryPort
+ * @module WalletRepositoryImpl
  */
 
 import { Injectable } from '@nestjs/common';

@@ -13,6 +13,7 @@
  * Capa: Infraestructura (fin/persistence)
  *
  * @see SagaStateRepositoryPort
+ * @module SagaStateRepositoryImpl
  */
 
 // ─── Importaciones de NestJS y TypeORM ───

@@ -15,6 +15,7 @@
  * Capa: Dominio (shared) — Puerto de salida
  *
  * @template T Tipo de entidad de dominio
+ * @module base-repository.port
  */
 
 // ─── Interfaz genérica de repositorio (Puerto de salida — Patrón Hexagonal) ───

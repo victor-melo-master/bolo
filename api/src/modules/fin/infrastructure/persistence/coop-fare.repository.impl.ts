@@ -13,6 +13,7 @@
  * Capa: Infraestructura (fin/persistence)
  *
  * @see CoopFareRepositoryPort
+ * @module CoopFareRepositoryImpl
  */
 
 import { Injectable } from '@nestjs/common';

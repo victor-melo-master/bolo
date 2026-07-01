@@ -1,5 +1,4 @@
 // src/modules/auth/interfaces/rest/passenger-auth.controller.ts — Ruta relativa desde src/
-import { UpdatePassengerUseCase } from './../../application/use-cases/update-passenger.use-case';
 /**
  * ═══════════════════════════════════════════════════════════════
  * PassengerAuthController — Controlador REST de autenticación de pasajeros
@@ -20,6 +19,7 @@ import { UpdatePassengerUseCase } from './../../application/use-cases/update-pas
  *
  * @module PassengerAuthController
  */
+import { UpdatePassengerUseCase } from './../../application/use-cases/update-passenger.use-case';
 import {
   Controller,
   Post,

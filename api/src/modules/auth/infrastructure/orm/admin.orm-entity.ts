@@ -17,6 +17,7 @@
  *
  * @see Admin
  * @see AdminRepositoryImpl
+ * @module AdminOrmEntity
  */
 
 import {

@@ -1,7 +1,12 @@
 // src/modules/auth/domain/entities/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para entidades de dominio del módulo auth.
- * Centraliza las exportaciones para facilitar importaciones.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Entidades de Dominio del Módulo Auth
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Centraliza las exportaciones de todas las entidades de dominio
+ * (Admin, Passenger, Session, Association, DriverRequest) para
+ * simplificar las importaciones desde otros módulos.
  *
  * @module auth/domain/entities
  */

@@ -17,6 +17,7 @@
  *
  * @see Passenger
  * @see PassengerRepositoryImpl
+ * @module PassengerOrmEntity
  */
 
 import {
