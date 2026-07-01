@@ -41,6 +41,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
       PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-ChangeMeNow!}
 
     secrets:
       - pg_password
@@ -51,8 +52,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/18/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./database/01-seed.sh:/docker-entrypoint-initdb.d/01-seed.sh:ro   # <-- añadir
       - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
-      - ./postgres/pgpass:/pgadmin4/pgpass:ro
 
     healthcheck:
       <<: *hc-defaults
@@ -274,7 +275,7 @@ services:
     logging: *default-logging
 
     environment:
-      VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
+      VITE_API_URL: http://localhost:${MIDDLEWARE_PORT:-8080}/api
       VITE_ENVIRONMENT:  development
 
     ports:

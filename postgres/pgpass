@@ -1,3 +1,0 @@
-# postgres/pgpass
-# hostname:port:database:username:password
-postgres:5432:*:bolo_admin:mi_super_password_postgres_123
