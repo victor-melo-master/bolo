@@ -14,6 +14,5 @@ fi
 
 REDIS_PASSWORD="$(cat "$SECRET_FILE")"
 
-# Arranca Redis con la contraseña cargada desde el secret
-exec redis-server /usr/local/etc/redis/redis.conf \
-  --requirepass "$REDIS_PASSWORD"
+# Arranca Redis con los argumentos recibidos y añade --requirepass
+exec redis-server "$@" --requirepass "$REDIS_PASSWORD"
