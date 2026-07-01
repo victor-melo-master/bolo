@@ -3,6 +3,7 @@
 # ==============================================================
 
 # ── CRÍTICO: Nunca commitear secretos ──────────────────────
+cookies.txt
 secrets/*.txt
 secrets/*.key
 secrets/*.pem
