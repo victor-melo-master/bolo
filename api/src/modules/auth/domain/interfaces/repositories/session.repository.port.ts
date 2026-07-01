@@ -29,4 +29,10 @@ export interface SessionRepositoryPort {
   save(session: Session): Promise<Session>;
   findById(id: string): Promise<Session | null>;
   deactivateExpired(): Promise<void>;
+  findActiveSessionsByUser(
+    userId: string,
+    userType: string,
+    clientType: string,
+  ): Promise<Session[]>;
+  deactivateSessions(sessionIds: string[]): Promise<void>;
 }

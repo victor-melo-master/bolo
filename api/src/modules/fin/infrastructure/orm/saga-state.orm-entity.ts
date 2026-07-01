@@ -19,6 +19,7 @@
  *
  * Capa: Infraestructura (fin/orm)
  *
+ * @module SagaStateOrmEntity
  * @see SagaState
  */
 

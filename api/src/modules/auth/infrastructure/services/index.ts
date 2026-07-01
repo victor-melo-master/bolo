@@ -1,6 +1,12 @@
 // src/modules/auth/infrastructure/services/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para servicios de infraestructura del módulo auth.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Servicios de Infraestructura del Módulo Auth
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Centraliza las exportaciones de los servicios de infraestructura
+ * (NotificationServiceImpl, SessionCleanupService) que implementan
+ * los puertos definidos en el dominio.
  *
  * @module auth/infrastructure/services
  */

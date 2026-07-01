@@ -30,6 +30,7 @@ import { AppModule } from './app.module';
 //
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import { AllExceptionsFilter } from './shared/interfaces/filters/all-exceptions.filter';
 
 // Función de arranque asíncrona: NestJS requiere async porque la creación del contenedor es asíncrona
 async function bootstrap() {
@@ -44,6 +45,7 @@ async function bootstrap() {
       transform: true, // transforma strings a números, etc.
     }),
   );
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',

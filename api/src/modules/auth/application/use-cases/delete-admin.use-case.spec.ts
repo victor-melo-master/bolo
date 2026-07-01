@@ -41,7 +41,9 @@ describe('DeleteAdminUseCase', () => {
 
   it('should throw NotFoundException if admin not found', async () => {
     adminRepo.findById.mockResolvedValue(null);
-    await expect(useCase.execute('unknown-id')).rejects.toThrow(NotFoundException);
+    await expect(useCase.execute('unknown-id')).rejects.toThrow(
+      NotFoundException,
+    );
     expect(adminRepo.softDelete).not.toHaveBeenCalled();
   });
 });

@@ -30,6 +30,7 @@ import {
   Req,
   Put,
   Delete,
+  Res,
 } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
@@ -65,10 +66,22 @@ export class AdminAuthController {
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return this.loginAdminUseCase.execute(dto.phone, dto.password);
-  }
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: any) {
+    const result = await this.loginAdminUseCase.execute(
+      dto.phone,
+      dto.password,
+    );
 
+    // Setear la cookie httpOnly manualmente
+    const cookieString = `token=${result.accessToken}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400`;
+    if (process.env.NODE_ENV === 'production') {
+      res.setHeader('Set-Cookie', cookieString + '; Secure');
+    } else {
+      res.setHeader('Set-Cookie', cookieString);
+    }
+
+    return result;
+  }
   // Crear admin (solo super_admin)
   @Post('create')
   @UseGuards(JwtAuthGuard, RolesGuard)

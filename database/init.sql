@@ -628,16 +628,8 @@ $$ LANGUAGE plpgsql;
 -- 8. DATOS INICIALES (SEEDERS)
 -- ============================================================
 
--- 8.1 Super Admin por defecto (ahora en auth.admins)
-INSERT INTO auth.admins (phone, email, password_hash, full_name, role, is_active)
-VALUES (
-    '+584121234567',
-    'admin@bolo.com',
-    crypt('admin123', gen_salt('bf', 10)),
-    'Super Admin BOLO',
-    'super_admin',
-    TRUE
-) ON CONFLICT (phone) DO NOTHING;
+
+
 
 -- 8.2 Billetera del Super Admin
 INSERT INTO fin.wallets (user_id, balance, currency)

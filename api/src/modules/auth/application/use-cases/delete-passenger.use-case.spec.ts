@@ -42,7 +42,9 @@ describe('DeletePassengerUseCase', () => {
 
   it('should throw NotFoundException if passenger not found', async () => {
     passengerRepo.findById.mockResolvedValue(null);
-    await expect(useCase.execute('unknown-id')).rejects.toThrow(NotFoundException);
+    await expect(useCase.execute('unknown-id')).rejects.toThrow(
+      NotFoundException,
+    );
     expect(passengerRepo.softDelete).not.toHaveBeenCalled();
   });
 });

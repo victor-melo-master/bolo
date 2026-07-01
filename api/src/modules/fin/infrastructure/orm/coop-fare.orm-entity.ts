@@ -7,6 +7,8 @@
  * Mapeo ORM de la tabla `fin.coop_fares`. Contraparte de infraestructura
  * de la entidad de dominio CoopFare.
  *
+ * @module CoopFareOrmEntity
+ *
  * Campos (coinciden con el DDL):
  *   - association_id (UUID)  → cooperativa propietaria
  *   - name (VARCHAR)         → nombre del tarifario

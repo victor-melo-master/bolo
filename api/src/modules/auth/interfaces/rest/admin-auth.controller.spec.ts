@@ -9,11 +9,10 @@
  *
  * @module test/admin-auth.controller.spec
  */
-// auth/interfaces/rest/admin-auth.controller.spec.ts
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { ThrottlerGuard } from '@nestjs/throttler'; // ← añadir
-import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard'; // ← añadir
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { AdminAuthController } from './admin-auth.controller';
 import { CreateAdminUseCase } from '../../application/use-cases/create-admin.use-case';
 import { LoginAdminUseCase } from '../../application/use-cases/login-admin.use-case';
@@ -77,10 +76,17 @@ describe('AdminAuthController', () => {
         },
       };
       loginAdminUseCase.execute.mockResolvedValue(mockResponse);
-      const result = await controller.login(dto);
+
+      const res = { setHeader: jest.fn() }; // ← objeto respuesta simulado
+      const result = await controller.login(dto, res);
+
       expect(loginAdminUseCase.execute).toHaveBeenCalledWith(
         dto.phone,
         dto.password,
+      );
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Set-Cookie',
+        expect.any(String),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -155,7 +161,7 @@ describe('AdminAuthController', () => {
       const dto: ChangePasswordDto = {
         currentPassword: 'OldPass1',
         newPassword: 'NewPass2',
-        newPasswordConfirmation: 'NewPass2', // añadido para que coincida con el DTO real
+        newPasswordConfirmation: 'NewPass2',
       };
       changePasswordUseCase.execute.mockResolvedValue(undefined);
 

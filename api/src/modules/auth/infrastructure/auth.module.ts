@@ -108,7 +108,7 @@ import { SessionCleanupService } from './services/session-cleanup.service';
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: 'unused',
+      secret: '',
       signOptions: { expiresIn: '24h' },
     }),
     FinModule,

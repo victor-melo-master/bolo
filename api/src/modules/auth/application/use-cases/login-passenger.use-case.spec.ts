@@ -52,6 +52,8 @@ describe('LoginPassengerUseCase', () => {
     sessionRepo = {
       save: jest.fn(),
       deactivateAllForUser: jest.fn(),
+      findActiveSessionsByUser: jest.fn().mockResolvedValue([]), // ← nuevo
+      deactivateSessions: jest.fn().mockResolvedValue(undefined), //
     };
     cryptoService = {
       compare: jest.fn(),

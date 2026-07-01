@@ -27,9 +27,15 @@ describe('GetAdminProfileUseCase', () => {
     'Admin Uno',
     'V87654321',
     'super_admin',
-    null, null, 1, null,
-    true, null, null,
-    new Date(), new Date(),
+    null,
+    null,
+    1,
+    null,
+    true,
+    null,
+    null,
+    new Date(),
+    new Date(),
   );
 
   beforeEach(async () => {

@@ -10,9 +10,13 @@
 | -------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------- |
 | **README.md**              | README principal del proyecto. Stack, endpoints, esquemas BD, scripts.                        | `/api/README.md`                  |
 | **PROYECTO.md**            | Documentación técnica detallada. Arquitectura, estructura, módulos, BD.                       | `/api/PROYECTO.md`                |
+| **FLUJOS.md**              | Flujos de información visuales dentro de la API. Ideal para nuevos desarrolladores.           | `/api/FLUJOS.md`                  |
+| **FLUJOS_MIDDLEWARE.md**   | Flujos del middleware (Go/Fiber): proxy, JWT, rate limiting y su relación con la API.         | `/FLUJOS_MIDDLEWARE.md`           |
+| **FLUJOS_REDIS.md**        | Flujo de Redis: despliegue, configuración, valores necesarios, rate-limiting y sesiones.      | `/FLUJOS_REDIS.md`                |
+| **FLUJOS_POSTGRES.md**     | Flujo de PostgreSQL: despliegue, init.sql, autenticación, seeders y valores de configuración. | `/FLUJOS_POSTGRES.md`             |
 | **DOCUMENTACION.md**       | Documentación exhaustiva por archivo (~120 archivos). Explica qué hace cada bloque y por qué. | `/api/DOCUMENTACION.md`           |
 | **ANALISIS.md**            | Análisis completo del código fuente. Hallazgos, inconsistencias, patrones, recomendaciones.   | `/api/ANALISIS.md`                |
-| **DOCUMENTATION_GUIDE.md** | **← Este archivo.** Guía de navegación de la documentación.                                   | `/api/src/DOCUMENTATION_GUIDE.md` |
+| **DOCUMENTATION_GUIDE.md** | ← Este archivo. Guía de navegación de la documentación.                                       | `/api/src/DOCUMENTATION_GUIDE.md` |
 
 ---
 
@@ -224,6 +228,10 @@ npm run format         # Prettier
 
 ## 🔗 Referencias Rápidas
 
+- **Para entender los flujos de información dentro del API:** `FLUJOS.md` (ideal para empezar)
+- **Para entender el middleware (proxy, JWT, seguridad):** `FLUJOS_MIDDLEWARE.md` (raíz del proyecto)
+- **Para entender Redis (despliegue, valores, sesiones):** `FLUJOS_REDIS.md` (raíz del proyecto)
+- **Para entender PostgreSQL (esquema, init.sql, despliegue):** `FLUJOS_POSTGRES.md` (raíz del proyecto)
 - **Para entender la arquitectura:** `PROYECTO.md` sección 3
 - **Para ver el estado de cada módulo:** `PROYECTO.md` sección 5-7
 - **Para documentación por archivo:** `DOCUMENTACION.md`

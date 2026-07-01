@@ -17,6 +17,7 @@
  *
  * @see DriverRequest
  * @see DriverRequestRepositoryImpl
+ * @module DriverRequestOrmEntity
  */
 
 import {

@@ -7,6 +7,8 @@
  * Mapeo ORM de la tabla `fin.transactions`. Contraparte de infraestructura
  * de la entidad de dominio Transaction.
  *
+ * @module TransactionOrmEntity
+ *
  * Notas:
  *   - amount es BIGINT (centavos, no floats)
  *   - type se almacena como VARCHAR (no enum nativo de PG para flexibilidad)

@@ -3,6 +3,7 @@
 # ==============================================================
 
 # ── CRÍTICO: Nunca commitear secretos ──────────────────────
+cookies.txt
 secrets/*.txt
 secrets/*.key
 secrets/*.pem
@@ -37,4 +38,6 @@ logs/
 .DS_Store
 Thumbs.db
 .env
+postgres/pgpass
+middleware/tmp/
 middleware/tmp/

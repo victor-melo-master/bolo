@@ -36,7 +36,8 @@ describe('CreateAssociationUseCase', () => {
     1, // qrVersion
     null, // associationId: null → sin asociación
     true,
-    null, null,
+    null,
+    null,
     new Date(),
     new Date(),
   );

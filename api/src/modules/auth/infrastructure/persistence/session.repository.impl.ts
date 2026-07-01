@@ -15,19 +15,22 @@
  *
  * @module SessionRepositoryImpl
  */
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan } from 'typeorm';
+import { In, LessThan } from 'typeorm';
 import { Repository } from 'typeorm';
 import { SessionRepositoryPort } from '../../domain/interfaces/repositories/session.repository.port';
 import { Session } from '../../domain/entities/session.entity';
 import { SessionOrmEntity } from '../orm/session.orm-entity';
+import { Redis } from 'ioredis';
 
 @Injectable()
 export class SessionRepositoryImpl implements SessionRepositoryPort {
   constructor(
     @InjectRepository(SessionOrmEntity)
     private readonly ormRepo: Repository<SessionOrmEntity>,
+    @Inject('REDIS_CLIENT')
+    private readonly redis: Redis,
   ) {}
 
   async save(session: Session): Promise<Session> {
@@ -53,10 +56,23 @@ export class SessionRepositoryImpl implements SessionRepositoryPort {
   }
 
   async deactivateAllForUser(userId: string, userType: string): Promise<void> {
+    // 1. Obtener las sesiones activas antes de desactivarlas (para borrar sus claves)
+    const activeSessions = await this.ormRepo.find({
+      where: { userId, userType: userType as any, isActive: true },
+    });
+
+    if (activeSessions.length === 0) return;
+
+    // 2. Desactivar en BD
     await this.ormRepo.update(
       { userId, userType: userType as any, isActive: true },
       { isActive: false },
     );
+
+    // 3. Eliminar las claves de Redis para cada sesión desactivada
+    const pipeline = this.redis.pipeline();
+    activeSessions.forEach((s) => pipeline.del(`session:${s.id}`));
+    await pipeline.exec();
   }
 
   private toDomain(orm: SessionOrmEntity): Session {
@@ -97,5 +113,34 @@ export class SessionRepositoryImpl implements SessionRepositoryPort {
       { isActive: true, expiresAt: LessThan(new Date()) },
       { isActive: false },
     );
+  }
+
+  async findActiveSessionsByUser(
+    userId: string,
+    userType: string,
+    clientType: string,
+  ): Promise<Session[]> {
+    const orms = await this.ormRepo.find({
+      where: {
+        userId,
+        userType: userType as any,
+        clientType: clientType as any,
+        isActive: true,
+      },
+      order: { createdAt: 'ASC' }, // las más antiguas primero
+    });
+    return orms.map((orm) => this.toDomain(orm));
+  }
+
+  async deactivateSessions(sessionIds: string[]): Promise<void> {
+    if (sessionIds.length === 0) return;
+
+    // 1. Desactivar en BD
+    await this.ormRepo.update({ id: In(sessionIds) }, { isActive: false });
+
+    // 2. Eliminar claves de Redis
+    const pipeline = this.redis.pipeline();
+    sessionIds.forEach((id) => pipeline.del(`session:${id}`));
+    await pipeline.exec();
   }
 }

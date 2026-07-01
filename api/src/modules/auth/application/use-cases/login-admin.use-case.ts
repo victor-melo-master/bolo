@@ -57,7 +57,7 @@ export class LoginAdminUseCase {
 
     // 3. Verificar que esté activo
     if (!admin.isActive) {
-      throw new InvalidCredentialsException('Usuario inactivo');
+      throw new InvalidCredentialsException('Credenciales inválidas');
     }
 
     // Invalidar sesiones anteriores del mismo usuario y tipo
@@ -81,6 +81,10 @@ export class LoginAdminUseCase {
       role: admin.role,
       userType: 'admin',
       sessionId: session.id,
+      associationId: admin.associationId ?? null,
+      iss: 'bolo-api', // ← nuevo
+      aud: 'bolo-client', // ← nuevo
+      typ: 'at+jwt', // ← nuevo
     };
 
     const accessToken = this.jwtService.sign(payload, {

@@ -22,12 +22,19 @@
 // ─── Importaciones de NestJS ───
 import { Global, Module } from '@nestjs/common'; // Global = ámbito global, Module = definición de módulo
 import { RolesGuard } from './auth/roles.guard'; // Guard de verificación de roles para endpoints protegidos
+import { redisClient } from './redis/redis.client';
 
 // @Global() hace que los providers de este módulo estén disponibles en todo el árbol de dependencias
 // sin necesidad de importar SharedModule en cada submódulo
 @Global()
 @Module({
-  providers: [RolesGuard], // Registra RolesGuard para que el contenedor IoC lo inyecte donde sea necesario
-  exports: [RolesGuard], // Exporta RolesGuard para que esté disponible fuera de este módulo
+  providers: [
+    RolesGuard,
+    {
+      provide: 'REDIS_CLIENT',
+      useValue: redisClient,
+    },
+  ], // Registra RolesGuard para que el contenedor IoC lo inyecte donde sea necesario
+  exports: [RolesGuard, 'REDIS_CLIENT'], // Exporta RolesGuard y el cliente de Redis para que estén disponibles fuera de este módulo
 })
 export class SharedModule {}

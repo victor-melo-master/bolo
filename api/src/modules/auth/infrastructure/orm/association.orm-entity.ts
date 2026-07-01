@@ -14,6 +14,7 @@
  *
  * @see Association
  * @see AssociationRepositoryImpl
+ * @module AssociationOrmEntity
  */
 
 import {

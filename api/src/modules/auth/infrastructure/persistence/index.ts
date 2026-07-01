@@ -1,6 +1,12 @@
 // src/modules/auth/infrastructure/persistence/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para implementaciones de repositorios del módulo auth.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Implementaciones de Repositorios (Infraestructura)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Centraliza las exportaciones de todas las implementaciones concretas
+ * de repositorios del módulo auth. Cada clase implementa su puerto
+ * correspondiente definido en domain/interfaces/repositories.
  *
  * @module auth/infrastructure/persistence
  */

@@ -13,10 +13,12 @@ import { SessionRepositoryImpl } from './session.repository.impl';
 import { Session } from '../../domain/entities/session.entity';
 import { SessionOrmEntity } from '../orm/session.orm-entity';
 import { Repository } from 'typeorm';
+import Redis from 'ioredis';
 
 describe('SessionRepositoryImpl', () => {
   let repo: SessionRepositoryImpl;
   let mockOrmRepo: any;
+  let mockRedis: any;
 
   const mockOrmSession: SessionOrmEntity = {
     id: 'session-id',
@@ -47,9 +49,17 @@ describe('SessionRepositoryImpl', () => {
       findOne: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
+      find: jest.fn().mockResolvedValue([]),
+    };
+    mockRedis = {
+      pipeline: jest.fn(() => ({
+        del: jest.fn(),
+        exec: jest.fn().mockResolvedValue([]),
+      })),
     };
     repo = new SessionRepositoryImpl(
       mockOrmRepo as Repository<SessionOrmEntity>,
+      mockRedis as Redis,
     );
   });
 
@@ -114,11 +124,28 @@ describe('SessionRepositoryImpl', () => {
 
   describe('deactivateAllForUser', () => {
     it('should deactivate all active sessions for a user', async () => {
+      // Simular que hay sesiones activas para que se ejecute el update
+      mockOrmRepo.find.mockResolvedValue([
+        { id: 's1', userId: 'user-id', userType: 'passenger', isActive: true },
+      ]);
+
       await repo.deactivateAllForUser('user-id', 'passenger');
+
+      expect(mockOrmRepo.find).toHaveBeenCalledWith({
+        where: { userId: 'user-id', userType: 'passenger', isActive: true },
+      });
       expect(mockOrmRepo.update).toHaveBeenCalledWith(
         { userId: 'user-id', userType: 'passenger', isActive: true },
         { isActive: false },
       );
+      // Verifica que se limpiaron las claves en Redis
+      expect(mockRedis.pipeline).toHaveBeenCalled();
+    });
+
+    it('should not call update if no active sessions', async () => {
+      // mockOrmRepo.find ya devuelve [] por defecto
+      await repo.deactivateAllForUser('user-id', 'passenger');
+      expect(mockOrmRepo.update).not.toHaveBeenCalled();
     });
   });
 });

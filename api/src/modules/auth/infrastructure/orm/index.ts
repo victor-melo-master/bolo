@@ -1,6 +1,12 @@
 // src/modules/auth/infrastructure/orm/index.ts — Ruta relativa desde src/
 /**
- * Barrel exports para entidades ORM (TypeORM) del módulo auth.
+ * ═══════════════════════════════════════════════════════════════
+ * Barrel exports — Entidades ORM (TypeORM) del Módulo Auth
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * Centraliza las exportaciones de todas las entidades ORM que mapean
+ * las tablas del esquema auth en PostgreSQL (admins, passengers,
+ * sessions, associations, driver_requests).
  *
  * @module auth/infrastructure/orm
  */

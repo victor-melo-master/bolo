@@ -1,5 +1,4 @@
 // src/modules/auth/interfaces/rest/passenger-auth.controller.ts — Ruta relativa desde src/
-import { UpdatePassengerUseCase } from './../../application/use-cases/update-passenger.use-case';
 /**
  * ═══════════════════════════════════════════════════════════════
  * PassengerAuthController — Controlador REST de autenticación de pasajeros
@@ -20,6 +19,7 @@ import { UpdatePassengerUseCase } from './../../application/use-cases/update-pas
  *
  * @module PassengerAuthController
  */
+import { UpdatePassengerUseCase } from './../../application/use-cases/update-passenger.use-case';
 import {
   Controller,
   Post,
@@ -31,6 +31,7 @@ import {
   Req,
   Get,
   Delete,
+  Res,
 } from '@nestjs/common';
 import { CreatePassengerDto } from '../../application/dto/create-passenger.dto';
 import { LoginPassengerUseCase } from '../../application/use-cases/login-passenger.use-case';
@@ -75,8 +76,25 @@ export class PassengerAuthController {
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return this.loginPassengerUseCase.execute(dto.phone, dto.password);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: any, // ← cambiamos el tipo a any para evitar el error
+  ) {
+    const result = await this.loginPassengerUseCase.execute(
+      dto.phone,
+      dto.password,
+    );
+
+    // Setear la cookie httpOnly manualmente
+    const cookieString = `token=${result.accessToken}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400`;
+    if (process.env.NODE_ENV === 'production') {
+      // En producción agregar Secure
+      res.setHeader('Set-Cookie', cookieString + '; Secure');
+    } else {
+      res.setHeader('Set-Cookie', cookieString);
+    }
+
+    return result;
   }
 
   @Get('profile')
