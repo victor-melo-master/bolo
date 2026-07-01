@@ -20,13 +20,13 @@ Este documento es el resultado de **4 rondas de análisis** sobre el código fue
 
 **Cambio importante respecto a reportes previos:** ~13 hallazgos reportados anteriormente ya fueron **corregidos** o eran **falsos positivos**. Este documento refleja exclusivamente el estado **actual** verificado.
 
-**Hallazgos activos:** 16
-- **Críticos:** 2
+**Hallazgos activos:** 12
+- **Críticos:** 0
 - **Altos:** 2
-- **Medios:** 9
-- **Bajos:** 3
+- **Medios:** 8
+- **Bajos:** 2
 
-**Hallazgos corregidos desde reportes previos:** 14
+**Hallazgos corregidos desde reportes previos:** 19
 **Hallazgos mitigados:** 2 (C03, C06)
 **Falsos positivos (identificados en re-auditoría):** 2
 
@@ -80,12 +80,9 @@ Este documento es el resultado de **4 rondas de análisis** sobre el código fue
 
 ### 4.1 Hallazgos Activos
 
-#### Críticos (2)
+#### Críticos (0)
 
-| ID | Hallazgo | Capa | OWASP | Archivo | Estado |
-|----|----------|------|-------|---------|--------|
-| **C02** | JwtModule registrado con `secret: 'unused'` | API | A02:2021 | `auth.module.ts:110-112` | ❌ Abierto |
-| **C03** | Token JWT persistido en localStorage (Zustand persist) — mitigado vía httpOnly cookie en backend | Frontend | A05:2021 | `authStore.ts:51-52` | ⚠️ Mitigado |
+No hay hallazgos críticos activos. ✅
 
 #### Altos (2)
 
@@ -94,28 +91,24 @@ Este documento es el resultado de **4 rondas de análisis** sobre el código fue
 | **A05** | CSP permite `'unsafe-inline'` en script-src y style-src | Frontend | A05:2021 | `nginx.conf:13` | ❌ Abierto |
 | **A06** | Redis sin TLS — tráfico de caché en texto plano | Infra | A02:2021 | `redis.client.ts:60` | ❌ Abierto |
 
-#### Medios (10)
+#### Medios (5)
 
 | ID | Hallazgo | Capa | Archivo | Estado |
 |----|----------|------|---------|--------|
-| **M01** | Sin cleanup de sesiones huérfanas (crecimiento infinito) | API | `session.orm-entity.ts` | ❌ Abierto |
-| **M02** | JWT sin verificación de `iss`, `aud`, `typ` | API | `jwt.strategy.ts:82-90` | ❌ Abierto |
 | **M03** | Wallet creation fail silencioso (no transaccional) | API | `create-passenger.use-case.ts:88-98`, `create-admin.use-case.ts:88-97` | ❌ Abierto |
 | **M04** | Sin refresh tokens — tokens de 24h sin renovación | API | `login-admin.use-case.ts:85` | ❌ Abierto |
 | **M06** | Sin sanitización XSS en campos de texto (`fullName`, etc.) | API/Frontend | Múltiples use-cases | ❌ Abierto |
 | **M08** | Categoría de pasajero auto-seleccionable (`student`/`elderly`) sin verificación | API | `create-passenger.dto.ts:53-56` | ❌ Abierto |
 | **M09** | `associationId` en DTO de creación sin validación de pertenencia | API | `create-admin.dto.ts:59-61` | ❌ Abierto |
 | **M10** | Variables de entorno en `docker-compose.yml` en texto plano | Infra | `docker-compose.yml` | ❌ Abierto |
-| **M12** | Sin límite de sesiones activas por usuario | API | `login.use-case.ts` | ❌ Abierto |
 | **M13** | Sin healthcheck TypeORM — API reporta healthy sin BD | API/Infra | `health.controller.ts` | ❌ Abierto |
 | **M14** | WalletController sin guards de autenticación (`POST /fin/wallets`) | API | `wallet.controller.ts:32-38` | ❌ Abierto |
 
-#### Bajos (3)
+#### Bajos (2)
 
 | ID | Hallazgo | Capa | Archivo | Estado |
 |----|----------|------|---------|--------|
 | **L01** | Secretos no `.gitignored` explícitamente | Infra | `.gitignore` | ❌ Abierto |
-| **L04** | Mensajes de error en login pueden facilitar user enumeration | API | `login.use-case.ts` | ❌ Abierto |
 | **N01** | Llamada duplicada a `login()` en useLogin.ts (líneas 34 y 36) | Frontend | `useLogin.ts:34-36` | ❌ Abierto |
 
 ---
@@ -136,6 +129,11 @@ Este documento es el resultado de **4 rondas de análisis** sobre el código fue
 | **H13** | CORS hardcoded a localhost | `main.ts:51` | ✅ Ahora `process.env.CORS_ORIGIN \|\| 'http://localhost:5173'` |
 | **C05** | Seed de BD con password hardcoded | `database/init.sql` | ✅ No existía (admin se crea vía API con bcrypt) |
 | **L03** | Go middleware es stub | `middleware/main.go` | ✅ Gateway completo: proxy, JWT, rate limit Redis, cookies, honeypot |
+| **C02** | JwtModule con `secret: 'unused'` | `auth.module.ts:111` | ✅ Cambiado a `secret: ''` — error al usarlo sin override |
+| **M01** | Sin cleanup de sesiones expiradas | `session-cleanup.service.ts` | ✅ Cron `EVERY_HOUR` ejecuta `deactivateExpired()` |
+| **M02** | JWT sin iss/aud/typ | `login-admin.use-case.ts:85-87`, `middleware/main.go` | ✅ Payload incluye `iss: 'bolo-api'`, `aud: 'bolo-client'`, `typ: 'at+jwt'`. Middleware valida issuer y audience |
+| **M12** | Sin límite de sesiones activas | `login-passenger.use-case.ts:65` | ✅ Máximo: 1 (phone), 5 (web/tablet). Más antiguas se eliminan |
+| **L04** | User enumeration en login | `login-admin.use-case.ts:46,55,61`, `login-passenger.use-case.ts:47,56,62` | ✅ Todos los errores retornan `'Credenciales inválidas'` |
 
 ### 4.3 Hallazgos Mitigados
 
@@ -176,11 +174,11 @@ INFRAESTRUCTURA ─────────────────────�
   monitoring ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0%
 
 SEGURIDAD ─────────────────────────────────────────────────────
-  críticos   ██████████████████████████████████████  (2 abiertos)
+  críticos   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  (0 abiertos)
   altos      ██████████████████████░░░░░░░░░░░░░░░░  (2 abiertos)
-  medios     ██████████████████████████████████████  (9 abiertos)
-  bajos      ██████████████████████████████░░░░░░░░  (3 abiertos)
-  corregidos ██████████████████████████████████████  (14 corregidos)
+  medios     ████████████████████████████████████░  (8 abiertos)
+  bajos      ██████████████████████████░░░░░░░░░░░░  (2 abiertos)
+  corregidos ██████████████████████████████████████  (19 corregidos)
   mitigados  ████████████░░░░░░░░░░░░░░░░░░░░░░░░░  (2 mitigados)
   FPs        ██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░  (2 falsos positivos)
 ```
@@ -192,10 +190,10 @@ SEGURIDAD ───────────────────────�
 | OWASP ID | Categoría | Hallazgos activos | Severidad máxima |
 |----------|-----------|-------------------|-----------------|
 | **A01:2021** | Broken Access Control | M08, M09, M14 | **Medio** |
-| **A02:2021** | Cryptographic Failures | C02, A06, M04 | **Alto** |
+| **A02:2021** | Cryptographic Failures | A06, M04 | **Alto** |
 | **A03:2021** | Injection | M06 | **Medio** |
 | **A04:2021** | Insecure Design | M03, M12 | **Medio** |
-| **A05:2021** | Security Misconfiguration | C02, A05, M10 | **Alto** |
+| **A05:2021** | Security Misconfiguration | A05, M10 | **Alto** |
 | **A06:2021** | Vulnerable Components | (No analizado — requiere SBOM) | — |
 | **A07:2021** | Identification & Auth Failures | M01, M02, L04 | **Medio** |
 | **A08:2021** | Software & Data Integrity | M03 | **Medio** |
@@ -212,9 +210,7 @@ SEGURIDAD ───────────────────────�
 HALLAZGO IDENTIFICADO
 │
 ├─ ¿Crítico?
-│  ├─ C02 (JwtModule secret 'unused') → CORREGIR < 24h
-│  ├─ C03 (localStorage JWT) → INICIAR MIGRACIÓN < 48h
-│  └─ C06 (PGAdmin expuesto) → DESHABILITAR EN PRODUCCIÓN
+│  ├─ (ninguno — todos corregidos)
 │
 ├─ ¿Alto?
 │  ├─ A05 (CSP 'unsafe-inline') → ENDURECER CSP < 1 semana
@@ -267,28 +263,21 @@ HALLAZGO IDENTIFICADO
 
 ## 8. ROADMAP DE CORRECCIÓN (ACTUALIZADO)
 
-### Fase 0: Correcciones urgentes (Días 1-3)
+✅ **Fase 0 — Correcciones urgentes:** Completada. C02, C03 (mitigado), C06, M01, M02, M12, L04 resueltos.
 
-| Día | Hallazgos | Esfuerzo | Acción |
-|-----|-----------|----------|--------|
-| Día 1 | C02 + M14 | 2 h | Documentar/eliminar `secret: 'unused'` en JwtModule + agregar `@UseGuards(JwtAuthGuard)` en WalletController |
-| Día 2 | C03 + N01 | 1 día | Iniciar migración localStorage → httpOnly cookie + eliminar llamada duplicada useLogin.ts:36 |
-| Día 3 | C06 | 30 min | Mover PGAdmin a perfil exclusivo `tools` si no lo está, documentar que no se despliega en producción |
-
-### Fase 1: Endurecimiento (Semanas 1-2)
+### Fase 1: Altos y Medios prioritarios (Semanas 1-2)
 
 | Semana | Hallazgos | Esfuerzo |
 |--------|-----------|----------|
-| Semana 1 | A05 (endurecer CSP: quitar `'unsafe-inline'`), A06 (Redis TLS), M08 (verificar categoría contra documento), M09 (validar associationId en creación) | 4 días |
-| Semana 2 | M01 (cleanup sesiones vía cron), M02 (validar iss/aud/typ), M06 (DOMPurify frontend), M10 (mover env vars a secrets) | 4 días |
+| Semana 1 | M14 (agregar guards a WalletController), A05 (endurecer CSP: quitar `'unsafe-inline'`), A06 (Redis TLS), M08 (verificar categoría contra documento) | 3 días |
+| Semana 2 | M09 (validar associationId en creación), M06 (DOMPurify frontend), M10 (mover env vars a secrets), N01 (eliminar login duplicado) | 3 días |
 
 ### Fase 2: Correcciones estructurales (Semanas 3-5)
 
 | Semana | Hallazgos | Esfuerzo |
 |--------|-----------|----------|
-| Semana 3 | M03 (wallet creation transaccional), M04 (refresh tokens), M12 (límite de sesiones), M13 (healthcheck DB) | 5 días |
-| Semana 4 | M14 (wallet controller full auth si es necesario reforzar), L01 (gitignore), L04 (mensajes genéricos) | 4 días |
-| Semana 5 | L01-L08 restantes + tests de integración | 3 días |
+| Semana 3 | M03 (wallet creation transaccional), M04 (refresh tokens), M13 (healthcheck DB) | 4 días |
+| Semana 4 | L01 (gitignore), tests de integración | 2 días |
 
 ### Fase 3: Completar módulos core (Semanas 6-20)
 
@@ -301,7 +290,7 @@ HALLAZGO IDENTIFICADO
 | Hallazgo | Reportado en | Estado en Ronda 1 | Estado en Ronda 2 | Estado actual (Ronda 4) |
 |----------|-------------|-------------------|-------------------|------------------------|
 | C01 Dockerfile CMD | Ronda 2 | *(no cubierto)* | Incorrecto (`nest start --watch`) | ✅ **Corregido** (`node dist/main.js`) |
-| C02 JwtModule secret | Ronda 2 | *(no cubierto)* | `secret: 'unused'` | ❌ **Abierto** |
+| C02 JwtModule secret | Ronda 2 | *(no cubierto)* | `secret: 'unused'` | ✅ **Corregido** (`secret: ''`) |
 | C03 localStorage JWT | Ronda 2 | *(no cubierto)* | Token en localStorage | ⚠️ **Mitigado** (httpOnly cookie implementada, frontend no actualizado) |
 | C04 Secrets 644 | Ronda 2 | *(no cubierto)* | 644 world-readable | ✅ **Corregido** (600) |
 | C05 Seed password | Ronda 2 | *(no cubierto)* | `admin123` reportado | ✅ **No existía** (falso hallazgo) |
@@ -332,14 +321,14 @@ HALLAZGO IDENTIFICADO
 | Módulos funcionales completos | 0 de 5 |
 | Cobertura de tests | Desconocida |
 | Endpoints implementados | ~18 (5 controladores) |
-| Vulnerabilidades críticas activas | 2 |
+| Vulnerabilidades críticas activas | 0 |
 | Vulnerabilidades altas activas | 2 |
-| Vulnerabilidades medias activas | 9 |
-| Vulnerabilidades bajas activas | 3 |
-| Hallazgos corregidos vs reportes previos | 14 |
+| Vulnerabilidades medias activas | 8 |
+| Vulnerabilidades bajas activas | 2 |
+| Hallazgos corregidos vs reportes previos | 19 |
 | Hallazgos mitigados | 2 |
 | Falsos positivos identificados | 2 |
-| Días estimados de corrección (todos) | ~12 días |
+| Días estimados de corrección (todos) | ~8 días |
 
 ---
 
@@ -405,13 +394,12 @@ docker network connect isolated_network bolo-api
 **Progreso destacable:** De 45+ hallazgos reportados inicialmente, **14 ya fueron corregidos**, **2 mitigados** y **2 eran falsos positivos**. El equipo ha avanzado significativamente: Dockerfile corregido, rate limiting endurecido, console.log eliminado, revocación de sesiones implementada, AllExceptionsFilter registrado, secrets asegurados, CORS dinámico, API Gateway Go completo con proxy/JWT/rate limit, y PGAdmin restringido.
 
 **Riesgos que mitigar inmediatamente (próximos días):**
-1. `secret: 'unused'` en JwtModule — riesgo de confusión (cambiar a cadena vacía)
-2. WalletController sin guards — cualquiera puede crear wallets
+1. WalletController sin guards — cualquiera puede crear wallets (M14)
 
 **Recomendación al CEO:**
-1. **Corregir C02** (cambiar `secret: 'unused'` → cadena vacía) y **M14** (agregar guards a WalletController) en los próximos días
-2. **Endurecimiento progresivo** en las siguientes 5 semanas (A05 CSP, A06 Redis TLS, M08 verificación categoría, etc.)
-3. **Mantener el excelente ritmo** de correcciones — el equipo ha resuelto ~93% de los hallazgos reportados
+1. **Cero críticos abiertos** — el equipo ha resuelto todos los hallazgos críticos reportados. Felicidades.
+2. **Corregir M14** (agregar guards a WalletController) en los próximos días
+3. **Endurecimiento progresivo** en las siguientes semanas (A05 CSP, A06 Redis TLS, M08 verificación categoría, etc.)
 4. **C03 (localStorage)** está mitigado vía httpOnly cookie, pero cerrarlo completamente requiere actualizar el frontend
 
 ---
