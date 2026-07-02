@@ -23,7 +23,6 @@ export interface PassengerProfile {
   category: 'normal' | 'student' | 'elderly';
   isActive: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface AdminProfile {
@@ -35,7 +34,6 @@ export interface AdminProfile {
   role: 'super_admin' | 'association_admin' | 'driver';
   isActive: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export type UserProfile = PassengerProfile | AdminProfile;
@@ -47,7 +45,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string;   // antes decía token
+  accessToken: string;
   user: UserProfile;
 }
 

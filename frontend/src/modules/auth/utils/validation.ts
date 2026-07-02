@@ -107,6 +107,27 @@ export const createAdminSchema = z.object({
   }),
 });
 
+export const recoverSchema = z.object({
+  email: z.email({ message: 'Email inválido' }).optional().or(z.literal('')),
+  phone: phoneSchema.optional().or(z.literal('')),
+}).refine((data) => data.email || data.phone, {
+  message: 'Debes ingresar al menos un email o teléfono',
+  path: ['email'],
+});
+
+export const recoverConfirmSchema = z.object({
+  token: z
+    .string()
+    .length(6, { message: 'El código debe tener 6 dígitos' })
+    .regex(/^\d{6}$/, { message: 'El código debe ser numérico' }),
+  newPassword: passwordSchema,
+  newPasswordConfirmation: z.string(),
+}).refine((data) => data.newPassword === data.newPasswordConfirmation, {
+  message: 'Las contraseñas no coinciden',
+  path: ['newPasswordConfirmation'],
+});
+
+
 // ─── Tipos inferidos para formularios ───────────────
 
 export type LoginFormData = z.infer<typeof loginSchema>;
@@ -114,3 +135,5 @@ export type RegisterPassengerFormData = z.infer<typeof registerPassengerSchema>;
 export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export type CreateAdminFormData = z.infer<typeof createAdminSchema>;
+export type RecoverFormData = z.infer<typeof recoverSchema>;
+export type RecoverConfirmFormData = z.infer<typeof recoverConfirmSchema>;

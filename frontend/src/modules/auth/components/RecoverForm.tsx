@@ -1,10 +1,17 @@
 // modules/auth/components/RecoverForm.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { recoverSchema, type RecoverFormData } from "../utils/validation";
+import { z } from "zod";
+import { phoneSchema } from "../utils/validation";
+
+const recoverSchema = z.object({
+  phone: phoneSchema,
+});
+
+type RecoverFormData = z.infer<typeof recoverSchema>;
 
 interface Props {
-  onSubmit: (data: RecoverFormData) => Promise<void>;
+  onSubmit: (data: {phone: string}) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   success: boolean;
@@ -26,26 +33,15 @@ export default function RecoverForm({
   });
 
   const handleFormSubmit = async (data: RecoverFormData) => {
-    await onSubmit(data);
+    await onSubmit({ phone: data.phone });
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
       <div style={{ marginBottom: 12 }}>
         <input
-          {...register("email")}
-          placeholder="Email registrado"
-          style={inputStyle}
-        />
-        {errors.email && (
-          <small style={{ color: "red" }}>{errors.email.message}</small>
-        )}
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <input
           {...register("phone")}
-          placeholder="Teléfono (opcional)"
+          placeholder="Teléfono (0412-1234567)"
           style={inputStyle}
         />
         {errors.phone && (
@@ -56,7 +52,7 @@ export default function RecoverForm({
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && (
         <p style={{ color: "green" }}>
-          Si la cuenta existe, recibirás un código de 6 dígitos en tu correo.
+          Si el teléfono está registrado, recibirás instrucciones.
         </p>
       )}
 
@@ -67,9 +63,10 @@ export default function RecoverForm({
           ...buttonBaseStyle,
           backgroundColor: !isValid || isLoading ? "#bdbdbd" : "#1976d2",
           cursor: !isValid || isLoading ? "not-allowed" : "pointer",
+          opacity: !isValid || isLoading ? 0.8 : 1,
         }}
       >
-        {isLoading ? "Enviando..." : "Enviar código"}
+        {isLoading ? "Enviando..." : "Recuperar cuenta"}
       </button>
     </form>
   );
@@ -90,5 +87,6 @@ const buttonBaseStyle: React.CSSProperties = {
   border: "none",
   borderRadius: 4,
   fontWeight: "bold",
+  transition: "background-color 0.2s ease",
   marginTop: 8,
 };

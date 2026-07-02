@@ -24,4 +24,7 @@ export interface NotificationServicePort {
   sendEmail(to: string, subject: string, body: string): Promise<void>;
   // Envía un mensaje SMS al número telefónico especificado.
   sendSms(phone: string, message: string): Promise<void>;
+  // Envía un correo electrónico de recuperación de contraseña.
+  sendRecoveryEmail(email: string, token: string): Promise<void>;
+  sendRecoveryCode(email: string, code: string): Promise<void>;
 }

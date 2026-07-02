@@ -95,6 +95,8 @@ import { ChangePassengerPasswordUseCase } from '../application/use-cases/change-
 import { ChangeAdminPasswordUseCase } from '../application/use-cases/change-admin-password.use-case';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SessionCleanupService } from './services/session-cleanup.service';
+import { LogoutUseCase } from '../application/use-cases/logout.use-case';
+import { RecoverPassengerUseCase } from '../application/use-cases/recover-passenger.use-case';
 
 @Module({
   imports: [
@@ -132,6 +134,8 @@ import { SessionCleanupService } from './services/session-cleanup.service';
     DeleteAdminUseCase,
     ChangePassengerPasswordUseCase,
     ChangeAdminPasswordUseCase,
+    LogoutUseCase,
+    RecoverPassengerUseCase,
 
     // Servicios compartidos
     CryptoService,

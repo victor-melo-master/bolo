@@ -28,4 +28,13 @@ export interface PassengerRepositoryPort {
   findByEmail(email: string): Promise<Passenger | null>;
   findByCedula(cedula: string): Promise<Passenger | null>;
   updateLastLogin(userId: string): Promise<void>;
+  findByPhoneIncludeDeleted(phone: string): Promise<Passenger | null>;
+  findByEmailIncludeDeleted(email: string): Promise<Passenger | null>;
+  findByRecoveryCode(code: string): Promise<Passenger | null>;
+  updateRecoveryCode(
+    passengerId: string,
+    code: string,
+    expiresAt: Date,
+  ): Promise<void>;
+  reactivate(passengerId: string): Promise<void>;
 }

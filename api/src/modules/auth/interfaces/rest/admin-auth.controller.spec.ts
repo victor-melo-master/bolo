@@ -21,6 +21,7 @@ import { UpdateAdminUseCase } from '../../application/use-cases/update-admin.use
 import { DeleteAdminUseCase } from '../../application/use-cases/delete-admin.use-case';
 import { ChangeAdminPasswordUseCase } from '../../application/use-cases/change-admin-password.use-case';
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';
+import { LogoutUseCase } from '../../application/use-cases/logout.use-case';
 
 describe('AdminAuthController', () => {
   let controller: AdminAuthController;
@@ -30,6 +31,7 @@ describe('AdminAuthController', () => {
   let updateAdminUseCase: any;
   let deleteAdminUseCase: any;
   let changePasswordUseCase: any;
+  let logoutUseCase: any;
 
   beforeEach(async () => {
     createAdminUseCase = { execute: jest.fn() };
@@ -38,6 +40,7 @@ describe('AdminAuthController', () => {
     updateAdminUseCase = { execute: jest.fn() };
     deleteAdminUseCase = { execute: jest.fn() };
     changePasswordUseCase = { execute: jest.fn() };
+    logoutUseCase = { execute: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminAuthController],
@@ -51,6 +54,8 @@ describe('AdminAuthController', () => {
           provide: ChangeAdminPasswordUseCase,
           useValue: changePasswordUseCase,
         },
+        // Agregar mock de LogoutUseCase
+        { provide: LogoutUseCase, useValue: logoutUseCase },
       ],
     })
       .overrideGuard(ThrottlerGuard)
@@ -168,6 +173,20 @@ describe('AdminAuthController', () => {
       await controller.changePassword({ user: { userId: 'uuid' } }, dto);
 
       expect(changePasswordUseCase.execute).toHaveBeenCalledWith('uuid', dto);
+    });
+  });
+
+  // ─── Logout ─────────────────────────────────────────────
+  describe('POST /auth/admin/logout', () => {
+    it('should call logout use case and clear cookie', async () => {
+      const req = { user: { userId: 'uuid', sessionId: 'session-1' } };
+      const res = { clearCookie: jest.fn() };
+      logoutUseCase.execute.mockResolvedValue(undefined);
+
+      await controller.logout(req, res);
+
+      expect(logoutUseCase.execute).toHaveBeenCalledWith('session-1');
+      expect(res.clearCookie).toHaveBeenCalledWith('token', { path: '/' });
     });
   });
 });

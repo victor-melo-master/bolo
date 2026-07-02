@@ -13,6 +13,7 @@
  *
  * @module AppRouter
  */
+// src/routes/AppRouter.tsx
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ProtectedRoute } from '../shared/guards/ProtectedRoute';
 import HomePage from '../pages/HomePage';
@@ -25,12 +26,19 @@ import PasswordChangePage from '../pages/profile/PasswordChangePage';
 import AdminCreatePage from '../pages/admin/AdminCreatePage';
 import UnauthorizedPage from '../pages/error/UnauthorizedPage';
 import NotFoundPage from '../pages/error/NotFoundPage';
+import RecoverPage from '../pages/auth/RecoverPage';
+import LogoutSuccessPage from '../pages/auth/LogoutSuccessPage';
 
 const router = createBrowserRouter([
+  // Rutas públicas
   { path: '/', element: <HomePage /> },
   { path: '/login', element: <PassengerLoginPage /> },
   { path: '/admin/login', element: <AdminLoginPage /> },
   { path: '/register', element: <RegisterPage /> },
+  { path: '/recover', element: <RecoverPage /> },
+  { path: '/logout-success', element: <LogoutSuccessPage /> }, // ← pública
+  { path: '/unauthorized', element: <UnauthorizedPage /> },
+
   // Rutas protegidas genéricas
   {
     element: <ProtectedRoute />,
@@ -38,8 +46,10 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/password', element: <PasswordChangePage /> },
+      // { path: 'logout-success', ... } ← eliminado de aquí
     ],
   },
+
   // Solo super_admin
   {
     element: <ProtectedRoute requiredRole="super_admin" />,
@@ -47,7 +57,7 @@ const router = createBrowserRouter([
       { path: 'admin/create', element: <AdminCreatePage /> },
     ],
   },
-  { path: '/unauthorized', element: <UnauthorizedPage /> },
+
   { path: '*', element: <NotFoundPage /> },
 ]);
 

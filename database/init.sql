@@ -43,6 +43,8 @@ CREATE SCHEMA IF NOT EXISTS audit;  -- Auditoría global (logs inmutables)
 CREATE TYPE auth.admin_role AS ENUM (
     'driver',             -- Conductor asociado a una cooperativa
     'association_admin',  -- Administrador de una cooperativa
+    'bolo_support',       -- Soporte
+    'bolo_admin',         -- Administrador de BOLO
     'super_admin'         -- Administrador global del sistema BOLO
 );
 
@@ -165,6 +167,8 @@ CREATE TABLE IF NOT EXISTS auth.passengers (
     is_active       BOOLEAN         DEFAULT TRUE,
     deleted_at      TIMESTAMPTZ,                                        -- Soft delete: NULL = activo
     last_login_at   TIMESTAMPTZ,
+    recovery_code            VARCHAR(6) NULL,          -- ← NUEVO: código de recuperación numérico
+    recovery_code_expires_at TIMESTAMPTZ NULL,         -- ← NUEVO: expiración del código
     created_at      TIMESTAMPTZ     DEFAULT clock_timestamp(),
     updated_at      TIMESTAMPTZ     DEFAULT clock_timestamp()
 );

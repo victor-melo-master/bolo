@@ -72,6 +72,16 @@ export class PassengerOrmEntity {
   @Column({ type: 'timestamptz', name: 'last_login_at', nullable: true })
   lastLoginAt: Date | null;
 
+  @Column({ type: 'varchar', length: 6, nullable: true, name: 'recovery_code' })
+  recoveryCode: string | null;
+
+  @Column({
+    type: 'timestamptz',
+    nullable: true,
+    name: 'recovery_code_expires_at',
+  })
+  recoveryCodeExpiresAt: Date | null;
+
   @CreateDateColumn({
     type: 'timestamptz',
     name: 'created_at',

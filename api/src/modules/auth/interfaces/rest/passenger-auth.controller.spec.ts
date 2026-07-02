@@ -21,6 +21,9 @@ import { ChangePassengerPasswordUseCase } from '../../application/use-cases/chan
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';
 import { CreatePassengerUseCase } from '../../application/use-cases/create-passanger.use-case';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
+import { SESSION_REPOSITORY_PORT } from '../../domain/interfaces';
+import { LogoutUseCase } from '../../application/use-cases/logout.use-case';
+import { RecoverPassengerUseCase } from '../../application/use-cases/recover-passenger.use-case';
 
 describe('PassengerAuthController', () => {
   let controller: PassengerAuthController;
@@ -30,6 +33,8 @@ describe('PassengerAuthController', () => {
   let updatePassengerUseCase: any;
   let deletePassengerUseCase: any;
   let changePasswordUseCase: any;
+  let logoutUseCase: any;
+  let recoverPassengerUseCase: any;
 
   beforeEach(async () => {
     createPassengerUseCase = { execute: jest.fn() };
@@ -38,6 +43,8 @@ describe('PassengerAuthController', () => {
     updatePassengerUseCase = { execute: jest.fn() };
     deletePassengerUseCase = { execute: jest.fn() };
     changePasswordUseCase = { execute: jest.fn() };
+    logoutUseCase = { execute: jest.fn() };
+    recoverPassengerUseCase = { request: jest.fn(), confirm: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PassengerAuthController],
@@ -51,6 +58,8 @@ describe('PassengerAuthController', () => {
           provide: ChangePassengerPasswordUseCase,
           useValue: changePasswordUseCase,
         },
+        { provide: LogoutUseCase, useValue: logoutUseCase },
+        { provide: RecoverPassengerUseCase, useValue: recoverPassengerUseCase },
       ],
     })
       .overrideGuard(ThrottlerGuard)
@@ -166,6 +175,100 @@ describe('PassengerAuthController', () => {
       await controller.changePassword({ user: { userId: 'uuid' } }, dto);
 
       expect(changePasswordUseCase.execute).toHaveBeenCalledWith('uuid', dto);
+    });
+  });
+
+  describe('LogoutUseCase', () => {
+    let useCase: LogoutUseCase;
+    let sessionRepo: any;
+
+    beforeEach(async () => {
+      sessionRepo = {
+        deactivateSessions: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          LogoutUseCase,
+          { provide: SESSION_REPOSITORY_PORT, useValue: sessionRepo },
+        ],
+      }).compile();
+
+      useCase = module.get<LogoutUseCase>(LogoutUseCase);
+    });
+
+    it('should deactivate the session', async () => {
+      await useCase.execute('session-1');
+      expect(sessionRepo.deactivateSessions).toHaveBeenCalledWith([
+        'session-1',
+      ]);
+    });
+  });
+
+  describe('POST /auth/passenger/logout', () => {
+    it('should call logout use case and clear cookie', async () => {
+      const req = { user: { userId: 'uuid', sessionId: 'session-1' } };
+      const res = { clearCookie: jest.fn() };
+      logoutUseCase.execute.mockResolvedValue(undefined);
+
+      await controller.logout(req, res);
+
+      expect(logoutUseCase.execute).toHaveBeenCalledWith('session-1');
+      expect(res.clearCookie).toHaveBeenCalledWith('token', { path: '/' });
+    });
+  });
+
+  describe('POST /auth/passenger/recover', () => {
+    it('should delegate to recover use case (request) and return generic message', async () => {
+      const dto = { email: 'test@example.com' };
+      // El método request no retorna nada, así que el controlador retorna un mensaje fijo
+      recoverPassengerUseCase.request = jest.fn().mockResolvedValue(undefined);
+
+      const result = await controller.requestRecover(dto);
+
+      expect(recoverPassengerUseCase.request).toHaveBeenCalledWith(dto);
+      expect(result).toEqual({
+        message:
+          'Si la cuenta existe y fue eliminada, recibirás un código de recuperación.',
+      });
+    });
+
+    it('should accept phone in request dto', async () => {
+      const dto = { phone: '04121234567' };
+      recoverPassengerUseCase.request = jest.fn().mockResolvedValue(undefined);
+
+      const result = await controller.requestRecover(dto);
+
+      expect(recoverPassengerUseCase.request).toHaveBeenCalledWith(dto);
+      expect(result).toEqual({
+        message:
+          'Si la cuenta existe y fue eliminada, recibirás un código de recuperación.',
+      });
+    });
+  });
+
+  describe('POST /auth/passenger/recover/confirm', () => {
+    it('should delegate to recover use case (confirm) with full DTO and return access token + user', async () => {
+      const dto = {
+        token: 'valid-token',
+        newPassword: 'NewPass1',
+        newPasswordConfirmation: 'NewPass1',
+      };
+      const mockResponse = {
+        accessToken: 'jwt-access-token',
+        user: {
+          id: '123',
+          phone: '+584121234567',
+          fullName: 'Test User',
+          role: 'passenger',
+        },
+      };
+      recoverPassengerUseCase.confirm.mockResolvedValue(mockResponse);
+
+      const result = await controller.confirmRecover(dto);
+
+      expect(recoverPassengerUseCase.confirm).toHaveBeenCalledWith(dto);
+      expect(result).toEqual(mockResponse);
     });
   });
 });

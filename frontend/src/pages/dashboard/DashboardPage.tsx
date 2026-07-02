@@ -1,32 +1,26 @@
 // src/pages/dashboard/DashboardPage.tsx
-/**
- * ═══════════════════════════════════════════════════════════════
- * DashboardPage — Panel principal post-autenticación
- * ═══════════════════════════════════════════════════════════════
- *
- * Muestra los datos del usuario autenticado (nombre, teléfono,
- * rol/categoría) y enlaces de navegación a editar perfil, cambiar
- * contraseña y crear admin (solo super_admin). Incluye botón de
- * cerrar sesión.
- *
- * Capa: page
- * Dependencias: authStore, react-router-dom, auth type guards
- *
- * @module DashboardPage
- */
 import { useAuthStore } from '../../shared/store/authStore';
 import { useNavigate, Link } from 'react-router-dom';
 import { isAdminProfile, isPassengerProfile } from '../../modules/auth/types';
+import { useLogout } from '../../modules/auth/hooks/useLogout';
+import { useDeleteAccount } from '../../modules/auth/hooks/useDeleteAccount';
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const userType = useAuthStore((s) => s.userType());
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const { execute: handleLogout } = useLogout(() => {
     navigate('/', { replace: true });
+  });
+
+  const { execute: handleDeleteAccount, isLoading: isDeleting } = useDeleteAccount();
+
+  const onDeleteClick = () => {
+    if (window.confirm('¿Estás seguro de eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      handleDeleteAccount();
+      navigate('/', { replace: true });
+    }
   };
 
   if (!user) {
@@ -34,6 +28,8 @@ export default function DashboardPage() {
   }
 
   const isAdmin = userType === 'admin';
+  const isSuperAdmin = isAdmin && isAdminProfile(user) && user.role === 'super_admin';
+  const canDelete = !isSuperAdmin;
 
   return (
     <div style={{ maxWidth: 600, margin: '40px auto' }}>
@@ -62,9 +58,25 @@ export default function DashboardPage() {
         )}
       </nav>
 
-      <button onClick={handleLogout} style={logoutButtonStyle}>
-        Cerrar sesión
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <button onClick={handleLogout} style={logoutButtonStyle}>
+          Cerrar sesión
+        </button>
+        
+        <button
+          onClick={onDeleteClick}
+          disabled={!canDelete || isDeleting}
+          title={!canDelete ? 'No puedes eliminar tu propia cuenta de Super Admin por seguridad' : ''}
+          style={{
+            ...logoutButtonStyle,
+            backgroundColor: canDelete ? '#9e9e9e' : '#e0e0e0',
+            cursor: canDelete ? 'pointer' : 'not-allowed',
+            opacity: canDelete ? 1 : 0.7,
+          }}
+        >
+          {isDeleting ? 'Eliminando...' : 'Eliminar cuenta'}
+        </button>
+      </div>
     </div>
   );
 }

@@ -53,4 +53,16 @@ export class NotificationServiceImpl implements NotificationServicePort {
   ): Promise<void> {
     this.logger.log(`Sending push to user ${userId}: ${title}`);
   }
+
+  async sendRecoveryEmail(email: string, token: string): Promise<void> {
+    // En el MVP se loguea el enlace; luego se integrará con servicio real de email.
+    const recoveryLink = `https://tu-app.com/recover?token=${token}`;
+    this.logger.log(
+      `[Recovery] Enlace de recuperación para ${email}: ${recoveryLink}`,
+    );
+  }
+
+  async sendRecoveryCode(email: string, code: string): Promise<void> {
+    this.logger.log(`[Recovery] Código para ${email}: ${code}`);
+  }
 }

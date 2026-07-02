@@ -41,6 +41,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
       PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-ChangeMeNow!}
 
     secrets:
       - pg_password
@@ -51,8 +52,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/18/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./database/01-seed.sh:/docker-entrypoint-initdb.d/01-seed.sh:ro   # <-- añadir
       - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
-      - ./postgres/pgpass:/pgadmin4/pgpass:ro
 
     healthcheck:
       <<: *hc-defaults
@@ -76,33 +77,25 @@ services:
     container_name: bolo_redis
     <<: *default-restart
     logging: *default-logging
-
-    # Carga la config desde archivo (no flags inline)
-    command: redis-server /usr/local/etc/redis/redis.conf
-
+    # Cambiamos el comando para leer el secreto y pasarlo como argumento
+    command: sh -c 'exec redis-server /usr/local/etc/redis/redis.conf --requirepass "$(cat /run/secrets/redis_password)"'
     secrets:
       - redis_password
-
     ports:
-      - "127.0.0.1:6379:6379"   # Solo loopback
-
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
-
     healthcheck:
       <<: *hc-defaults
-      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
-
+      test: ["CMD-SHELL", "redis-cli -a $(cat /run/secrets/redis_password) ping | grep -q PONG"]
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 128M
-
     networks:
-      - cache_net       # Red aislada: API y middleware pueden ver redis
-
+      - cache_net
   # ============================================================
   # pgAdmin (solo en desarrollo, desactivar en staging/prod)
   # ============================================================
@@ -145,53 +138,65 @@ services:
     build:
       context: ./middleware
       dockerfile: Dockerfile
-      target: development       # Stage separado con hot-reload (air)
+      target: development
     container_name: bolo_middleware
     <<: *default-restart
     logging: *default-logging
 
     environment:
-      JWT_SECRET_FILE:    /run/secrets/jwt_secret
-      QR_HMAC_SECRET_FILE: /run/secrets/qr_hmac_secret
-      REDIS_HOST:         redis
-      REDIS_PORT:         6379
-      REDIS_PASSWORD_FILE: /run/secrets/redis_password
-      API_URL:            http://api:3000
-      FIBER_PREFORK:      "false"
-      LOG_LEVEL:          ${LOG_LEVEL:-info}
+      # Configuración de la API
+      API_URL:                  http://api:3000
+      # Redis (ya estaba, añadimos DB_*)
+      REDIS_ADDR:               redis:6379
+      REDIS_PASSWORD_FILE:      /run/secrets/redis_password
+      # PostgreSQL (nuevo)
+      DB_HOST:                  postgres
+      DB_PORT:                  5432
+      DB_USER:                  ${POSTGRES_USER}
+      DB_PASSWORD_FILE:         /run/secrets/pg_password
+      DB_NAME:                  ${POSTGRES_DB}
+      # Puerto
+      PORT:                     8080
+      # Otros
+      LOG_LEVEL:                ${LOG_LEVEL:-info}
 
     secrets:
-      - jwt_secret
-      - qr_hmac_secret
       - redis_password
+      - pg_password              # <-- nuevo secreto
 
     ports:
       - "127.0.0.1:${MIDDLEWARE_PORT:-8080}:8080"
 
     volumes:
       - ./middleware:/app:delegated
-      - middleware_cache:/root/go/pkg/mod  # Caché de módulos Go entre reinicios
+      - middleware_cache:/root/go/pkg/mod
 
     depends_on:
       redis:
         condition: service_healthy
       api:
         condition: service_healthy
+      postgres:                  # <-- dependencia añadida
+        condition: service_healthy
 
     healthcheck:
-      <<: *hc-defaults
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10               # ← más reintentos
+      start_period: 60s         # ← más tiempo de gracia
 
     deploy:
       resources:
         limits:
           cpus: '0.5'
-          memory: 128M
+          memory: 512M
 
     networks:
-      - public_net      # Recibe tráfico externo
-      - cache_net       # Habla con Redis
-      - api_net         # Proxy hacia la API
+      - public_net
+      - cache_net
+      - api_net
+      - db_net           # <-- ¡IMPORTANTE! Acceso a PostgreSQL
 
   # ============================================================
   # API Monolítica (Node.js / NestJS)
@@ -227,9 +232,9 @@ services:
       - jwt_secret
       - qr_hmac_secret
 
-    #! Para pruebas rápidas, exponer puerto 3000 de lo contrario comentar o eliminar !#
-    ports:
-      - "127.0.0.1:3000:3000" # Exponer API para pruebas rápidas
+    # #! Para pruebas rápidas, exponer puerto 3000 de lo contrario comentar o eliminar !#
+    # ports:
+    #   - "127.0.0.1:3000:3000" # Exponer API para pruebas rápidas
 
     # Puerto NO expuesto al host: solo el middleware accede por api_net
     expose:
@@ -273,9 +278,7 @@ services:
     logging: *default-logging
 
     environment:
-      # VITE_API_URL:      http://localhost:${MIDDLEWARE_PORT:-8080}
-      #! ANLAR EN PRODUCCION !#
-      VITE_API_URL:      http://localhost:3000
+      VITE_API_URL: http://localhost:${MIDDLEWARE_PORT:-8080}/api
       VITE_ENVIRONMENT:  development
 
     ports:

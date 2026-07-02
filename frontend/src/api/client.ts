@@ -14,23 +14,22 @@
  *
  * @module apiClient
  */
-import { useAuthStore } from "../shared/store/authStore";
+import { useAuthStore } from '../shared/store/authStore';
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-interface RequestOptions extends Omit<RequestInit, "body" | "signal"> {
+interface RequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
   body?: unknown;
   signal?: AbortSignal;
 }
 
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestOptions = {},
+  options: RequestOptions = {}
 ): Promise<T> {
-  // 👇 token directamente desde el store de Zustand (sin importar React)
   const token = useAuthStore.getState().token;
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -42,12 +41,12 @@ export async function apiClient<T>(
   });
 
   if (options.signal?.aborted) {
-    throw new DOMException("Request aborted", "AbortError");
+    throw new DOMException('Request aborted', 'AbortError');
   }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new ApiError(response.status, error.message || "Error desconocido");
+    throw new ApiError(response.status, error.message || 'Error desconocido');
   }
 
   if (response.status === 204) return undefined as T;
@@ -59,7 +58,7 @@ export class ApiError extends Error {
 
   constructor(status: number, message: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
   }
 }

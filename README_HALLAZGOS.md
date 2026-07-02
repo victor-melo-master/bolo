@@ -1,7 +1,7 @@
 # INFORME DE HALLAZGOS — Auditoría de Seguridad y Calidad
 ## Proyecto BOLOS — Plataforma de Transporte de Pasajeros
 
-**Auditor:** CTO / Arquitecto de Software Líder
+
 **Fecha:** 1 de julio de 2026
 **Estándares:** ISO 27001, OWASP Top 10 (2021), CIS Benchmarks
 

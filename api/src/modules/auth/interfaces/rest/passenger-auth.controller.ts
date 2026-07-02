@@ -44,6 +44,9 @@ import { DeletePassengerUseCase } from '../../application/use-cases/delete-passe
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';
 import { ChangePassengerPasswordUseCase } from '../../application/use-cases/change-passenger-password.use-case';
+import { LogoutUseCase } from '../../application/use-cases/logout.use-case';
+import { RecoverPassengerUseCase } from '../../application/use-cases/recover-passenger.use-case';
+import { RecoverConfirmDto, RecoverRequestDto } from '../../application/dto';
 
 @Controller('auth/passenger')
 export class PassengerAuthController {
@@ -54,6 +57,8 @@ export class PassengerAuthController {
     private readonly updatePassengerUseCase: UpdatePassengerUseCase,
     private readonly deletePassengerUseCase: DeletePassengerUseCase,
     private readonly changePasswordUseCase: ChangePassengerPasswordUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
+    private readonly recoverPassengerUseCase: RecoverPassengerUseCase,
   ) {}
 
   @Post('register')
@@ -121,5 +126,41 @@ export class PassengerAuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
     await this.changePasswordUseCase.execute(req.user.userId as string, dto);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@Req() req: any, @Res({ passthrough: true }) res: any) {
+    await this.logoutUseCase.execute(req.user.sessionId as string);
+    res.clearCookie('token', { path: '/' });
+  }
+
+  /**
+   * Solicitar recuperación de cuenta eliminada.
+   * Público: no requiere autenticación.
+   */
+  @Post('recover')
+  async requestRecover(@Body() dto: RecoverRequestDto) {
+    await this.recoverPassengerUseCase.request(dto);
+    return {
+      message:
+        'Si la cuenta existe y fue eliminada, recibirás un código de recuperación.',
+    };
+  }
+
+  /**
+   * Confirmar recuperación con código numérico.
+   * Público: no requiere autenticación.
+   * Devuelve token de acceso si el código es válido.
+   */
+  @Post('recover/confirm')
+  async confirmRecover(@Body() dto: RecoverConfirmDto) {
+    try {
+      return await this.recoverPassengerUseCase.confirm(dto);
+    } catch (error) {
+      console.error('[Confirm] Error:', error);
+      throw error;
+    }
   }
 }

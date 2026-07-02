@@ -287,6 +287,8 @@ func main() {
 	publicPaths := []string{
 		"/api/auth/passenger/login",
 		"/api/auth/passenger/register",
+		"/api/auth/passenger/recover",         // ← nueva
+		"/api/auth/passenger/recover/confirm", // ← nueva
 		"/api/auth/admin/login",
 		"/api/health",
 	}
@@ -337,9 +339,12 @@ func main() {
 			targetPath = "/"
 		}
 		targetURL := API_URL + targetPath
-		return proxy.Do(c, targetURL)
+		if err := proxy.Do(c, targetURL); err != nil {
+			log.Printf("Proxy error para %s: %v", targetPath, err)
+			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"message": "Error interno del servidor"})
+		}
+		return nil
 	})
-
 	// ---- Iniciar servidor ----
 	log.Printf("Middleware iniciado en puerto %s", PORT)
 	log.Fatal(app.Listen(":" + PORT))

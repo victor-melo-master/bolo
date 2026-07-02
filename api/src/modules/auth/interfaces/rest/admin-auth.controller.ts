@@ -46,6 +46,8 @@ import { UpdateAdminUseCase } from '../../application/use-cases/update-admin.use
 import { DeleteAdminUseCase } from '../../application/use-cases/delete-admin.use-case';
 import { ChangeAdminPasswordUseCase } from '../../application/use-cases/change-admin-password.use-case';
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';
+import { LogoutUseCase } from '../../application/use-cases/logout.use-case';
+import { NotSuperAdminGuard } from '../../infrastructure/auth/not-super-admin.guard';
 
 @Controller('auth/admin')
 export class AdminAuthController {
@@ -56,6 +58,7 @@ export class AdminAuthController {
     private readonly updateAdminUseCase: UpdateAdminUseCase,
     private readonly deleteAdminUseCase: DeleteAdminUseCase,
     private readonly changePasswordUseCase: ChangeAdminPasswordUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
   ) {}
 
   // 🚫 Registro público ELIMINADO por seguridad.
@@ -115,7 +118,7 @@ export class AdminAuthController {
   }
 
   @Delete('profile')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, NotSuperAdminGuard) // nuevo guard
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteProfile(@Req() req: any) {
     await this.deleteAdminUseCase.execute(req.user.userId as string);
@@ -126,5 +129,12 @@ export class AdminAuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
     await this.changePasswordUseCase.execute(req.user.userId as string, dto);
+  }
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@Req() req: any, @Res({ passthrough: true }) res: any) {
+    await this.logoutUseCase.execute(req.user.sessionId as string);
+    res.clearCookie('token', { path: '/' });
   }
 }

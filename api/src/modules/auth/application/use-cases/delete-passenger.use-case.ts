@@ -25,12 +25,19 @@ export class DeletePassengerUseCase {
     private readonly passengerRepo: PassengerRepositoryPort,
   ) {}
 
+  /**
+   *  No se hace necesario valdiar el ID ya que el Guard se encarga del mismo
+   * ademas que se busca conel ID valdiado a la persona y se realiza el
+   * soft delete
+   * @param passengerId
+   */
+
   async execute(passengerId: string): Promise<void> {
     const passenger = await this.passengerRepo.findById(passengerId);
     if (!passenger) {
       throw new NotFoundException('Pasajero no encontrado');
     }
-    // Soft delete: marcamos deletedAt y desactivamos
+
     await this.passengerRepo.softDelete(passengerId);
   }
 }

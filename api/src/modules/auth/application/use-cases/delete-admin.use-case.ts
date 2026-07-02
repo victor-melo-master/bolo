@@ -14,7 +14,12 @@
  *
  * @module DeleteAdminUseCase
  */
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ADMIN_REPOSITORY_PORT } from '../../domain/interfaces/repositories/admin.repository.port';
 import type { AdminRepositoryPort } from '../../domain/interfaces/repositories/admin.repository.port';
 
@@ -29,6 +34,11 @@ export class DeleteAdminUseCase {
     const admin = await this.adminRepo.findById(adminId);
     if (!admin) {
       throw new NotFoundException('Admin no encontrado');
+    }
+    if (admin.role === 'super_admin') {
+      throw new ForbiddenException(
+        'No puedes eliminar una cuenta de super administrador',
+      );
     }
     await this.adminRepo.softDelete(adminId);
   }

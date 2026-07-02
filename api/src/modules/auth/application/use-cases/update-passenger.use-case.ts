@@ -53,7 +53,7 @@ export class UpdatePassengerUseCase {
 
     // Solo actualizar los campos enviados
     const updatedData = {
-      ...passenger, // copia las propiedades originales
+      ...passenger,
       fullName: dto.fullName !== undefined ? dto.fullName : passenger.fullName,
       email: dto.email !== undefined ? dto.email : passenger.email,
       cedula: dto.cedula !== undefined ? dto.cedula : passenger.cedula,

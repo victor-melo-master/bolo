@@ -48,6 +48,11 @@ make tools
 | Redis       | `localhost:6379`              | _secret_                              |
 | pgAdmin     | http://localhost:5050         | `admin@bolo.com` / _secret_           |
 
+> 📖 **Documentación de flujos:**
+> - [`FLUJOS_MIDDLEWARE.md`](./FLUJOS_MIDDLEWARE.md) — proxy, validación JWT, rate limiting, honeypot
+> - [`FLUJOS_REDIS.md`](./FLUJOS_REDIS.md) — caché, sesiones, despliegue y valores de Redis
+> - [`FLUJOS_POSTGRES.md`](./FLUJOS_POSTGRES.md) — esquema, init.sql, despliegue y valores de PostgreSQL
+
 Los secretos se generan en `secrets/*.txt`. Para ver las contraseñas:
 ```bash
 cat secrets/pg_password.txt

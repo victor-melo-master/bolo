@@ -15,6 +15,8 @@
  *
  * @module PassengerRepositoryImpl
  */
+// src/modules/auth/infrastructure/persistence/passenger.repository.impl.ts
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -60,6 +62,8 @@ export class PassengerRepositoryImpl implements PassengerRepositoryPort {
       orm.lastLoginAt,
       orm.createdAt,
       orm.updatedAt,
+      orm.recoveryCode,
+      orm.recoveryCodeExpiresAt,
     );
   }
 
@@ -77,6 +81,8 @@ export class PassengerRepositoryImpl implements PassengerRepositoryPort {
     orm.isActive = passenger.isActive;
     orm.deletedAt = passenger.deletedAt;
     orm.lastLoginAt = passenger.lastLoginAt;
+    orm.recoveryCode = passenger.recoveryCode;
+    orm.recoveryCodeExpiresAt = passenger.recoveryCodeExpiresAt;
     orm.createdAt = passenger.createdAt;
     orm.updatedAt = passenger.updatedAt;
     return orm;
@@ -106,5 +112,42 @@ export class PassengerRepositoryImpl implements PassengerRepositoryPort {
 
   async updateLastLogin(userId: string): Promise<void> {
     await this.ormRepo.update(userId, { lastLoginAt: new Date() });
+  }
+
+  async findByPhoneIncludeDeleted(phone: string): Promise<Passenger | null> {
+    const orm = await this.ormRepo.findOne({ where: { phone } });
+    return orm ? this.toDomain(orm) : null;
+  }
+
+  async findByEmailIncludeDeleted(email: string): Promise<Passenger | null> {
+    const orm = await this.ormRepo.findOne({ where: { email } });
+    return orm ? this.toDomain(orm) : null;
+  }
+
+  async findByRecoveryCode(code: string): Promise<Passenger | null> {
+    console.log('[Repo] Buscando código:', code);
+    const orm = await this.ormRepo.findOne({ where: { recoveryCode: code } });
+    console.log('[Repo] Resultado ORM:', orm ? 'encontrado' : 'nulo');
+    return orm ? this.toDomain(orm) : null;
+  }
+
+  async updateRecoveryCode(
+    passengerId: string,
+    code: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.ormRepo.update(passengerId, {
+      recoveryCode: code,
+      recoveryCodeExpiresAt: expiresAt,
+    });
+  }
+
+  async reactivate(passengerId: string): Promise<void> {
+    await this.ormRepo.update(passengerId, {
+      deletedAt: null,
+      isActive: true,
+      recoveryCode: null,
+      recoveryCodeExpiresAt: null,
+    });
   }
 }

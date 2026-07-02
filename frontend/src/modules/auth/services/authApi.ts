@@ -30,7 +30,8 @@ const adminBase = '/auth/admin';
 
 // ── Pasajero ──
 export const registerPassenger = (data: RegisterPassengerRequest) =>
-  apiClient<LoginResponse>(`${passengerBase}/register`, { method: 'POST', body: data });
+  apiClient<PassengerProfile>(`${passengerBase}/register`, { method: 'POST', body: data });
+
 
 export const loginPassenger = (data: LoginRequest) =>
   apiClient<LoginResponse>(`${passengerBase}/login`, { method: 'POST', body: data });
@@ -46,6 +47,21 @@ export const changePassengerPassword = (data: ChangePasswordRequest) =>
 
 export const deletePassengerAccount = () =>
   apiClient<void>(`${passengerBase}/profile`, { method: 'DELETE' });
+
+export const logoutPassenger = () =>
+  apiClient<void>(`${passengerBase}/logout`, { method: 'POST' });
+
+export const logoutAdmin = () =>
+  apiClient<void>(`${adminBase}/logout`, { method: 'POST' });
+
+export const recoverPassenger = (data: { email?: string; phone?: string }) =>
+  apiClient<{ message: string }>(`${passengerBase}/recover`, { method: 'POST', body: data });
+
+export const confirmRecovery = (data: { token: string; newPassword: string; newPasswordConfirmation: string }) =>
+  apiClient<LoginResponse>(`${passengerBase}/recover/confirm`, {
+    method: 'POST',
+    body: data,
+  });
 
 // ── Admin ──
 export const loginAdmin = (data: LoginRequest) =>
